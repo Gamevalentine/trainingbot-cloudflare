@@ -13,6 +13,9 @@ mkdir -p "$TMP_DIR"
 unzip -q "$ARCHIVE" -d "$TMP_DIR"
 rm -rf public
 cp -a "$TMP_DIR/public" ./public
+if [[ -d overrides ]]; then
+  cp -a overrides/. public/
+fi
 rm -f public/_redirects
 rm -rf "$TMP_DIR" "$ARCHIVE"
 
