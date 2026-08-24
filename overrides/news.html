@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="/mobile_polish_v62.css?v=62">
   <link rel="stylesheet" href="/brand_logo_v116.css?v=116">
   <link rel="stylesheet" href="/navigation_v124.css?v=124">
-  <link rel="stylesheet" href="/news_grouped_v127.css?v=127">
+  <link rel="stylesheet" href="/news_grouped_v128.css?v=128">
 </head>
 <body>
   <header class="site-header">
@@ -75,10 +75,10 @@
         </section>
 
         <section class="tb-news-topics" aria-labelledby="tb-topics-title">
-          <header class="tb-news-section-head">
-            <div><span class="kicker">Theo chủ đề</span><h2 id="tb-topics-title">Khám phá nội dung</h2></div>
-          </header>
-          <div class="tb-topic-groups">
+          <button class="tb-topics-toggle" type="button" aria-expanded="false" aria-controls="tb-topic-groups">
+            <span id="tb-topics-title">Khám phá nội dung</span><i aria-hidden="true"></i>
+          </button>
+          <div class="tb-topic-groups" id="tb-topic-groups" hidden>
             <section class="tb-topic-group tb-topic-update">
               <header><span>CẬP NHẬT & PHIÊN BẢN</span><h2>Thay đổi trong game</h2><p>Tính năng, phiên bản thử nghiệm và tác động tới lối chơi.</p></header>
               <div class="tb-topic-list">
@@ -116,5 +116,6 @@
   </footer>
   <script src="/script.js"></script>
   <script defer src="/navigation_v124.js?v=124"></script>
+  <script defer src="/news_grouped_v128.js?v=128"></script>
 </body>
 </html>
