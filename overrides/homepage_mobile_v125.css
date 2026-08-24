@@ -1,0 +1,286 @@
+/* TrainingBot V125 — compact community-first mobile homepage */
+@media (max-width: 600px) {
+  .site-header {
+    background: rgba(6, 9, 20, .94);
+  }
+
+  .header-inner {
+    min-height: 60px;
+  }
+
+  .brand {
+    gap: 8px;
+    font-size: 1rem;
+  }
+
+  .brand-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+  }
+
+  .icon-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .announcement-inner {
+    min-height: 44px;
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 8px !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+    flex-wrap: nowrap !important;
+    font-size: .69rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .announcement-badge {
+    padding: 4px 7px;
+    font-size: .65rem;
+  }
+
+  .announcement-text {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .announcement a {
+    white-space: nowrap;
+    font-size: .69rem;
+  }
+
+  .hero {
+    padding: 38px 0 30px !important;
+    overflow: visible;
+  }
+
+  .hero-layout {
+    gap: 26px;
+  }
+
+  .hero-copy,
+  .hero-copy p {
+    text-align: left;
+  }
+
+  .kicker {
+    font-size: .65rem;
+    letter-spacing: .11em;
+  }
+
+  .kicker::before {
+    width: 18px;
+  }
+
+  .hero-copy h1 {
+    margin: 14px 0 18px;
+    font-size: clamp(2.85rem, 14vw, 3.6rem) !important;
+    line-height: .94;
+    letter-spacing: -.065em;
+  }
+
+  .hero-copy p {
+    max-width: 100%;
+    margin: 0;
+    color: #b5bfd4;
+    font-size: .94rem;
+    line-height: 1.65;
+  }
+
+  .hero-actions {
+    display: grid !important;
+    grid-template-columns: 1.08fr .92fr;
+    gap: 9px;
+    margin-top: 24px;
+  }
+
+  .hero-actions .button {
+    width: 100%;
+    min-height: 48px;
+    padding: 0 12px;
+    border-radius: 14px;
+    font-size: .82rem;
+  }
+
+  .hero-actions .button svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .hero-trust {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .hero-trust span {
+    min-height: 52px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 3px;
+    border: 1px solid rgba(255, 255, 255, .08);
+    border-radius: 13px;
+    background: rgba(255, 255, 255, .025);
+    font-size: .62rem;
+    line-height: 1.2;
+    text-align: center;
+  }
+
+  .hero-trust i {
+    width: 6px;
+    height: 6px;
+  }
+
+  .hero-visual {
+    min-height: 250px !important;
+    margin-top: 4px;
+  }
+
+  .dashboard-card {
+    inset: 0 !important;
+    padding: 15px !important;
+    border-radius: 22px;
+    transform: none;
+  }
+
+  .dashboard-chip {
+    padding: 5px 8px;
+    font-size: .58rem;
+  }
+
+  .dashboard-main {
+    margin-top: 13px;
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .dashboard-main h3 {
+    margin: 5px 0 11px;
+    font-size: 1.35rem;
+  }
+
+  .progress-shell {
+    height: 7px;
+  }
+
+  .dashboard-grid {
+    gap: 8px;
+    margin-top: 9px;
+  }
+
+  .mini-card {
+    min-height: 88px;
+    padding: 11px;
+    border-radius: 14px;
+  }
+
+  .mini-card span {
+    font-size: .65rem;
+  }
+
+  .mini-card b {
+    margin-top: 7px;
+    font-size: 1.12rem;
+  }
+
+  .graph {
+    height: 23px;
+    gap: 3px;
+    margin-top: 6px;
+  }
+
+  .float-card {
+    display: none;
+  }
+
+  .stats-strip {
+    padding: 12px 0 52px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 9px;
+  }
+
+  .stat {
+    min-height: 92px;
+    padding: 15px;
+    border-radius: 15px;
+  }
+
+  .stat b {
+    font-size: 1.05rem;
+  }
+
+  .stat span {
+    font-size: .71rem;
+    line-height: 1.35;
+  }
+
+  .section {
+    padding: 52px 0;
+  }
+
+  .section-header {
+    gap: 13px;
+    margin-bottom: 22px;
+  }
+
+  .section-header h2 {
+    font-size: 2.05rem;
+    line-height: 1.05;
+  }
+
+  .section-header p,
+  .feature-card p,
+  .article-body p {
+    font-size: .9rem;
+  }
+
+  .feature-card {
+    min-height: 0;
+    padding: 21px;
+    border-radius: 20px;
+  }
+
+  .feature-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+  }
+
+  .feature-card h3 {
+    margin: 28px 0 10px;
+    font-size: 1.35rem;
+  }
+
+  .feature-card a {
+    position: static;
+    display: inline-flex;
+    margin-top: 24px;
+  }
+
+  .article-cover,
+  .tb-home-cover {
+    min-height: 180px;
+  }
+
+  .article-body {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 360px) {
+  .hero-copy h1 {
+    font-size: 2.65rem !important;
+  }
+
+  .hero-actions {
+    grid-template-columns: 1fr;
+  }
+}
