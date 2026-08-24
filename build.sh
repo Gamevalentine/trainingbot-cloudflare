@@ -19,11 +19,11 @@ fi
 rm -f public/_redirects
 rm -rf "$TMP_DIR" "$ARCHIVE"
 
-while IFS= read -r page; do
-  if ! rg -q 'footer_v135\.js' "$page"; then
-    perl -0pi -e 's#</body>#  <script defer src="/footer_v135.js?v=135"></script>\n</body>#i' "$page"
+while IFS= read -r -d '' page; do
+  if ! grep -q 'footer_v135\.js' "$page"; then
+    sed -i 's#</body>#  <script defer src="/footer_v135.js?v=135"></script>\n</body>#' "$page"
   fi
-done < <(rg --files public -g '*.html')
+done < <(find public -type f -name '*.html' -print0)
 
 test -f public/index.html
 test -f public/styles.css
