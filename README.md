@@ -8,4 +8,4 @@ Nguồn triển khai TrainingBot trên Cloudflare Pages.
 - Build command: `npm run build`
 - Build output directory: `public`
 
-Source frontend được lưu dưới dạng các phần base64 `source.part*.b64`; lệnh build sẽ ghép và giải nén thành thư mục `public/`.
+Frontend được đóng trong file `TrainingBot_Cloudflare_Pages_C1.zip`. Lệnh build sẽ giải nén thư mục `public/` từ file ZIP này; Cloudflare Pages Functions nằm trực tiếp trong `functions/` để `/api/*` tiếp tục proxy sang Worker hiện tại.
