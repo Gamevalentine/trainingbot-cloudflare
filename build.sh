@@ -13,6 +13,7 @@ mkdir -p "$TMP_DIR"
 unzip -q "$ARCHIVE" -d "$TMP_DIR"
 rm -rf public
 cp -a "$TMP_DIR/public" ./public
+rm -f public/_redirects
 rm -rf "$TMP_DIR" "$ARCHIVE"
 
 test -f public/index.html
