@@ -2,14 +2,18 @@
 set -euo pipefail
 
 ARCHIVE="TrainingBot_SOURCE_CLEAN.zip"
+PARTS_DIR="source_parts"
 TMP_DIR=".cf_unpack"
 
-rm -rf public "$TMP_DIR"
-test -f "$ARCHIVE"
+rm -rf "$TMP_DIR"
+test -d "$PARTS_DIR"
+cat "$PARTS_DIR"/part_* > "$ARCHIVE"
+unzip -tq "$ARCHIVE"
 mkdir -p "$TMP_DIR"
 unzip -q "$ARCHIVE" -d "$TMP_DIR"
+rm -rf public
 cp -a "$TMP_DIR/public" ./public
-rm -rf "$TMP_DIR"
+rm -rf "$TMP_DIR" "$ARCHIVE"
 
 test -f public/index.html
 test -f public/styles.css
