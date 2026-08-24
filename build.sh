@@ -19,17 +19,24 @@ fi
 rm -f public/_redirects
 rm -rf "$TMP_DIR" "$ARCHIVE"
 
+cp public/updates.html public/ban-cap-nhat.html
+
 while IFS= read -r -d '' page; do
   if ! grep -q 'footer_v135\.js' "$page"; then
     sed -i 's#</body>#  <script defer src="/footer_v135.js?v=135"></script>\n</body>#' "$page"
   fi
+  sed -i 's#href="/updates"#href="/ban-cap-nhat"#g; s#href="updates\.html"#href="/ban-cap-nhat"#g' "$page"
 done < <(find public -type f -name '*.html' -print0)
+
+sed -i "s#'updates','/updates'#'updates','/ban-cap-nhat'#" public/navigation_v124.js
+sed -i 's#route:"/updates"#route:"/ban-cap-nhat"#g' public/mobile_menu_v5.js
 
 test -f public/index.html
 test -f public/styles.css
 test -f public/navigation_v124.js
 test -f public/footer_v135.js
 test -f public/footer_v135.css
+test -f public/ban-cap-nhat.html
 test -f 'functions/api/[[path]].js'
 
 if grep -RIl --include='*.html' --include='*.css' --include='*.js' '\.vercel\.app' public | grep -q .; then
