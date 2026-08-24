@@ -19,9 +19,17 @@ fi
 rm -f public/_redirects
 rm -rf "$TMP_DIR" "$ARCHIVE"
 
+while IFS= read -r page; do
+  if ! rg -q 'footer_v135\.js' "$page"; then
+    perl -0pi -e 's#</body>#  <script defer src="/footer_v135.js?v=135"></script>\n</body>#i' "$page"
+  fi
+done < <(rg --files public -g '*.html')
+
 test -f public/index.html
 test -f public/styles.css
 test -f public/navigation_v124.js
+test -f public/footer_v135.js
+test -f public/footer_v135.css
 test -f 'functions/api/[[path]].js'
 
 if grep -RIl --include='*.html' --include='*.css' --include='*.js' '\.vercel\.app' public | grep -q .; then
