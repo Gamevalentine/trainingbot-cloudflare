@@ -26,13 +26,15 @@
     const url=betaDownloadLinks[version];
     const button=card.querySelector('.beta-build-btn.primary');
     if(!url||!button)return;
-    const link=document.createElement('a');
-    link.className=button.className;
-    link.textContent=button.textContent;
-    link.href=url;
-    link.target='_blank';
-    link.rel='noopener noreferrer';
-    link.referrerPolicy='no-referrer';
-    button.replaceWith(link);
+    button.setAttribute('role','link');
+    button.setAttribute('tabindex','0');
+    const openDownload=()=>{ window.location.href=url; };
+    button.addEventListener('click',openDownload);
+    button.addEventListener('keydown',event=>{
+      if(event.key==='Enter'||event.key===' '){
+        event.preventDefault();
+        openDownload();
+      }
+    });
   });
 })();
