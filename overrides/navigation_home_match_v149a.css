@@ -1,0 +1,147 @@
+/* TrainingBot v149a — scoped header-only alignment for Updates + Wiki.
+   This file is intentionally loaded ONLY on /ban-cap-nhat (updates) and /wiki. */
+
+body > header,
+body > .site-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 60 !important;
+  background: #080b14 !important;
+  border-bottom: 1px solid rgba(148,163,184,.12) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body > header .nav,
+body > header .header-inner,
+body > .site-header .header-inner {
+  width: min(1040px, calc(100% - 32px)) !important;
+  max-width: 1040px !important;
+  height: 78px !important;
+  min-height: 78px !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 22px !important;
+}
+
+body > header .brand,
+body > .site-header .brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 11px !important;
+  margin: 0 auto 0 0 !important;
+  color: #f5f7ff !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+}
+
+body > header .brand-logo,
+body > .site-header .brand-logo {
+  width: 42px !important;
+  height: 42px !important;
+  flex: 0 0 42px !important;
+}
+
+body > header .brand > span:not(.brand-logo),
+body > header .tb-brand-text,
+body > .site-header .brand > span:not(.brand-logo) {
+  color: #f5f7ff !important;
+  font-family: Inter, system-ui, sans-serif !important;
+  font-size: 18px !important;
+  font-weight: 900 !important;
+  line-height: 1.02 !important;
+  letter-spacing: .015em !important;
+}
+
+body > header .brand small,
+body > .site-header .brand small {
+  display: block !important;
+  margin-top: 4px !important;
+  color: #8f99ad !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  letter-spacing: .08em !important;
+}
+
+body > header .navlinks,
+body > header .desktop-nav,
+body > .site-header .desktop-nav {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  margin: 0 !important;
+  padding: 5px !important;
+  border: 1px solid rgba(148,163,184,.20) !important;
+  border-radius: 999px !important;
+  background: #0b0f1a !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.16) !important;
+  color: #9ca6ba !important;
+  white-space: nowrap !important;
+}
+
+body > header .navlinks a,
+body > header .desktop-nav a,
+body > .site-header .desktop-nav a {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 38px !important;
+  padding: 0 15px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: #9ca6ba !important;
+  font-family: Inter, system-ui, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  text-decoration: none !important;
+  transition: background .16s ease,color .16s ease,box-shadow .16s ease !important;
+}
+
+body > header .navlinks a:hover,
+body > header .desktop-nav a:hover,
+body > .site-header .desktop-nav a:hover {
+  color: #f5f7ff !important;
+}
+
+body > header .navlinks a[aria-current="page"],
+body > header .desktop-nav a.active,
+body > .site-header .desktop-nav a.active {
+  background: linear-gradient(135deg,#7357ff 0%,#6174ff 58%,#6788ff 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 22px rgba(101,88,255,.32) !important;
+}
+
+/* Homepage desktop header has no separate square search button in the visible toolbar. */
+body > header .header-actions,
+body > header .icon-button,
+body > .site-header .icon-button {
+  display: none !important;
+}
+
+@media (max-width: 900px) {
+  body > header .nav,
+  body > header .header-inner,
+  body > .site-header .header-inner {
+    width: min(100% - 24px, 1040px) !important;
+    height: 66px !important;
+    min-height: 66px !important;
+  }
+
+  body > header .brand-logo,
+  body > .site-header .brand-logo {
+    width: 38px !important;
+    height: 38px !important;
+    flex-basis: 38px !important;
+  }
+
+  body > header .navlinks,
+  body > header .desktop-nav,
+  body > .site-header .desktop-nav {
+    display: none !important;
+  }
+}
