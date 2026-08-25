@@ -181,6 +181,20 @@
     head.insertAdjacentElement('afterend',note);
   }
 
+  function tuneImagePriority(){
+    const images=[...document.querySelectorAll('#tbWikiGrid .tb-card-visual img')];
+    images.forEach((img,index)=>{
+      img.decoding='async';
+      if(index<5){
+        img.loading='eager';
+        img.fetchPriority='high';
+      }else{
+        img.loading='lazy';
+        img.fetchPriority='low';
+      }
+    });
+  }
+
   function useColoredWeaponImages(){
     document.querySelectorAll('#tbWikiGrid .tb-real-item-image').forEach(img=>{
       const src=img.currentSrc||img.src||'';
@@ -226,6 +240,7 @@
     const apply=()=>{
       addSourceNote();
       useColoredWeaponImages();
+      tuneImagePriority();
       normalizeCards();
     };
 
@@ -235,7 +250,7 @@
       queued=true;
       requestAnimationFrame(()=>{queued=false;apply();});
     });
-    observer.observe(grid,{childList:true,subtree:true,attributes:true,attributeFilter:['src','class']});
+    observer.observe(grid,{childList:true,subtree:true});
     apply();
   }
 
