@@ -27,6 +27,14 @@
     const wikiScript=document.createElement('script');
     wikiScript.src='/wiki_reference_v136.js?v=136';
     document.body.append(wikiScript);
+
+    const wikiRealStyle=document.createElement('link');
+    wikiRealStyle.rel='stylesheet';
+    wikiRealStyle.href='/wiki_real_images_v137.css?v=137';
+    document.head.append(wikiRealStyle);
+    const wikiRealScript=document.createElement('script');
+    wikiRealScript.src='/wiki_real_images_v137.js?v=137';
+    document.body.append(wikiRealScript);
   }
 
   if(document.querySelector('.release-hero')&&!document.querySelector('#tb-release-hero-highlight')){
