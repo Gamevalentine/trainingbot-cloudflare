@@ -27,6 +27,10 @@ rm -rf "$TMP_DIR" "$ARCHIVE"
 
 cp public/updates.html public/ban-cap-nhat.html
 
+# Keep the public contact card in sync with the current TrainingBot contact details.
+test -f public/contact.html
+sed -i 's#hello@trainingbot\.vn#trainingbot.ai2@gmail.com#g; s#TrainingBot Community#trainingbot.ai#g' public/contact.html
+
 while IFS= read -r -d '' page; do
   case "$page" in
     public/admin.html|public/admin-*.html|public/contact-inbox.html)
@@ -172,6 +176,8 @@ test -f public/header_search_v152.js
 test -f public/search-index-v152.json
 node --check public/header_search_v152.js >/dev/null
 node -e "const x=require('./public/search-index-v152.json'); if(!Array.isArray(x)||x.length<3) process.exit(1)" >/dev/null
+grep -q 'trainingbot.ai2@gmail.com' public/contact.html
+grep -q 'trainingbot.ai' public/contact.html
 test -f public/ban-cap-nhat.html
 test -f public/wiki_theme_v143.css
 test -f public/wiki_real_color_v139.js
