@@ -28,6 +28,10 @@ while IFS= read -r -d '' page; do
   sed -i 's#href="/updates"#href="/ban-cap-nhat"#g; s#href="updates\.html"#href="/ban-cap-nhat"#g' "$page"
 done < <(find public -type f -name '*.html' -print0)
 
+if ! grep -q 'wiki_real_color_v139\.js' public/wiki.html; then
+  sed -i 's#</body>#  <script defer src="/wiki_real_color_v139.js?v=139"></script>\n</body>#' public/wiki.html
+fi
+
 sed -i "s#'updates','/updates'#'updates','/ban-cap-nhat'#" public/navigation_v124.js
 sed -i 's#route:"/updates"#route:"/ban-cap-nhat"#g' public/mobile_menu_v5.js
 
@@ -37,6 +41,7 @@ test -f public/navigation_v124.js
 test -f public/footer_v135.js
 test -f public/footer_v135.css
 test -f public/ban-cap-nhat.html
+test -f public/wiki_real_color_v139.js
 test -f 'functions/api/[[path]].js'
 
 if grep -RIl --include='*.html' --include='*.css' --include='*.js' '\.vercel\.app' public | grep -q .; then
