@@ -1,0 +1,60 @@
+/* TrainingBot Wiki V136 — layout matched to the supplied reference */
+body.tb-wiki-reference{
+  background-color:#050505!important;
+  background-image:
+    linear-gradient(rgba(255,96,16,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,96,16,.045) 1px,transparent 1px)!important;
+  background-size:62px 62px!important;
+  color:#f4f4f5!important;
+}
+body.tb-wiki-reference .announcement{display:none!important}
+body.tb-wiki-reference main{padding:0!important}
+.tb-wiki-shell{width:min(1600px,calc(100% - 68px));margin:0 auto;padding:48px 0 80px}
+.tb-wiki-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:36px;align-items:end}
+.tb-wiki-kicker{display:flex;align-items:center;gap:10px;color:#ff5a0a;font:800 .82rem/1 Inter,sans-serif;letter-spacing:.13em;text-transform:uppercase}
+.tb-wiki-kicker svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2}
+.tb-wiki-head h1{margin:10px 0 4px;color:#f7f7f8;font:800 clamp(3rem,4.5vw,4.55rem)/.98 "Space Grotesk",Inter,sans-serif;letter-spacing:-.055em}
+.tb-wiki-subtitle{margin:0;color:#a4a4ad;font-size:1.12rem;line-height:1.5}
+.tb-wiki-tools{display:flex;align-items:center;gap:12px;padding-bottom:4px}
+.tb-wiki-search{position:relative;width:min(430px,34vw)}
+.tb-wiki-search svg{position:absolute;left:17px;top:50%;width:21px;height:21px;transform:translateY(-50%);fill:none;stroke:#7d828d;stroke-width:2}
+.tb-wiki-search input{width:100%;height:62px;padding:0 18px 0 55px;border:1px solid #29292d;border-radius:999px;background:#101011;color:#fff;outline:none;font:600 1rem Inter,sans-serif;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}
+.tb-wiki-search input::placeholder{color:#666a73}
+.tb-wiki-search input:focus{border-color:#5b5b61;box-shadow:0 0 0 3px rgba(255,90,10,.08)}
+.tb-compare-btn{height:62px;padding:0 23px;border:1px solid #29292d;border-radius:999px;background:#111112;color:#d5d5da;display:inline-flex;align-items:center;gap:9px;font:800 1rem Inter,sans-serif;cursor:pointer;white-space:nowrap}
+.tb-compare-btn svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2}
+.tb-compare-btn.active{border-color:#ff5a0a;color:#fff;background:rgba(255,90,10,.13)}
+.tb-wiki-tabs{display:flex;gap:10px;margin-top:28px;overflow:auto;scrollbar-width:none}
+.tb-wiki-tabs::-webkit-scrollbar,.tb-wiki-filters::-webkit-scrollbar{display:none}
+.tb-wiki-tab{height:57px;padding:0 22px;border:1px solid #2b2b2e;border-radius:17px;background:#111112;color:#a9a9b1;display:inline-flex;align-items:center;gap:10px;font:800 .98rem Inter,sans-serif;white-space:nowrap;cursor:pointer}
+.tb-wiki-tab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2}
+.tb-wiki-tab small{font-size:.73rem;color:#6f7077}
+.tb-wiki-tab.active{border-color:#ff4e08;background:linear-gradient(135deg,#ff5f10,#ff3f05);color:#fff;box-shadow:0 10px 28px rgba(255,72,5,.16)}
+.tb-wiki-tab.active small{color:#ffe1d3}
+.tb-wiki-filters{display:flex;gap:10px;margin:34px 0 40px;overflow:auto;scrollbar-width:none}
+.tb-wiki-filter{height:45px;padding:0 20px;border:1px solid #2b2b2f;border-radius:999px;background:#0d0d0e;color:#9e9ea7;font:600 .92rem Inter,sans-serif;white-space:nowrap;cursor:pointer}
+.tb-wiki-filter.active{background:#29292b;border-color:#545459;color:#fff}
+.tb-wiki-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:22px}
+.tb-wiki-card{position:relative;min-height:248px;overflow:hidden;border:1px solid #2b2b30;border-radius:23px;background:linear-gradient(150deg,rgba(18,18,19,.98),rgba(9,9,10,.98));cursor:pointer;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.tb-wiki-card:hover{transform:translateY(-3px);border-color:#46464d;box-shadow:0 20px 46px rgba(0,0,0,.34)}
+.tb-wiki-card.selected{border-color:#ff5a0a;box-shadow:0 0 0 1px rgba(255,90,10,.32),0 18px 45px rgba(255,72,5,.08)}
+.tb-card-tag{position:absolute;left:13px;top:13px;z-index:2;padding:5px 8px;border-radius:6px;background:#09090a;color:#a9a9b2;font:700 .67rem/1 Inter,sans-serif}
+.tb-card-visual{height:156px;display:flex;align-items:center;justify-content:center;padding:26px 24px 6px}
+.tb-card-visual svg{width:100%;max-width:245px;height:92px;opacity:.72;filter:drop-shadow(0 7px 14px rgba(0,0,0,.55))}
+.tb-card-visual .gun-body{fill:#5c5f66}.tb-card-visual .gun-dark{fill:#36383d}.tb-card-visual .gun-line{stroke:#777b84;stroke-width:2;fill:none}
+.tb-card-visual.tb-glyph{font:900 2.4rem/1 "Space Grotesk",Inter,sans-serif;color:#555962;letter-spacing:.03em}
+.tb-wiki-card h3{margin:2px 16px 1px;text-align:center;color:#f2f2f4;font:800 1.18rem/1.2 "Space Grotesk",Inter,sans-serif;letter-spacing:-.025em}
+.tb-wiki-card p{margin:0 16px 19px;text-align:center;color:#676b75;font-size:.83rem}
+.tb-card-check{position:absolute;right:13px;top:13px;width:24px;height:24px;border:1px solid #45454a;border-radius:50%;display:none;place-items:center;background:#111;color:#fff;font-size:.72rem}
+.compare-mode .tb-card-check{display:grid}.tb-wiki-card.selected .tb-card-check{border-color:#ff5a0a;background:#ff4e08}
+.tb-wiki-empty{grid-column:1/-1;padding:70px 20px;text-align:center;border:1px dashed #303036;border-radius:22px;color:#7c7c84}
+.tb-wiki-modal{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.78);backdrop-filter:blur(8px)}
+.tb-wiki-modal.open{display:flex}.tb-wiki-modal-card{width:min(760px,100%);max-height:86vh;overflow:auto;border:1px solid #34343a;border-radius:22px;background:#111113;box-shadow:0 32px 90px rgba(0,0,0,.58)}
+.tb-wiki-modal-head{position:sticky;top:0;display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid #2d2d31;background:rgba(17,17,19,.97)}
+.tb-wiki-modal-head h3{margin:0;font:800 1.35rem/1 "Space Grotesk",Inter,sans-serif}.tb-wiki-modal-close{margin-left:auto;width:38px;height:38px;border:1px solid #34343a;border-radius:11px;background:#18181b;color:#fff;font-size:20px;cursor:pointer}
+.tb-wiki-modal-body{padding:20px}.tb-detail-lead{color:#b0b0b8;line-height:1.7}.tb-detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:18px}.tb-detail-item{padding:14px;border:1px solid #2d2d33;border-radius:13px;background:#18181b}.tb-detail-item small{display:block;color:#777b86;font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em}.tb-detail-item b{display:block;margin-top:5px;color:#f3f3f5}
+.tb-compare-list{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.tb-compare-col{padding:15px;border:1px solid #2d2d33;border-radius:14px;background:#18181b}.tb-compare-col h4{margin:0 0 10px;color:#fff;font-size:1rem}.tb-compare-col p{margin:7px 0;color:#9d9da6;font-size:.82rem}
+@media(max-width:1280px){.tb-wiki-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:980px){.tb-wiki-head{grid-template-columns:1fr}.tb-wiki-tools{padding:0}.tb-wiki-search{width:100%}.tb-wiki-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){.tb-wiki-shell{width:min(100% - 22px,1600px);padding:28px 0 110px}.tb-wiki-head h1{font-size:2.7rem}.tb-wiki-subtitle{font-size:.9rem}.tb-wiki-tools{gap:8px}.tb-wiki-search input{height:50px;font-size:.84rem}.tb-wiki-search svg{left:14px;width:18px}.tb-wiki-search input{padding-left:43px}.tb-compare-btn{height:50px;padding:0 15px;font-size:.82rem}.tb-wiki-tabs{margin-top:22px}.tb-wiki-tab{height:48px;padding:0 15px;border-radius:14px;font-size:.78rem}.tb-wiki-tab svg{width:18px}.tb-wiki-filters{margin:22px 0 24px;gap:7px}.tb-wiki-filter{height:39px;padding:0 14px;font-size:.75rem}.tb-wiki-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.tb-wiki-card{min-height:185px;border-radius:16px}.tb-card-visual{height:112px;padding:22px 14px 2px}.tb-card-visual svg{height:66px}.tb-card-tag{left:9px;top:9px;font-size:.56rem}.tb-wiki-card h3{margin-top:2px;font-size:.94rem}.tb-wiki-card p{margin-bottom:14px;font-size:.68rem}.tb-detail-grid,.tb-compare-list{grid-template-columns:1fr}}
+@media(max-width:380px){.tb-wiki-tools{display:grid;grid-template-columns:1fr auto}.tb-wiki-grid{grid-template-columns:1fr}}
