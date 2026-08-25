@@ -1,0 +1,31 @@
+(() => {
+  "use strict";
+  const $=id=>document.getElementById(id);
+  function addStyles(){
+    if($("adminAuthUiV23"))return;
+    const s=document.createElement("style");s.id="adminAuthUiV23";s.textContent=`
+      .auth-extra-input{width:100%;box-sizing:border-box;border:1px solid #26324b;background:#090f1e;color:#f7f9ff;border-radius:12px;padding:13px 14px;outline:none;font:inherit}.auth-extra-input:focus{border-color:#7568ff;box-shadow:0 0 0 3px rgba(117,104,255,.12)}
+      .auth-field-group{display:grid;gap:8px;margin-top:12px}.auth-field-group.hidden,.totp-setup.hidden{display:none!important}.totp-setup{margin-top:18px;padding:18px;border:1px solid #283653;border-radius:16px;background:#0b1222}.totp-setup h3{margin:8px 0}.totp-setup p{color:#91a0b9;line-height:1.6}.totp-secret-row{display:flex;gap:10px;align-items:center;margin:14px 0}.totp-secret-row code{flex:1;overflow:auto;padding:12px 14px;border:1px solid #2a3959;border-radius:12px;background:#060b16;color:#65e6ff;letter-spacing:.08em}.totp-setup label{display:block;margin:16px 0 8px}.totp-setup>input{width:100%;box-sizing:border-box;border:1px solid #26324b;background:#090f1e;color:#f7f9ff;border-radius:12px;padding:13px 14px;font:inherit;letter-spacing:.25em;text-align:center}.notice.ok{color:#61e7b1}.notice.error{color:#ff8b8b}.security-card.auth-ready{border-color:rgba(97,231,177,.28)!important}.security-card.auth-ready>b{color:#61e7b1!important}.security-card.auth-pending>b{color:#ffb66b!important}
+    `;document.head.appendChild(s);
+  }
+  function transformLogin(){
+    addStyles();const form=$("loginForm");if(!form||$("adminPassword"))return;
+    form.innerHTML=`<label for="adminUsername">Tài khoản Admin</label><input id="adminUsername" class="auth-extra-input" type="text" autocomplete="username" value="admin" required><label for="adminPassword">Mật khẩu Admin</label><div class="password-field"><input id="adminPassword" type="password" autocomplete="current-password" placeholder="Mật khẩu Admin" required><button id="togglePassword" type="button">Hiện</button></div><div id="otpLoginGroup" class="auth-field-group hidden"><label for="adminOtp">Mã 2FA</label><input id="adminOtp" class="auth-extra-input" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"></div><div id="bootstrapTokenGroup" class="auth-field-group"><label for="adminBootstrapToken">ADMIN_TOKEN · chỉ dùng để liên kết thiết bị lần đầu</label><div class="password-field"><input id="adminBootstrapToken" type="password" autocomplete="off" placeholder="ADMIN_TOKEN hiện tại"><button id="toggleBootstrapToken" type="button">Hiện</button></div></div><button id="loginSubmit" class="btn primary wide" type="submit">Liên kết thiết bị & bật 2FA <span>→</span></button>`;
+    const setup=document.createElement("section");setup.id="totpSetup";setup.className="totp-setup hidden";setup.innerHTML=`<span class="eyebrow">KÍCH HOẠT 2FA</span><h3>Thêm TrainingBot vào ứng dụng Authenticator</h3><p>Chọn “Nhập khóa thiết lập” trong Google Authenticator, Microsoft Authenticator hoặc 1Password rồi nhập khóa bên dưới.</p><div class="totp-secret-row"><code id="totpSecret">—</code><button id="copyTotpSecret" class="btn secondary" type="button">Sao chép</button></div><small id="totpAccountHint">TrainingBot · admin</small><label for="totpConfirmCode">Nhập mã 6 số vừa tạo</label><input id="totpConfirmCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"><button id="confirmTotp" class="btn primary wide" type="button" style="margin-top:12px">Xác nhận và bật 2FA <span>→</span></button>`;form.insertAdjacentElement("afterend",setup);
+  }
+  function security(state={linked:false,authenticated:false}){
+    const view=document.querySelector('[data-view-panel="security"]');if(!view)return;
+    const intro=view.querySelector('.section-title p');if(intro)intro.textContent="Admin V2.3 dùng tài khoản riêng, phiên cookie HttpOnly và TOTP 2FA. ADMIN_TOKEN chỉ còn dùng để liên kết/khôi phục thiết bị.";
+    const cards=[...view.querySelectorAll('.security-card')];
+    if(cards[0]){cards[0].querySelector('p').textContent="Phiên quản trị dùng cookie HttpOnly, Secure, SameSite=Strict và tự hết hạn sau 8 giờ.";const b=cards[0].querySelector('b');if(b)b.textContent=state.authenticated?"Đang hoạt động":"Chưa đăng nhập"}
+    if(cards[1]){cards[1].classList.remove('warn');cards[1].classList.add('good','auth-ready');cards[1].querySelector('p').textContent="Tài khoản Admin riêng đã hoạt động; mật khẩu được xác minh phía server.";const b=cards[1].querySelector('b');if(b)b.textContent="Đã kích hoạt"}
+    if(cards[2]){cards[2].classList.toggle('warn',!state.linked);cards[2].classList.toggle('good',!!state.linked);cards[2].classList.toggle('auth-ready',!!state.linked);cards[2].classList.toggle('auth-pending',!state.linked);cards[2].querySelector('p').textContent=state.linked?"TOTP 6 số từ ứng dụng Authenticator được xác minh phía server.":"2FA đã sẵn sàng; liên kết thiết bị một lần để tạo khóa TOTP.";const b=cards[2].querySelector('b');if(b)b.textContent=state.linked?"Đã bật":"Chờ thiết lập"}
+    const road=view.querySelector('.security-roadmap h3');if(road)road.textContent="Lớp bảo vệ đang sử dụng";
+    const labels=[['Tài khoản Admin','Mật khẩu hash PBKDF2 phía server'],['Session server','Cookie HttpOnly, Secure, SameSite=Strict'],['TOTP 2FA','Mã 6 số thay đổi mỗi 30 giây'],['Khóa khôi phục','ADMIN_TOKEN chỉ dùng khi liên kết thiết bị']];
+    [...view.querySelectorAll('.security-steps span')].forEach((el,i)=>{if(!labels[i])return;const b=el.querySelector('b'),sm=el.querySelector('small');if(b)b.textContent=labels[i][0];if(sm)sm.textContent=labels[i][1]});
+    if(!$("unlinkAdminDevice")){const btn=document.createElement('button');btn.id='unlinkAdminDevice';btn.className='btn danger';btn.type='button';btn.textContent='Gỡ liên kết thiết bị này';btn.style.marginTop='16px';view.appendChild(btn)}
+    document.querySelectorAll('.info-grid strong').forEach(el=>{if(el.textContent.includes('ADMIN_TOKEN'))el.textContent='Tài khoản + TOTP 2FA'});
+  }
+  transformLogin();security();
+  fetch('/api/admin-auth/status',{credentials:'same-origin',cache:'no-store'}).then(r=>r.json()).then(d=>{if(d&&d.ok)security(d)}).catch(()=>{});
+})();
