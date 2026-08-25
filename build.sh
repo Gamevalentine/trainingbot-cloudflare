@@ -28,6 +28,9 @@ while IFS= read -r -d '' page; do
   sed -i 's#href="/updates"#href="/ban-cap-nhat"#g; s#href="updates\.html"#href="/ban-cap-nhat"#g' "$page"
 done < <(find public -type f -name '*.html' -print0)
 
+if ! grep -q 'wiki_theme_v143\.css' public/wiki.html; then
+  sed -i 's#</head>#  <link rel="stylesheet" href="/wiki_theme_v143.css?v=143">\n</head>#' public/wiki.html
+fi
 if ! grep -q 'wiki_real_color_v139\.js' public/wiki.html; then
   sed -i 's#</body>#  <script defer src="/wiki_real_color_v139.js?v=139"></script>\n</body>#' public/wiki.html
 fi
@@ -50,6 +53,7 @@ test -f public/navigation_v124.js
 test -f public/footer_v135.js
 test -f public/footer_v135.css
 test -f public/ban-cap-nhat.html
+test -f public/wiki_theme_v143.css
 test -f public/wiki_real_color_v139.js
 test -f public/wiki_strict_uniform_v140.js
 test -f public/wiki_missing_images_v141.js
