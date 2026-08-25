@@ -25,6 +25,21 @@ rm -rf public/admin
 rm -f public/_redirects
 rm -rf "$TMP_DIR" "$ARCHIVE"
 
+# Admin V2.3: inject the account + TOTP layer into the final Admin document
+# before the legacy V2 core loads. This changes Admin only.
+python3 - <<'PY'
+from pathlib import Path
+p = Path("public/admin.html")
+s = p.read_text(encoding="utf-8")
+marker = 'document.open();document.write(h);document.close()'
+inject = 'h=h.replace("<script src=\\"/admin-center-v2.js?v=2\\" defer></script>","<script src=\\"/admin-auth-ui-v23.js?v=23\\"></script><script src=\\"/admin-auth-gate-v23.js?v=23\\"></script><script src=\\"/admin-center-v2.js?v=2\\" defer></script>");'
+if "admin-auth-ui-v23.js" not in s:
+    if marker not in s:
+        raise SystemExit("ERROR: Admin V2 bootstrap marker not found")
+    s = s.replace(marker, inject + marker, 1)
+p.write_text(s, encoding="utf-8")
+PY
+
 cp public/updates.html public/ban-cap-nhat.html
 
 while IFS= read -r -d '' page; do
@@ -97,13 +112,18 @@ node --check public/wiki_audit_v149.js >/dev/null
 test -f public/admin.html
 test ! -e public/admin
 grep -q 'TrainingBot Admin Center V2' public/admin.html
+grep -q 'admin-auth-ui-v23.js' public/admin.html
+grep -q 'admin-auth-gate-v23.js' public/admin.html
+test -f public/admin-auth-ui-v23.js
+test -f public/admin-auth-gate-v23.js
 if grep -q 'footer_v135\.js' public/admin.html; then
   echo 'ERROR: public footer leaked into Admin Center V2' >&2
   exit 1
 fi
 test ! -f functions/admin.js
-
 test -f 'functions/api/[[path]].js'
+test -f 'functions/api/admin-auth/[[path]].js'
+test -f 'functions/_lib/admin_auth.js'
 
 if grep -RIl --include='*.html' --include='*.css' --include='*.js' '\.vercel\.app' public | grep -q .; then
   echo 'ERROR: Vercel reference found in public/' >&2
