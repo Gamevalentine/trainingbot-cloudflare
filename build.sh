@@ -25,21 +25,6 @@ rm -rf public/admin
 rm -f public/_redirects
 rm -rf "$TMP_DIR" "$ARCHIVE"
 
-# Admin V2.3: inject the account + TOTP layer into the final Admin document
-# before the legacy V2 core loads. This changes Admin only.
-node <<'NODE'
-const fs = require('fs');
-const p = 'public/admin.html';
-let s = fs.readFileSync(p, 'utf8');
-const marker = 'document.open();document.write(h);document.close()';
-const inject = 'h=h.replace("<script src=\\"/admin-center-v2.js?v=2\\" defer></script>","<script src=\\"/admin-auth-ui-v23.js?v=23\\"></script><script src=\\"/admin-auth-gate-v23.js?v=23\\"></script><script src=\\"/admin-center-v2.js?v=2\\" defer></script>");';
-if (!s.includes('admin-auth-ui-v23.js')) {
-  if (!s.includes(marker)) throw new Error('Admin V2 bootstrap marker not found');
-  s = s.replace(marker, inject + marker);
-}
-fs.writeFileSync(p, s);
-NODE
-
 cp public/updates.html public/ban-cap-nhat.html
 
 while IFS= read -r -d '' page; do
@@ -112,20 +97,13 @@ node --check public/wiki_audit_v149.js >/dev/null
 test -f public/admin.html
 test ! -e public/admin
 grep -q 'TrainingBot Admin Center V2' public/admin.html
-grep -q 'admin-auth-ui-v23.js' public/admin.html
-grep -q 'admin-auth-gate-v23.js' public/admin.html
-test -f public/admin-auth-ui-v23.js
-test -f public/admin-auth-gate-v23.js
-node --check public/admin-auth-ui-v23.js >/dev/null
-node --check public/admin-auth-gate-v23.js >/dev/null
 if grep -q 'footer_v135\.js' public/admin.html; then
   echo 'ERROR: public footer leaked into Admin Center V2' >&2
   exit 1
 fi
 test ! -f functions/admin.js
+
 test -f 'functions/api/[[path]].js'
-test -f 'functions/api/admin-auth/[[path]].js'
-test -f 'functions/_lib/admin_auth.js'
 
 if grep -RIl --include='*.html' --include='*.css' --include='*.js' '\.vercel\.app' public | grep -q .; then
   echo 'ERROR: Vercel reference found in public/' >&2
