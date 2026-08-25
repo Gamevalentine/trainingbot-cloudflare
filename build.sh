@@ -31,6 +31,13 @@ done < <(find public -type f -name '*.html' -print0)
 if ! grep -q 'wiki_theme_v143\.css' public/wiki.html; then
   sed -i 's#</head>#  <link rel="stylesheet" href="/wiki_theme_v143.css?v=143">\n</head>#' public/wiki.html
 fi
+
+for page in public/updates.html public/ban-cap-nhat.html public/wiki.html; do
+  if ! grep -q 'navigation_home_match_v149a\.css' "$page"; then
+    sed -i 's#</head>#  <link rel="stylesheet" href="/navigation_home_match_v149a.css?v=149a">\n</head>#' "$page"
+  fi
+done
+
 if ! grep -q 'wiki_real_color_v139\.js' public/wiki.html; then
   sed -i 's#</body>#  <script defer src="/wiki_real_color_v139.js?v=139"></script>\n</body>#' public/wiki.html
 fi
@@ -59,6 +66,7 @@ sed -i 's#route:"/updates"#route:"/ban-cap-nhat"#g' public/mobile_menu_v5.js
 test -f public/index.html
 test -f public/styles.css
 test -f public/navigation_v124.js
+test -f public/navigation_home_match_v149a.css
 test -f public/footer_v135.js
 test -f public/footer_v135.css
 test -f public/ban-cap-nhat.html
