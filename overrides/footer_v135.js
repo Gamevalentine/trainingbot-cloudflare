@@ -22,7 +22,7 @@
       .light-signup-btn{cursor:pointer;user-select:none}
       .light-signup-platforms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:min(100%,300px);max-height:0;margin-top:0;opacity:0;overflow:hidden;transform:translateY(-4px);transition:max-height .22s ease,opacity .18s ease,margin-top .22s ease,transform .22s ease}
       .light-signup-platforms.is-open{max-height:52px;margin-top:10px;opacity:1;transform:translateY(0)}
-      .light-platform-btn{min-height:38px;border:1px solid rgba(123,142,188,.42);border-radius:10px;background:#1a2233;color:#fff;font:800 .78rem/1 Inter,system-ui,sans-serif;cursor:pointer}
+      .light-platform-btn{min-height:38px;border:1px solid rgba(123,142,188,.42);border-radius:10px;background:#1a2233;color:#fff;font:800 .78rem/1 Inter,system-ui,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none}
       .light-platform-btn:hover{background:#222c42}
       @media(max-width:600px){.light-signup-platforms{width:min(100%,250px);gap:6px}.light-platform-btn{min-height:34px;font-size:.7rem}}
     `;
@@ -30,7 +30,7 @@
 
     const platforms=document.createElement('div');
     platforms.className='light-signup-platforms';
-    platforms.innerHTML='<button class="light-platform-btn" type="button">Đăng kí IOS</button><button class="light-platform-btn" type="button">Đăng kí Android</button>';
+    platforms.innerHTML='<button class="light-platform-btn" type="button">Đăng kí IOS</button><a class="light-platform-btn" href="https://play.google.com/store/apps/details?id=com.tencent.igfit" target="_blank" rel="noopener noreferrer">Đăng kí Android</a>';
     signupBtn.insertAdjacentElement('afterend',platforms);
 
     signupBtn.setAttribute('role','button');
