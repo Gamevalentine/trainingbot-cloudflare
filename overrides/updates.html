@@ -37,26 +37,16 @@ main{padding:34px 0 72px}
     linear-gradient(135deg,#0b0d11 0%,#10141a 58%,#0b0d11 100%);
   box-shadow:0 28px 80px rgba(0,0,0,.35)
 }
-.hero-art{position:relative;min-height:440px;overflow:hidden;display:flex;align-items:flex-end;padding:38px}
-.hero-art:before{
-  content:"";position:absolute;inset:0;
-  background:
-    linear-gradient(90deg,transparent 0 8%,rgba(255,255,255,.025) 8% 9%,transparent 9% 16%,rgba(255,255,255,.025) 16% 17%,transparent 17%),
-    linear-gradient(180deg,transparent 0 70%,rgba(0,0,0,.68));
-}
-.hero-mark{position:relative;z-index:1}
-.hero-mark .game-avatar{display:block!important;position:relative;z-index:2;width:88px;height:88px;margin:0 0 22px;border-radius:24px;object-fit:cover;border:1px solid rgba(76,211,255,.34);box-shadow:0 14px 38px rgba(48,120,255,.24),0 0 0 5px rgba(115,87,255,.08)}
-.hero-mark .pubg{font-size:clamp(52px,8vw,102px);font-weight:1000;line-height:.82;letter-spacing:-.07em;color:#f3f4f6}
-.hero-mark .mobile{margin-top:14px;font-size:16px;letter-spacing:.36em;font-weight:900;color:var(--accent)}
-.hero-mark p{max-width:520px;margin:18px 0 0;color:#a9b1bd}
+.hero-art{min-height:440px;display:grid;place-items:center;padding:38px}
+.hero-mark{width:100%;display:grid;place-items:center}
+.hero-mark .game-avatar{display:block!important;width:min(88%,430px);height:auto;aspect-ratio:1/1;border-radius:20px;object-fit:cover;border:1px solid #303744;box-shadow:0 20px 54px rgba(0,0,0,.42)}
 .hero-info{
   padding:54px 48px;display:flex;flex-direction:column;justify-content:center;
   background:linear-gradient(90deg,rgba(10,12,16,.15),rgba(10,12,16,.72))
 }
 .hero-info .kicker{color:var(--accent);font-size:12px;font-weight:950;letter-spacing:.18em}
-.hero-info h1{margin:10px 0 5px;font-size:clamp(42px,5vw,72px);line-height:.92;letter-spacing:-.055em}
-.hero-info .version{font-size:28px;font-weight:900;margin:8px 0}
-.hero-info .arch{display:inline-flex;width:max-content;margin:4px 0 25px;padding:7px 11px;border:1px solid #39414d;border-radius:7px;color:#d8dde5;font-weight:800}
+.hero-info h1{margin:10px 0 12px;font-size:clamp(42px,5vw,72px);line-height:.92;letter-spacing:-.055em}
+.hero-info .arch{display:inline-flex;width:max-content;margin:0 0 25px;padding:7px 11px;border:1px solid #39414d;border-radius:7px;color:#d8dde5;font-weight:800}
 .hero-actions{display:grid;gap:11px;max-width:340px}
 .btn{height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;border:1px solid #303744}
 .btn.primary{background:linear-gradient(135deg,#7357ff 0%,#4f7cff 48%,#22d3ee 100%)!important;border-color:rgba(94,160,255,.7)!important;color:#fff!important;box-shadow:0 10px 28px rgba(72,105,255,.22)}
@@ -92,9 +82,10 @@ footer{border-top:1px solid #1d232c;padding:24px 0 42px;color:#7f8996;font-size:
 @media(max-width:860px){
   .navlinks{display:none}
   .release-hero{grid-template-columns:1fr}
-  .hero-art{min-height:280px;padding:28px}
-  .hero-mark .game-avatar{width:74px;height:74px;margin-bottom:18px;border-radius:20px}
-  .hero-info{padding:32px 28px 38px}
+  .hero-art{min-height:0;padding:28px 28px 10px}
+  .hero-mark .game-avatar{width:min(72vw,360px)}
+  .hero-info{padding:26px 28px 38px;align-items:center;text-align:center}
+  .hero-actions{width:100%;max-width:360px}
   .cards,.changes{grid-template-columns:1fr}
   .card p{min-height:0}
 }
@@ -102,8 +93,9 @@ footer{border-top:1px solid #1d232c;padding:24px 0 42px;color:#7f8996;font-size:
   .wrap{width:min(100% - 22px,var(--max))}
   main{padding-top:18px}
   .release-hero{border-radius:18px}
-  .hero-art{min-height:230px}
-  .hero-info{padding:28px 22px 30px}
+  .hero-art{padding:22px 22px 8px}
+  .hero-mark .game-avatar{width:min(78vw,320px);border-radius:18px}
+  .hero-info{padding:22px 22px 30px}
   .hero-actions{max-width:none}
   .notice .wrap{gap:7px}
   .notice a{display:none}
@@ -139,25 +131,16 @@ footer{border-top:1px solid #1d232c;padding:24px 0 42px;color:#7f8996;font-size:
 <section class="release-hero">
 <div class="hero-art">
 <div class="hero-mark">
-<img class="game-avatar" src="/pubg-game-avatar.webp?v=138" alt="PUBG Mobile" loading="eager" fetchpriority="high"/>
-<div class="pubg">PUBG</div>
-<div class="mobile">MOBILE</div>
-<p>Bản thử nghiệm mới nhất dành cho thiết bị Android 64-bit.</p>
+<img class="game-avatar" src="/pubg-game-avatar.webp?v=139" alt="PUBG Mobile" loading="eager" fetchpriority="high"/>
 </div>
 </div>
 <div class="hero-info">
-<div class="kicker">PUBG BETA</div>
-<h1>V4.6.2</h1>
-<div class="version">Android Beta</div>
+<div class="kicker">PUBG MOBILE BETA</div>
+<h1>V4.6.4</h1>
 <div class="arch">x64</div>
 <div class="hero-actions">
-<a class="btn primary" href="http://k.gjacky.com/1375135419/230/apkupdate/4.6.3.21435/1375135419_230_4.6.3.21435_20260814163305_39475866_apkupdate.apk" rel="noopener">Tải ngay tại đây</a>
-<a class="btn secondary" href="#versions">Faster mirror</a>
-</div>
-<div class="meta">
-<span>Beta build</span>
-<span>Android</span>
-<span>64-bit</span>
+<a class="btn primary" href="http://k.gjacky.com/1375135419/230/apkupdate/4.6.3.21435/1375135419_230_4.6.3.21435_20260814163305_39475866_apkupdate.apk" rel="noopener">Tải ngay đây</a>
+<a class="btn secondary" href="#versions">Chọn phiên bản</a>
 </div>
 </div>
 </section>
