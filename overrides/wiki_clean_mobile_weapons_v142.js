@@ -1,5 +1,4 @@
 (()=>{
-  if(!document.getElementById('tbWikiGrid'))return;
   const CLEAN={
     'Honey Badger':'https://liquipedia.net/commons/images/d/d9/Honey_badger_new.png',
     'ASM Abakan':'https://staticg.sportskeeda.com/editor/2025/07/7876a-17519700737225-1920.jpg',
@@ -7,8 +6,9 @@
     'M1014':'https://liquipedia.net/commons/images/e/e3/M1014_new.png',
     'NS2000':'https://liquipedia.net/commons/images/c/cc/Ns2000_new.png'
   };
-  function apply(){
-    document.querySelectorAll('#tbWikiGrid .tb-wiki-card').forEach(card=>{
+
+  function apply(grid){
+    grid.querySelectorAll('.tb-wiki-card').forEach(card=>{
       const name=card.querySelector('h3')?.textContent.trim()||'';
       const src=CLEAN[name];
       if(!src)return;
@@ -28,8 +28,18 @@
       img.src=src;
     });
   }
-  let queued=false;
-  const observer=new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;apply();});});
-  observer.observe(document.getElementById('tbWikiGrid'),{childList:true,subtree:true});
-  apply();
+
+  function boot(){
+    const grid=document.getElementById('tbWikiGrid');
+    if(!grid){setTimeout(boot,60);return;}
+    let queued=false;
+    const observer=new MutationObserver(()=>{
+      if(queued)return;
+      queued=true;
+      requestAnimationFrame(()=>{queued=false;apply(grid);});
+    });
+    observer.observe(grid,{childList:true,subtree:true});
+    apply(grid);
+  }
+  boot();
 })();
