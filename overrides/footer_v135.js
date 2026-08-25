@@ -19,28 +19,6 @@
   </div>`;
   document.body.append(footer);
 
-  if(document.getElementById('wikiGrid')){
-    const wikiStyle=document.createElement('link');
-    wikiStyle.rel='stylesheet';
-    wikiStyle.href='/wiki_reference_v136.css?v=136';
-    document.head.append(wikiStyle);
-    const wikiScript=document.createElement('script');
-    wikiScript.src='/wiki_reference_v136.js?v=136';
-    document.body.append(wikiScript);
-
-    const wikiRealStyle=document.createElement('link');
-    wikiRealStyle.rel='stylesheet';
-    wikiRealStyle.href='/wiki_real_images_v137.css?v=137';
-    document.head.append(wikiRealStyle);
-    const wikiRealScript=document.createElement('script');
-    wikiRealScript.src='/wiki_real_images_v137.js?v=137';
-    document.body.append(wikiRealScript);
-
-    const wikiCompletionScript=document.createElement('script');
-    wikiCompletionScript.src='/wiki_completion_v138.js?v=138';
-    document.body.append(wikiCompletionScript);
-  }
-
   if(document.querySelector('.release-hero')&&!document.querySelector('#tb-release-hero-highlight')){
     const releaseHeroStyle=document.createElement('style');
     releaseHeroStyle.id='tb-release-hero-highlight';
@@ -53,12 +31,8 @@
           linear-gradient(135deg,#2a211d 0%,#201c25 50%,#181b28 100%)!important;
         box-shadow:0 28px 80px rgba(0,0,0,.40),0 0 0 1px rgba(255,111,18,.10),0 18px 52px rgba(255,86,7,.18)!important;
       }
-      .release-hero .hero-art{
-        background:linear-gradient(90deg,rgba(255,102,18,.055),transparent 72%)!important;
-      }
-      .release-hero .hero-info{
-        background:linear-gradient(90deg,rgba(49,27,19,.24),rgba(10,12,18,.62))!important;
-      }
+      .release-hero .hero-art{background:linear-gradient(90deg,rgba(255,102,18,.055),transparent 72%)!important;}
+      .release-hero .hero-info{background:linear-gradient(90deg,rgba(49,27,19,.24),rgba(10,12,18,.62))!important;}
     `;
     document.head.append(releaseHeroStyle);
   }
@@ -84,16 +58,8 @@
     signupBtn.setAttribute('role','button');
     signupBtn.setAttribute('tabindex','0');
     signupBtn.setAttribute('aria-expanded','false');
-    const togglePlatforms=()=>{
-      const open=platforms.classList.toggle('is-open');
-      signupBtn.setAttribute('aria-expanded',String(open));
-    };
+    const togglePlatforms=()=>{const open=platforms.classList.toggle('is-open');signupBtn.setAttribute('aria-expanded',String(open));};
     signupBtn.addEventListener('click',togglePlatforms);
-    signupBtn.addEventListener('keydown',event=>{
-      if(event.key==='Enter'||event.key===' '){
-        event.preventDefault();
-        togglePlatforms();
-      }
-    });
+    signupBtn.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();togglePlatforms();}});
   }
 })();
