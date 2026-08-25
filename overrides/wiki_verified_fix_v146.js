@@ -16,6 +16,44 @@
     },true);
   }
 
+  function fixCurrentData(){
+    if(typeof DATA==='undefined')return;
+    const p90=DATA.weapons?.find(r=>r[0]==='P90');
+    if(p90){
+      p90[2]='5.7mm';
+      p90[3]='Tự động';
+    }
+  }
+
+  function syncWikiCounts(){
+    if(typeof DATA==='undefined')return;
+    const counts={weapons:DATA.weapons?.length,attachments:DATA.attachments?.length,vehicles:DATA.vehicles?.length,maps:DATA.maps?.length};
+    const tabs=document.getElementById('tbWikiTabs');
+    if(!tabs)return;
+    Object.entries(counts).forEach(([key,value])=>{
+      if(value==null)return;
+      const small=tabs.querySelector(`.tb-wiki-tab[data-tab="${key}"] small`);
+      if(small&&small.textContent!==String(value))small.textContent=String(value);
+    });
+  }
+
+  function watchWikiCounts(){
+    const start=()=>{
+      const tabs=document.getElementById('tbWikiTabs');
+      if(!tabs){setTimeout(start,80);return;}
+      let queued=false;
+      const apply=()=>{queued=false;fixCurrentData();syncWikiCounts();};
+      const obs=new MutationObserver(()=>{
+        if(queued)return;
+        queued=true;
+        requestAnimationFrame(apply);
+      });
+      obs.observe(tabs,{childList:true,subtree:true});
+      apply();
+    };
+    start();
+  }
+
   function patchOpenDetail(root){
     if(!root?.classList?.contains('open'))return;
     const name=root.querySelector('h2')?.textContent.trim();
@@ -42,10 +80,10 @@
     };
 
     if(name==='P90'){
-      fact('Loại đạn','9mm');
-      fact('Chế độ bắn','Đơn/Loạt/Tự động');
+      fact('Loại đạn','5.7mm');
+      fact('Chế độ bắn','Tự động');
       fact('Băng mặc định','50 viên');
-      setNote('<b>Thông tin đã đối chiếu:</b> Trang Livik chính thức của PUBG MOBILE xác nhận P90 dùng đạn 9mm, băng 50 viên và có ba chế độ bắn: đơn, loạt và tự động.');
+      setNote('<b>Thông tin đã đối chiếu:</b> PUBG MOBILE 3.1 làm mới P90 cho Classic: dùng đạn 5.7mm chuyên dụng, xuất hiện trong thính, tích hợp sẵn nòng giảm thanh, laser và ống ngắm riêng; không thể gắn thêm phụ kiện khác.');
     }
     if(name==='M249'){
       setPower(42);
@@ -83,17 +121,35 @@
     finder.observe(document.body,{childList:true,subtree:true});
   }
 
-  function loadScript(src,key){
-    if(document.querySelector(`script[data-${key}]`))return;
+  function loadScript(src,key,onload){
+    const selector=`script[data-${key}]`;
+    const existing=document.querySelector(selector);
+    if(existing){
+      if(onload){
+        if(existing.dataset.tbLoaded==='1')onload();
+        else existing.addEventListener('load',onload,{once:true});
+      }
+      return existing;
+    }
     const s=document.createElement('script');
     s.src=src;
     s.async=false;
     s.setAttribute(`data-${key}`,'1');
+    s.addEventListener('load',()=>{
+      s.dataset.tbLoaded='1';
+      if(onload)onload();
+    },{once:true});
     document.head.appendChild(s);
+    return s;
   }
 
   fixAliasClicks();
+  fixCurrentData();
+  watchWikiCounts();
   watch();
-  loadScript('/wiki_catalog_verified_v147.js?v=147','tb-wiki-v147');
+  loadScript('/wiki_catalog_verified_v147.js?v=147','tb-wiki-v147',()=>{
+    fixCurrentData();
+    syncWikiCounts();
+  });
   loadScript('/wiki_vehicle_map_detail_v148.js?v=148','tb-wiki-v148');
 })();
