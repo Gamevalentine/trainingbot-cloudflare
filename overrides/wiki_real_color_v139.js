@@ -1,6 +1,4 @@
 (()=>{
-  const COLOR_SUFFIX='_w.png';
-
   if(!document.getElementById('tb-wiki-v139-style')){
     const style=document.createElement('style');
     style.id='tb-wiki-v139-style';
@@ -195,24 +193,6 @@
     });
   }
 
-  function useColoredWeaponImages(){
-    document.querySelectorAll('#tbWikiGrid .tb-real-item-image').forEach(img=>{
-      const src=img.currentSrc||img.src||'';
-      if(!src.includes('/Assets/Item/Weapon/Main/')||!src.endsWith(COLOR_SUFFIX)||img.dataset.colorTried==='1')return;
-
-      const original=src;
-      const colored=src.slice(0,-COLOR_SUFFIX.length)+'.png';
-      img.dataset.colorTried='1';
-
-      const previousError=img.onerror;
-      img.onerror=()=>{
-        img.onerror=previousError||null;
-        img.src=original;
-      };
-      img.src=colored;
-    });
-  }
-
   function normalizeCards(){
     const grid=document.getElementById('tbWikiGrid');
     if(!grid)return;
@@ -239,7 +219,6 @@
 
     const apply=()=>{
       addSourceNote();
-      useColoredWeaponImages();
       tuneImagePriority();
       normalizeCards();
     };
