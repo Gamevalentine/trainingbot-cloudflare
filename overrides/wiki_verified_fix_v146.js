@@ -96,4 +96,5 @@
   watch();
   loadScript('/wiki_catalog_verified_v147.js?v=147','tb-wiki-v147');
   loadScript('/wiki_vehicle_map_detail_v148.js?v=148','tb-wiki-v148');
+  loadScript('/wiki_collab_red_cars_v149.js?v=149','tb-wiki-cars-v149');
 })();
