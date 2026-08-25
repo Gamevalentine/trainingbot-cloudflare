@@ -122,13 +122,14 @@
     if(!value)return null;
     return typeof value==='string'?{path:value,kind:'item'}:value;
   };
+  const coloredWeaponPath=path=>path.includes('/Weapon/Main/')&&path.endsWith('_w.png')?path.slice(0,-6)+'.png':path;
 
   function start(){
     const grid=document.getElementById('tbWikiGrid');
     if(!grid){setTimeout(start,80);return;}
 
     const apply=()=>{
-      grid.querySelectorAll('.tb-wiki-card').forEach(card=>{
+      grid.querySelectorAll('.tb-wiki-card').forEach((card,index)=>{
         const title=card.querySelector('h3');
         const visual=card.querySelector('.tb-card-visual');
         if(!title||!visual)return;
@@ -144,16 +145,26 @@
         const img=document.createElement('img');
         img.className='tb-real-item-image';
         img.alt=name;
-        img.loading='lazy';
         img.decoding='async';
-        img.src=BASE+asset.path;
+        if(index<5){img.loading='eager';img.fetchPriority='high';}
+        else{img.loading='lazy';img.fetchPriority='low';}
+
+        const primaryPath=coloredWeaponPath(asset.path);
+        const fallbackUrl=BASE+asset.path;
+        let triedFallback=primaryPath===asset.path;
         img.onerror=()=>{
+          if(!triedFallback){
+            triedFallback=true;
+            img.src=fallbackUrl;
+            return;
+          }
           failed.add(asset.path);
           delete visual.dataset.realImage;
           visual.classList.remove('tb-real-image');
           card.classList.remove('tb-real-map-card');
           visual.innerHTML=fallback;
         };
+        img.src=BASE+primaryPath;
         visual.replaceChildren(img);
       });
     };
