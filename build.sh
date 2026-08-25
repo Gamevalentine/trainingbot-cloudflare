@@ -37,6 +37,9 @@ fi
 if ! grep -q 'wiki_missing_images_v141\.js' public/wiki.html; then
   sed -i 's#</body>#  <script defer src="/wiki_missing_images_v141.js?v=141"></script>\n</body>#' public/wiki.html
 fi
+if ! grep -q 'wiki_clean_mobile_weapons_v142\.js' public/wiki.html; then
+  sed -i 's#</body>#  <script defer src="/wiki_clean_mobile_weapons_v142.js?v=142"></script>\n</body>#' public/wiki.html
+fi
 
 sed -i "s#'updates','/updates'#'updates','/ban-cap-nhat'#" public/navigation_v124.js
 sed -i 's#route:"/updates"#route:"/ban-cap-nhat"#g' public/mobile_menu_v5.js
@@ -50,6 +53,7 @@ test -f public/ban-cap-nhat.html
 test -f public/wiki_real_color_v139.js
 test -f public/wiki_strict_uniform_v140.js
 test -f public/wiki_missing_images_v141.js
+test -f public/wiki_clean_mobile_weapons_v142.js
 test -f 'functions/api/[[path]].js'
 
 if grep -RIl --include='*.html' --include='*.css' --include='*.js' '\.vercel\.app' public | grep -q .; then
