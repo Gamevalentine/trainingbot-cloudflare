@@ -28,29 +28,11 @@ while IFS= read -r -d '' page; do
   sed -i 's#href="/updates"#href="/ban-cap-nhat"#g; s#href="updates\.html"#href="/ban-cap-nhat"#g' "$page"
 done < <(find public -type f -name '*.html' -print0)
 
-if ! grep -q 'wiki_theme_v143\.css' public/wiki.html; then
-  sed -i 's#</head>#  <link rel="stylesheet" href="/wiki_theme_v143.css?v=143">\n</head>#' public/wiki.html
+if ! grep -q 'wiki_v150\.css' public/wiki.html; then
+  sed -i 's#</head>#  <link rel="stylesheet" href="/wiki_v150.css?v=150">\n</head>#' public/wiki.html
 fi
-if ! grep -q 'wiki_real_color_v139\.js' public/wiki.html; then
-  sed -i 's#</body>#  <script defer src="/wiki_real_color_v139.js?v=139"></script>\n</body>#' public/wiki.html
-fi
-if ! grep -q 'wiki_strict_uniform_v140\.js' public/wiki.html; then
-  sed -i 's#</body>#  <script defer src="/wiki_strict_uniform_v140.js?v=140"></script>\n</body>#' public/wiki.html
-fi
-if ! grep -q 'wiki_missing_images_v141\.js' public/wiki.html; then
-  sed -i 's#</body>#  <script defer src="/wiki_missing_images_v141.js?v=141"></script>\n</body>#' public/wiki.html
-fi
-if ! grep -q 'wiki_clean_mobile_weapons_v142\.js' public/wiki.html; then
-  sed -i 's#</body>#  <script defer src="/wiki_clean_mobile_weapons_v142.js?v=142"></script>\n</body>#' public/wiki.html
-fi
-if ! grep -q 'wiki_verified_data_v145\.js' public/wiki.html; then
-  sed -i 's#</body>#  <script defer src="/wiki_verified_data_v145.js?v=145"></script>\n</body>#' public/wiki.html
-fi
-if ! grep -q 'wiki_verified_fix_v146\.js' public/wiki.html; then
-  sed -i 's#</body>#  <script defer src="/wiki_verified_fix_v146.js?v=146"></script>\n</body>#' public/wiki.html
-fi
-if ! grep -q 'wiki_audit_v149\.js' public/wiki.html; then
-  sed -i 's#</body>#  <script defer src="/wiki_audit_v149.js?v=149"></script>\n</body>#' public/wiki.html
+if ! grep -q 'wiki_v150\.js' public/wiki.html; then
+  sed -i 's#</body>#  <script defer src="/wiki_v150.js?v=150"></script>\n</body>#' public/wiki.html
 fi
 
 sed -i "s#'updates','/updates'#'updates','/ban-cap-nhat'#" public/navigation_v124.js
@@ -62,22 +44,19 @@ test -f public/navigation_v124.js
 test -f public/footer_v135.js
 test -f public/footer_v135.css
 test -f public/ban-cap-nhat.html
-test -f public/wiki_theme_v143.css
-test -f public/wiki_real_color_v139.js
-test -f public/wiki_strict_uniform_v140.js
-test -f public/wiki_missing_images_v141.js
-test -f public/wiki_clean_mobile_weapons_v142.js
-test -f public/wiki_verified_data_v145.js
-test -f public/wiki_verified_fix_v146.js
-test -f public/wiki_catalog_verified_v147.js
-test -f public/wiki_vehicle_map_detail_v148.js
-test -f public/wiki_audit_v149.js
-node --check public/wiki_audit_v149.js >/dev/null
+test -f public/wiki_v150.css
+test -f public/wiki_v150.js
+node --check public/wiki_v150.js >/dev/null
 test -f 'functions/api/[[path]].js'
+
+if grep -Eq 'wiki_(reference_v136|real_images_v137|completion_v138|real_color_v139|strict_uniform_v140|missing_images_v141|clean_mobile_weapons_v142|theme_v143|verified_data_v145|verified_fix_v146|catalog_verified_v147|vehicle_map_detail_v148|audit_v149)' public/wiki.html; then
+  echo 'ERROR: Legacy Wiki runtime reference found in public/wiki.html' >&2
+  exit 1
+fi
 
 if grep -RIl --include='*.html' --include='*.css' --include='*.js' '\.vercel\.app' public | grep -q .; then
   echo 'ERROR: Vercel reference found in public/' >&2
   exit 1
 fi
 
-echo "TrainingBot Cloudflare Pages build ready"
+echo "TrainingBot Cloudflare Pages build ready — Wiki v150"
