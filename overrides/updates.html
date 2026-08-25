@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+
+<html lang="vi">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Bản cập nhật — TrainingBot</title>
+<style>
+:root{
+  --bg:#090b10;--panel:#11151c;--panel2:#171c25;--line:#242b36;
+  --text:#f5f7fb;--muted:#9ba5b4;--accent:#d7ff35;--accent2:#b9e51d;
+  --max:1180px
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:15px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+a{color:inherit;text-decoration:none}
+.wrap{width:min(var(--max),calc(100% - 32px));margin:auto}
+header{position:sticky;top:0;z-index:20;background:rgba(9,11,16,.94);backdrop-filter:blur(12px);border-bottom:1px solid #1d222c}
+.nav{height:68px;display:flex;align-items:center;gap:26px}
+.brand{font-size:19px;font-weight:900;letter-spacing:.03em;margin-right:auto}
+.brand small{display:block;color:#838d9b;font-size:10px;font-weight:700;letter-spacing:.12em;margin-top:-4px}
+.navlinks{display:flex;gap:24px;color:#c6cbd4;font-weight:650}
+.navlinks a:hover,.navlinks a[aria-current="page"]{color:#fff}
+.notice{border-bottom:1px solid #1c222c;background:#0d1016}
+.notice .wrap{min-height:42px;display:flex;align-items:center;gap:12px;color:#b7bec9;font-size:13px}
+.badge-new{padding:3px 8px;border-radius:999px;background:var(--accent);color:#111;font-size:10px;font-weight:900}
+.notice a{margin-left:auto;color:#fff;font-weight:750}
+main{padding:34px 0 72px}
+.eyebrow{margin:0 0 8px;color:#9fa8b5;font-size:12px;font-weight:850;text-transform:uppercase;letter-spacing:.12em}
+.release-hero{
+  min-height:480px;border:1px solid #272d37;border-radius:24px;overflow:hidden;
+  display:grid;grid-template-columns:1.15fr .85fr;
+  background:
+    radial-gradient(circle at 18% 40%,rgba(215,255,53,.13),transparent 24%),
+    radial-gradient(circle at 75% 22%,rgba(255,255,255,.07),transparent 24%),
+    linear-gradient(135deg,#0b0d11 0%,#10141a 58%,#0b0d11 100%);
+  box-shadow:0 28px 80px rgba(0,0,0,.35)
+}
+.hero-art{position:relative;min-height:440px;overflow:hidden;display:flex;align-items:flex-end;padding:38px}
+.hero-art:before{
+  content:"";position:absolute;inset:0;
+  background:
+    linear-gradient(90deg,transparent 0 8%,rgba(255,255,255,.025) 8% 9%,transparent 9% 16%,rgba(255,255,255,.025) 16% 17%,transparent 17%),
+    linear-gradient(180deg,transparent 0 70%,rgba(0,0,0,.68));
+}
+.hero-mark{position:relative;z-index:1}
+.hero-mark .game-avatar{display:block!important;position:relative;z-index:2;width:88px;height:88px;margin:0 0 22px;border-radius:24px;object-fit:cover;border:1px solid rgba(76,211,255,.34);box-shadow:0 14px 38px rgba(48,120,255,.24),0 0 0 5px rgba(115,87,255,.08)}
+.hero-mark .pubg{font-size:clamp(52px,8vw,102px);font-weight:1000;line-height:.82;letter-spacing:-.07em;color:#f3f4f6}
+.hero-mark .mobile{margin-top:14px;font-size:16px;letter-spacing:.36em;font-weight:900;color:var(--accent)}
+.hero-mark p{max-width:520px;margin:18px 0 0;color:#a9b1bd}
+.hero-info{
+  padding:54px 48px;display:flex;flex-direction:column;justify-content:center;
+  background:linear-gradient(90deg,rgba(10,12,16,.15),rgba(10,12,16,.72))
+}
+.hero-info .kicker{color:var(--accent);font-size:12px;font-weight:950;letter-spacing:.18em}
+.hero-info h1{margin:10px 0 5px;font-size:clamp(42px,5vw,72px);line-height:.92;letter-spacing:-.055em}
+.hero-info .version{font-size:28px;font-weight:900;margin:8px 0}
+.hero-info .arch{display:inline-flex;width:max-content;margin:4px 0 25px;padding:7px 11px;border:1px solid #39414d;border-radius:7px;color:#d8dde5;font-weight:800}
+.hero-actions{display:grid;gap:11px;max-width:340px}
+.btn{height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;border:1px solid #303744}
+.btn.primary{background:linear-gradient(135deg,#7357ff 0%,#4f7cff 48%,#22d3ee 100%)!important;border-color:rgba(94,160,255,.7)!important;color:#fff!important;box-shadow:0 10px 28px rgba(72,105,255,.22)}
+.btn.primary:hover{background:linear-gradient(135deg,#806cff 0%,#5d8cff 48%,#38def0 100%)}
+.btn.secondary{background:#171c24;color:#fff}
+.meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;color:#8993a0;font-size:12px}
+.meta span{border:1px solid #2b323e;border-radius:999px;padding:5px 9px}
+.section{padding-top:54px}
+.section h2{font-size:clamp(30px,4vw,48px);letter-spacing:-.04em;margin:5px 0 8px}
+.section-lead{color:var(--muted);max-width:760px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
+.card{border:1px solid var(--line);border-radius:18px;background:var(--panel);padding:24px}
+.card.featured{outline:1px solid rgba(215,255,53,.45)}
+.card .tag{font-size:10px;font-weight:900;color:var(--accent);text-transform:uppercase;letter-spacing:.12em}
+.card h3{font-size:22px;margin:10px 0 8px}
+.card p{color:var(--muted);min-height:68px}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.pill{font-size:12px;padding:5px 8px;border-radius:999px;background:#1b212b;color:#c9d0d9;border:1px solid #29313d}
+.changes{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px}
+.change{border-top:1px solid var(--line);padding-top:18px}
+.change h3{margin:0 0 7px;font-size:19px}
+.change p{margin:0;color:var(--muted)}
+.faq{margin-top:22px;border-top:1px solid var(--line)}
+details{border-bottom:1px solid var(--line);padding:18px 0}
+summary{cursor:pointer;font-weight:800}
+details p{color:var(--muted);max-width:850px}
+.cta{margin-top:54px;padding:32px;border:1px solid var(--line);border-radius:20px;background:var(--panel2)}
+.cta h2{margin:0 0 7px;font-size:30px}
+.cta p{margin:0;color:var(--muted)}
+footer{border-top:1px solid #1d232c;padding:24px 0 42px;color:#7f8996;font-size:13px}
+.footer-row{display:flex;gap:18px;align-items:center}
+.footer-row span{margin-right:auto}
+@media(max-width:860px){
+  .navlinks{display:none}
+  .release-hero{grid-template-columns:1fr}
+  .hero-art{min-height:280px;padding:28px}
+  .hero-mark .game-avatar{width:74px;height:74px;margin-bottom:18px;border-radius:20px}
+  .hero-info{padding:32px 28px 38px}
+  .cards,.changes{grid-template-columns:1fr}
+  .card p{min-height:0}
+}
+@media(max-width:520px){
+  .wrap{width:min(100% - 22px,var(--max))}
+  main{padding-top:18px}
+  .release-hero{border-radius:18px}
+  .hero-art{min-height:230px}
+  .hero-info{padding:28px 22px 30px}
+  .hero-actions{max-width:none}
+  .notice .wrap{gap:7px}
+  .notice a{display:none}
+}
+</style>
+<link href="/brand_logo_v116.css?v=116" rel="stylesheet"/><link href="/navigation_v124.css?v=124" rel="stylesheet"/></head>
+<body>
+<header>
+<div class="wrap nav">
+<a class="brand tb-brand-with-logo" href="/"><span aria-hidden="true" class="brand-logo"></span><span class="tb-brand-text">TRAININGBOT<small>Gaming Knowledge Hub</small></span></a>
+<nav class="navlinks">
+<a href="/">Trang chủ</a>
+<a aria-current="page" href="/ban-cap-nhat">Bản cập nhật</a>
+<a href="/news">Tin tức</a>
+<a href="/wiki">Wiki</a>
+<a href="/community">Cộng đồng</a>
+<a href="/contact">Liên hệ</a>
+</nav>
+</div>
+<nav aria-label="Điều hướng di động" class="mobile-nav">
+<a href="/">Trang chủ</a><a class="active" href="/ban-cap-nhat">Bản cập nhật</a><a href="/news">Tin tức</a><a href="/wiki.html">Wiki</a><a href="/community.html">Cộng đồng</a><a href="/contact.html">Liên hệ</a>
+</nav>
+</header>
+<div class="notice">
+<div class="wrap">
+<span class="badge-new">MỚI</span>
+<span>Giao diện TrainingBot phiên bản 2.0 đã sẵn sàng.</span>
+<a href="/ban-cap-nhat">Xem cập nhật →</a>
+</div>
+</div>
+<main class="wrap">
+<!-- CHỈ KHỐI LỚN PHÍA TRÊN ĐƯỢC THAY THEO MẪU PUBG -->
+<section class="release-hero">
+<div class="hero-art">
+<div class="hero-mark">
+<img class="game-avatar" src="/trainingbot-logo-v110.png?v=137" alt="TrainingBot Gaming" loading="eager" fetchpriority="high"/>
+<div class="pubg">PUBG</div>
+<div class="mobile">MOBILE</div>
+<p>Bản thử nghiệm mới nhất dành cho thiết bị Android 64-bit.</p>
+</div>
+</div>
+<div class="hero-info">
+<div class="kicker">PUBG BETA</div>
+<h1>V4.6.2</h1>
+<div class="version">Android Beta</div>
+<div class="arch">x64</div>
+<div class="hero-actions">
+<a class="btn primary" href="http://k.gjacky.com/1375135419/230/apkupdate/4.6.3.21435/1375135419_230_4.6.3.21435_20260814163305_39475866_apkupdate.apk" rel="noopener">Tải ngay tại đây</a>
+<a class="btn secondary" href="#versions">Faster mirror</a>
+</div>
+<div class="meta">
+<span>Beta build</span>
+<span>Android</span>
+<span>64-bit</span>
+</div>
+</div>
+</section>
+<!-- PHẦN DƯỚI GIỮ NGUYÊN NỘI DUNG CỦA TRANG ĐANG CHẠY -->
+<section class="section" id="versions">
+<p class="eyebrow">Lựa chọn phiên bản</p>
+<h2>Ba kênh cập nhật, một trải nghiệm liền mạch</h2>
+<p class="section-lead">Mỗi kênh phục vụ một nhu cầu khác nhau. Bạn có thể đổi phiên bản bất cứ lúc nào.</p>
+<div class="cards">
+<article class="card featured">
+<div class="tag">Khuyên dùng</div>
+<h3>Kênh ổn định</h3>
+<p>Phiên bản đã được kiểm tra kỹ, phù hợp để sử dụng hằng ngày.</p>
+<div class="pills"><span class="pill">v2.0.4</span><span class="pill">Ổn định</span><span class="pill">Mới nhất</span></div>
+</article>
+<article class="card">
+<div class="tag">Beta</div>
+<h3>Kênh thử nghiệm</h3>
+<p>Nhận tính năng mới sớm hơn và góp ý trước khi phát hành chính thức.</p>
+<div class="pills"><span class="pill">v2.1.0</span><span class="pill">Beta</span><span class="pill">Đang mở</span></div>
+</article>
+<article class="card">
+<div class="tag">Thiết bị yếu</div>
+<h3>Gói nhẹ</h3>
+<p>Giảm hiệu ứng nền và tối ưu tài nguyên cho điện thoại cấu hình thấp.</p>
+<div class="pills"><span class="pill">v2.0 Lite</span><span class="pill">Tiết kiệm</span></div>
+</article>
+</div>
+</section>
+<section class="section">
+<p class="eyebrow">Điểm mới</p>
+<h2>Những thay đổi đáng chú ý</h2>
+<p class="section-lead">Nội dung được chia theo nhóm để bạn nắm nhanh phần nào ảnh hưởng trực tiếp đến trải nghiệm.</p>
+<div class="changes">
+<div class="change"><h3>Wiki được thiết kế lại</h3><p>Vũ khí, phụ kiện, phương tiện và bản đồ được sắp xếp trực quan hơn trên cả máy tính lẫn điện thoại.</p></div>
+<div class="change"><h3>Tải trang nhanh hơn</h3><p>Giảm thành phần dư thừa, cải thiện độ ổn định và hạn chế giật khi cuộn nội dung dài.</p></div>
+<div class="change"><h3>Quản trị an toàn hơn</h3><p>Công cụ chỉnh sửa chỉ xuất hiện ở cổng quản trị, trong khi người xem công khai chỉ thấy nội dung đã xuất bản.</p></div>
+</div>
+</section>
+<section class="section">
+<p class="eyebrow">Hỏi đáp</p>
+<h2>Câu hỏi thường gặp</h2>
+<div class="faq">
+<details><summary>Tôi nên sử dụng kênh cập nhật nào?</summary><p>Kênh ổn định phù hợp với đa số người dùng. Kênh thử nghiệm dành cho người muốn xem tính năng mới sớm, còn gói nhẹ phù hợp thiết bị cấu hình thấp.</p></details>
+<details><summary>Cập nhật có làm mất nội dung tôi đã chỉnh sửa không?</summary><p>Bộ cài của TrainingBot luôn tạo bản sao lưu trước khi thay đổi tệp chính. Nội dung quản trị vẫn nên được kiểm tra lại sau mỗi lần nâng cấp lớn.</p></details>
+<details><summary>Vì sao điện thoại vẫn hiển thị giao diện cũ?</summary><p>Trình duyệt có thể đang giữ bộ nhớ đệm. Hãy mở liên kết với mã phiên bản mới ở cuối địa chỉ hoặc đóng hẳn trang rồi truy cập lại.</p></details>
+<details><summary>Tôi có thể đổi nội dung trên trang này không?</summary><p>Có. Các tiêu đề và mô tả đều nằm trực tiếp trong trang HTML, vì vậy bạn có thể chỉnh chúng từ chế độ quản trị cổng 8000.</p></details>
+</div>
+</section>
+<section class="cta">
+<h2>Sẵn sàng cho phiên bản tiếp theo.</h2>
+<p>Trang này được thiết kế để bạn dễ dàng thay số phiên bản, nội dung thay đổi và liên kết tải xuống trong những lần cập nhật sau.</p>
+</section>
+</main>
+<footer>
+<div class="wrap footer-row">
+<span class="tb-footer-copyright"><span aria-hidden="true" class="brand-logo"></span><span>© 2026 TrainingBot.</span></span>
+<a href="/contact">Điều khoản</a>
+<a href="/contact">Quyền riêng tư</a>
+</div>
+</footer>
+<script defer="True" src="/navigation_v124.js?v=124"></script>  <script defer src="/footer_v135.js?v=135"></script>
+</body>
+</html>
