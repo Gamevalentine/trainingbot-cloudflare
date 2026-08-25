@@ -264,8 +264,23 @@
     obs.observe(tabs,{childList:true,subtree:true});
     obs.observe(grid,{childList:true,subtree:true});
 
-    const detailObs=new MutationObserver(queue);
-    detailObs.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+    const attachDetail=root=>{
+      const detailObs=new MutationObserver(queue);
+      detailObs.observe(root,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+      queue();
+    };
+    const detail=document.querySelector('.tb-v145');
+    if(detail){
+      attachDetail(detail);
+    }else{
+      const finder=new MutationObserver(()=>{
+        const root=document.querySelector('.tb-v145');
+        if(!root)return;
+        finder.disconnect();
+        attachDetail(root);
+      });
+      finder.observe(document.body,{childList:true,subtree:true});
+    }
 
     sync();
   }
