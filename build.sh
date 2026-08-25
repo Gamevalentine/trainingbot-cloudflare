@@ -16,6 +16,12 @@ cp -a "$TMP_DIR/public" ./public
 if [[ -d overrides ]]; then
   cp -a overrides/. public/
 fi
+
+# Admin V2 has exactly one canonical document: /admin.html.
+# Remove any legacy /admin/ directory copied from the historical source,
+# otherwise Cloudflare Pages can bounce /admin <-> /admin/ forever.
+rm -rf public/admin
+
 rm -f public/_redirects
 rm -rf "$TMP_DIR" "$ARCHIVE"
 
@@ -23,7 +29,7 @@ cp public/updates.html public/ban-cap-nhat.html
 
 while IFS= read -r -d '' page; do
   case "$page" in
-    public/admin.html|public/admin/*.html|public/admin-*.html|public/contact-inbox.html)
+    public/admin.html|public/admin-*.html|public/contact-inbox.html)
       continue
       ;;
   esac
@@ -87,17 +93,17 @@ test -f public/wiki_vehicle_map_detail_v148.js
 test -f public/wiki_audit_v149.js
 node --check public/wiki_audit_v149.js >/dev/null
 
+# Admin V2 deployment guards.
 test -f public/admin.html
-test -f public/admin/index.html
+test ! -e public/admin
 grep -q 'TrainingBot Admin Center V2' public/admin.html
-grep -q 'TrainingBot Admin Center V2' public/admin/index.html
-if grep -q 'footer_v135\.js' public/admin.html public/admin/index.html; then
+if grep -q 'footer_v135\.js' public/admin.html; then
   echo 'ERROR: public footer leaked into Admin Center V2' >&2
   exit 1
 fi
+test ! -f functions/admin.js
 
 test -f 'functions/api/[[path]].js'
-test -f functions/admin.js
 
 if grep -RIl --include='*.html' --include='*.css' --include='*.js' '\.vercel\.app' public | grep -q .; then
   echo 'ERROR: Vercel reference found in public/' >&2
