@@ -27,18 +27,18 @@ rm -rf "$TMP_DIR" "$ARCHIVE"
 
 # Admin V2.3: inject the account + TOTP layer into the final Admin document
 # before the legacy V2 core loads. This changes Admin only.
-python3 - <<'PY'
-from pathlib import Path
-p = Path("public/admin.html")
-s = p.read_text(encoding="utf-8")
-marker = 'document.open();document.write(h);document.close()'
-inject = 'h=h.replace("<script src=\\"/admin-center-v2.js?v=2\\" defer></script>","<script src=\\"/admin-auth-ui-v23.js?v=23\\"></script><script src=\\"/admin-auth-gate-v23.js?v=23\\"></script><script src=\\"/admin-center-v2.js?v=2\\" defer></script>");'
-if "admin-auth-ui-v23.js" not in s:
-    if marker not in s:
-        raise SystemExit("ERROR: Admin V2 bootstrap marker not found")
-    s = s.replace(marker, inject + marker, 1)
-p.write_text(s, encoding="utf-8")
-PY
+node <<'NODE'
+const fs = require('fs');
+const p = 'public/admin.html';
+let s = fs.readFileSync(p, 'utf8');
+const marker = 'document.open();document.write(h);document.close()';
+const inject = 'h=h.replace("<script src=\\"/admin-center-v2.js?v=2\\" defer></script>","<script src=\\"/admin-auth-ui-v23.js?v=23\\"></script><script src=\\"/admin-auth-gate-v23.js?v=23\\"></script><script src=\\"/admin-center-v2.js?v=2\\" defer></script>");';
+if (!s.includes('admin-auth-ui-v23.js')) {
+  if (!s.includes(marker)) throw new Error('Admin V2 bootstrap marker not found');
+  s = s.replace(marker, inject + marker);
+}
+fs.writeFileSync(p, s);
+NODE
 
 cp public/updates.html public/ban-cap-nhat.html
 
@@ -116,6 +116,8 @@ grep -q 'admin-auth-ui-v23.js' public/admin.html
 grep -q 'admin-auth-gate-v23.js' public/admin.html
 test -f public/admin-auth-ui-v23.js
 test -f public/admin-auth-gate-v23.js
+node --check public/admin-auth-ui-v23.js >/dev/null
+node --check public/admin-auth-gate-v23.js >/dev/null
 if grep -q 'footer_v135\.js' public/admin.html; then
   echo 'ERROR: public footer leaked into Admin Center V2' >&2
   exit 1
