@@ -14,8 +14,15 @@
 <style>
 .hero-tiktok{display:flex;align-items:center;justify-content:center;min-height:620px}
 .hero-tiktok iframe{display:block;width:min(100%,390px);aspect-ratio:9/16;height:auto;border:1px solid rgba(148,163,184,.22);border-radius:24px;background:#000;box-shadow:0 28px 70px rgba(0,0,0,.35)}
+.hero-lower{transform:translateY(-14px)}
+.light-signup-card{display:grid;grid-template-columns:116px minmax(0,1fr);gap:18px;align-items:center;max-width:520px;margin-top:24px;padding:14px;border:1px solid rgba(148,163,184,.18);border-radius:20px;background:linear-gradient(135deg,rgba(26,31,48,.96),rgba(12,16,28,.96));box-shadow:0 18px 44px rgba(0,0,0,.24)}
+.light-signup-card img{display:block;width:116px;height:116px;object-fit:cover;border-radius:16px;border:1px solid rgba(148,163,184,.2)}
+.light-signup-copy{min-width:0}
+.light-signup-copy strong{display:block;color:#f7f9ff;font:800 1.32rem/1.1 "Space Grotesk",Inter,sans-serif;letter-spacing:-.035em}
+.light-signup-copy span{display:block;margin-top:7px;color:#aeb8ce;font-size:.88rem;font-weight:600}
+.light-signup-btn{display:inline-flex;align-items:center;justify-content:center;min-height:38px;margin-top:14px;padding:0 18px;border-radius:10px;background:linear-gradient(135deg,#7357ff 0%,#4f7cff 48%,#22d3ee 100%);color:#fff;font-size:.82rem;font-weight:800}
 @media(max-width:900px){.hero-tiktok{min-height:0;margin-top:24px}.hero-tiktok iframe{width:min(100%,360px)}}
-@media(max-width:520px){.hero-tiktok{margin-top:18px}.hero-tiktok iframe{width:min(86vw,330px);border-radius:18px}}
+@media(max-width:520px){.hero-tiktok{margin-top:18px}.hero-tiktok iframe{width:min(86vw,330px);border-radius:18px}.hero-lower{transform:translateY(-6px)}.light-signup-card{grid-template-columns:86px minmax(0,1fr);gap:12px;margin-top:18px;padding:11px;border-radius:16px}.light-signup-card img{width:86px;height:86px;border-radius:12px}.light-signup-copy strong{font-size:1rem}.light-signup-copy span{margin-top:5px;font-size:.75rem}.light-signup-btn{min-height:34px;margin-top:10px;padding:0 13px;font-size:.74rem;border-radius:9px}}
 </style>
 </head>
 <body>
@@ -64,6 +71,7 @@
 <div class="hero-copy">
 <span class="kicker">Cập nhật · Chia sẻ · Kết nối</span>
 <h1>Cộng đồng game thủ <span class="gradient-text">cùng chơi tốt hơn.</span></h1>
+<div class="hero-lower">
 <p>
           TrainingBot là không gian chung để theo dõi bản cập nhật, chia sẻ kinh nghiệm,
           tra cứu kiến thức và kết nối những người cùng đam mê game.
@@ -77,6 +85,15 @@
           </a>
 </div>
 <div class="hero-trust"><span><i></i>Tin game mới</span><span><i></i>Wiki cộng đồng</span><span><i></i>Truy cập miễn phí</span></div>
+<div class="light-signup-card">
+<img src="/pubg-game-avatar.webp?v=140" alt="PUBG Mobile Light"/>
+<div class="light-signup-copy">
+<strong>PUBG MOBILE LIGHT</strong>
+<span>Phiên bản V1.0</span>
+<div class="light-signup-btn">Đăng ký ngay</div>
+</div>
+</div>
+</div>
 </div>
 <div aria-label="Video TikTok nổi bật" class="hero-visual hero-tiktok">
 <iframe src="https://www.tiktok.com/player/v1/7677790316665031957?controls=1&amp;description=1&amp;music_info=0&amp;rel=0&amp;autoplay=0" title="Video TikTok nổi bật của TrainingBot" loading="lazy" allow="fullscreen; autoplay; encrypted-media; picture-in-picture"></iframe>
