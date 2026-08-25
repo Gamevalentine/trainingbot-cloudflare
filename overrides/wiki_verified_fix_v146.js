@@ -21,32 +21,56 @@
     const name=root.querySelector('h2')?.textContent.trim();
     if(!name)return;
     const facts=[...root.querySelectorAll('.tb-v145-fact')];
-    const fact=(label,value)=>{const el=facts.find(x=>x.querySelector('small')?.textContent.trim()===label);if(el&&value!=null)el.querySelector('b').textContent=value;};
-    const note=root.querySelector('.tb-v145-note');
+    const fact=(label,value)=>{
+      const el=facts.find(x=>x.querySelector('small')?.textContent.trim()===label);
+      const target=el?.querySelector('b');
+      if(target&&value!=null&&target.textContent!==value)target.textContent=value;
+    };
+    const setNote=html=>{
+      const note=root.querySelector('.tb-v145-left .tb-v145-note');
+      if(note&&note.innerHTML!==html)note.innerHTML=html;
+    };
     const statRows=[...root.querySelectorAll('.tb-v145-stat')];
-    const setPower=v=>{const r=statRows.find(x=>x.querySelector('span')?.textContent.trim()==='Sức mạnh');if(!r)return;r.querySelector('b').textContent=`${v}/100`;const fill=r.querySelector('.tb-v145-fill');if(fill)fill.style.width=`${v}%`;};
+    const setPower=v=>{
+      const r=statRows.find(x=>x.querySelector('span')?.textContent.trim()==='Sức mạnh');
+      if(!r)return;
+      const value=`${v}/100`;
+      const b=r.querySelector('b');
+      if(b&&b.textContent!==value)b.textContent=value;
+      const fill=r.querySelector('.tb-v145-fill');
+      if(fill&&fill.style.width!==`${v}%`)fill.style.width=`${v}%`;
+    };
 
     if(name==='P90'){
-      fact('Loại đạn','5.7mm');fact('Chế độ bắn','Tự động');fact('Băng mặc định','50 viên');
-      if(note)note.innerHTML='<b>Thông tin đã đối chiếu:</b> Từ phiên bản 3.1, P90 trở thành SMG thả dù, dùng đạn 5.7mm riêng, tích hợp sẵn giảm thanh, laser và ống ngắm chuyên dụng; không thể gắn thêm phụ kiện khác.';
-      const attTitle=[...root.querySelectorAll('.tb-v145-title')].find(x=>x.textContent.includes('Phụ kiện'));
-      if(attTitle){const next=attTitle.nextElementSibling;if(next)next.outerHTML='<div class="tb-v145-unknown">P90 phiên bản hiện tại không có khe phụ kiện rời: giảm thanh, laser và ống ngắm đã tích hợp sẵn.</div>';}
+      fact('Loại đạn','9mm');
+      fact('Chế độ bắn','Đơn/Loạt/Tự động');
+      fact('Băng mặc định','50 viên');
+      setNote('<b>Thông tin đã đối chiếu:</b> Trang Livik chính thức của PUBG MOBILE xác nhận P90 dùng đạn 9mm, băng 50 viên và có ba chế độ bắn: đơn, loạt và tự động.');
     }
     if(name==='M249'){
       setPower(42);
-      if(note)note.innerHTML='<b>Thông tin đã đối chiếu:</b> PUBG MOBILE 2.5 tăng sát thương cơ bản lên 41; phiên bản 3.1 tiếp tục tăng thêm 1. M249 có thể gắn Gun Shield.';
+      setNote('<b>Thông tin đã đối chiếu:</b> PUBG MOBILE 2.5 tăng sát thương cơ bản lên 41; phiên bản 3.1 tiếp tục tăng thêm 1. M249 có thể gắn Gun Shield.');
     }
     if(name==='DP-28'){
       setPower(52);
-      if(note)note.innerHTML='<b>Thông tin đã đối chiếu:</b> PUBG MOBILE xác nhận băng mặc định 47 viên, tăng độ chính xác hip-fire và sát thương tay/chân; phiên bản 3.1 tiếp tục tăng sát thương cơ bản thêm 1. Có thể gắn Gun Shield.';
+      setNote('<b>Thông tin đã đối chiếu:</b> PUBG MOBILE xác nhận băng mặc định 47 viên, tăng độ chính xác hip-fire và sát thương tay/chân; phiên bản 3.1 tiếp tục tăng sát thương cơ bản thêm 1. Có thể gắn Gun Shield.');
     }
     if(name==='MG3')setPower(41);
   }
 
   function watch(){
-    const obs=new MutationObserver(()=>{const root=document.querySelector('.tb-v145');if(root)patchOpenDetail(root);});
+    let queued=false;
+    const apply=()=>{
+      const root=document.querySelector('.tb-v145');
+      if(root)patchOpenDetail(root);
+    };
+    const obs=new MutationObserver(()=>{
+      if(queued)return;
+      queued=true;
+      requestAnimationFrame(()=>{queued=false;apply();});
+    });
     obs.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
-    const root=document.querySelector('.tb-v145');if(root)patchOpenDetail(root);
+    apply();
   }
   fixAliasClicks();watch();
 })();
