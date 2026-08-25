@@ -83,14 +83,17 @@
     finder.observe(document.body,{childList:true,subtree:true});
   }
 
-  function loadV147(){
-    if(document.querySelector('script[data-tb-wiki-v147]'))return;
+  function loadScript(src,key){
+    if(document.querySelector(`script[data-${key}]`))return;
     const s=document.createElement('script');
-    s.src='/wiki_catalog_verified_v147.js?v=147';
+    s.src=src;
     s.async=false;
-    s.dataset.tbWikiV147='1';
+    s.setAttribute(`data-${key}`,'1');
     document.head.appendChild(s);
   }
 
-  fixAliasClicks();watch();loadV147();
+  fixAliasClicks();
+  watch();
+  loadScript('/wiki_catalog_verified_v147.js?v=147','tb-wiki-v147');
+  loadScript('/wiki_vehicle_map_detail_v148.js?v=148','tb-wiki-v148');
 })();
