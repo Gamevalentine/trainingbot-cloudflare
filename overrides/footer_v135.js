@@ -14,27 +14,4 @@
     <section><h2>KẾT NỐI</h2><nav><a href="https://www.tiktok.com/@trainingbot.ai2">♪ <span>@trainingbot.ai2</span></a><a href="mailto:trainingbot.ai2@gmail.com">✉ <span>trainingbot.ai2@gmail.com</span></a><a href="https://trainingbot.ai">◉ <span>trainingbot.ai</span></a></nav></section>
   </div>`;
   document.body.append(footer);
-
-  const betaDownloadLinks={
-    'V4.6.1':'http://k.gjacky.com/1375135419/230/apkupdate/4.6.1.21395/1375135419_230_4.6.1.21395_20260801175229_459046313_apkupdate.apk',
-    'V4.6.2':'http://k.gjacky.com/1375135419/230/apkupdate/4.6.2.21415/1375135419_230_4.6.2.21415_20260807154052_1447578134_apkupdate.apk',
-    'V4.6.3':'http://k.gjacky.com/1375135419/230/apkupdate/4.6.3.21435/1375135419_230_4.6.3.21435_20260814163305_39475866_apkupdate.apk',
-    'V4.6.4':'http://k.gjacky.com/1375135419/230/apkupdate/4.6.4.21455/1375135419_230_4.6.4.21455_20260824160548_128024679_apkupdate.apk'
-  };
-  document.querySelectorAll('.beta-build-card').forEach(card=>{
-    const version=card.querySelector('.beta-build-version')?.textContent.trim();
-    const url=betaDownloadLinks[version];
-    const button=card.querySelector('.beta-build-btn.primary');
-    if(!url||!button)return;
-    button.setAttribute('role','link');
-    button.setAttribute('tabindex','0');
-    const openDownload=()=>{ window.location.href=url; };
-    button.addEventListener('click',openDownload);
-    button.addEventListener('keydown',event=>{
-      if(event.key==='Enter'||event.key===' '){
-        event.preventDefault();
-        openDownload();
-      }
-    });
-  });
 })();
