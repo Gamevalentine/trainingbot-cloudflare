@@ -37,7 +37,94 @@ while IFS= read -r -d '' page; do
     sed -i 's#</body>#  <script defer src="/footer_v135.js?v=135"></script>\n</body>#' "$page"
   fi
   sed -i 's#href="/updates"#href="/ban-cap-nhat"#g; s#href="updates\.html"#href="/ban-cap-nhat"#g' "$page"
+  if ! grep -q 'header_search_v152\.css' "$page"; then
+    sed -i 's#</head>#  <link rel="stylesheet" href="/header_search_v152.css?v=152">\n</head>#' "$page"
+  fi
+  if ! grep -q 'header_search_v152\.js' "$page"; then
+    sed -i 's#</body>#  <script defer src="/header_search_v152.js?v=152"></script>\n</body>#' "$page"
+  fi
 done < <(find public -type f -name '*.html' -print0)
+
+# Build a lightweight client-side search index from public HTML only.
+# Admin pages and duplicate legacy update routes are intentionally excluded.
+node <<'NODE'
+const fs = require('fs');
+const path = require('path');
+const root = path.resolve('public');
+
+function walk(dir) {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const full = path.join(dir, entry.name);
+    return entry.isDirectory() ? walk(full) : [full];
+  });
+}
+function decode(value) {
+  const named = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
+  return String(value || '')
+    .replace(/&(#x[0-9a-f]+|#\d+|amp|lt|gt|quot|apos|nbsp);/gi, (m, code) => {
+      if (code[0] === '#') {
+        const n = code[1].toLowerCase() === 'x' ? parseInt(code.slice(2), 16) : parseInt(code.slice(1), 10);
+        return Number.isFinite(n) ? String.fromCodePoint(n) : m;
+      }
+      return named[code.toLowerCase()] ?? m;
+    });
+}
+function plain(html) {
+  return decode(String(html || '').replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' ').trim();
+}
+function routeFor(rel) {
+  const unix = rel.split(path.sep).join('/');
+  if (unix === 'index.html') return '/';
+  if (unix === 'updates.html' || unix === 'ban-cap-nhat.html') return '/ban-cap-nhat';
+  if (unix.endsWith('/index.html')) return '/' + unix.slice(0, -'/index.html'.length);
+  return '/' + unix.replace(/\.html$/i, '');
+}
+function typeFor(rel) {
+  const name = rel.toLowerCase();
+  if (name === 'wiki.html' || name.startsWith('wiki-')) return 'Wiki';
+  if (name === 'news.html' || name.startsWith('news-')) return 'Tin tức';
+  if (name === 'updates.html' || name === 'ban-cap-nhat.html') return 'Bản cập nhật';
+  if (name === 'community.html') return 'Cộng đồng';
+  if (name === 'contact.html') return 'Liên hệ';
+  if (name === 'index.html') return 'Trang chủ';
+  return 'TrainingBot';
+}
+
+const items = [];
+const seen = new Set();
+for (const file of walk(root)) {
+  if (!/\.html$/i.test(file)) continue;
+  const rel = path.relative(root, file).split(path.sep).join('/');
+  if (/^(admin(?:-|\/|\.html)|contact-inbox\.html$)/i.test(rel)) continue;
+  if (rel === 'updates.html' && fs.existsSync(path.join(root, 'ban-cap-nhat.html'))) continue;
+
+  let html = fs.readFileSync(file, 'utf8');
+  html = html
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<nav\b[^>]*>[\s\S]*?<\/nav>/gi, ' ')
+    .replace(/<footer\b[^>]*>[\s\S]*?<\/footer>/gi, ' ');
+
+  const h1 = plain((html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i) || [,''])[1]);
+  const titleTag = plain((html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i) || [,''])[1]);
+  const firstP = plain((html.match(/<p\b[^>]*>([\s\S]*?)<\/p>/i) || [,''])[1]);
+  const meta = decode((html.match(/<meta\b[^>]*name=["']description["'][^>]*content=["']([^"']*)["'][^>]*>/i) || [,''])[1]);
+  const text = plain(html).slice(0, 10000);
+  const url = routeFor(rel);
+  if (seen.has(url)) continue;
+  seen.add(url);
+
+  items.push({
+    title: h1 || titleTag || 'TrainingBot',
+    description: firstP || meta || text.slice(0, 220),
+    text,
+    url,
+    type: typeFor(rel),
+  });
+}
+items.sort((a, b) => a.title.localeCompare(b.title, 'vi'));
+fs.writeFileSync(path.join(root, 'search-index-v152.json'), JSON.stringify(items));
+NODE
 
 if ! grep -q 'wiki_theme_v143\.css' public/wiki.html; then
   sed -i 's#</head>#  <link rel="stylesheet" href="/wiki_theme_v143.css?v=143">\n</head>#' public/wiki.html
@@ -80,6 +167,11 @@ test -f public/navigation_v124.js
 test -f public/navigation_home_match_v149a.css
 test -f public/footer_v135.js
 test -f public/footer_v135.css
+test -f public/header_search_v152.css
+test -f public/header_search_v152.js
+test -f public/search-index-v152.json
+node --check public/header_search_v152.js >/dev/null
+node -e "const x=require('./public/search-index-v152.json'); if(!Array.isArray(x)||x.length<3) process.exit(1)" >/dev/null
 test -f public/ban-cap-nhat.html
 test -f public/wiki_theme_v143.css
 test -f public/wiki_real_color_v139.js
