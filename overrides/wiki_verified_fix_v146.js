@@ -72,5 +72,15 @@
     obs.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
     apply();
   }
-  fixAliasClicks();watch();
+
+  function loadV147(){
+    if(document.querySelector('script[data-tb-wiki-v147]'))return;
+    const s=document.createElement('script');
+    s.src='/wiki_catalog_verified_v147.js?v=147';
+    s.async=false;
+    s.dataset.tbWikiV147='1';
+    document.head.appendChild(s);
+  }
+
+  fixAliasClicks();watch();loadV147();
 })();
