@@ -15,6 +15,28 @@
   </div>`;
   document.body.append(footer);
 
+  if(document.querySelector('.release-hero')&&!document.querySelector('#tb-release-hero-highlight')){
+    const releaseHeroStyle=document.createElement('style');
+    releaseHeroStyle.id='tb-release-hero-highlight';
+    releaseHeroStyle.textContent=`
+      .release-hero{
+        border-color:rgba(255,111,18,.58)!important;
+        background:
+          radial-gradient(circle at 20% 46%,rgba(255,111,18,.28),transparent 38%),
+          radial-gradient(circle at 76% 28%,rgba(255,142,58,.14),transparent 44%),
+          linear-gradient(135deg,#2a211d 0%,#201c25 50%,#181b28 100%)!important;
+        box-shadow:0 28px 80px rgba(0,0,0,.40),0 0 0 1px rgba(255,111,18,.10),0 18px 52px rgba(255,86,7,.18)!important;
+      }
+      .release-hero .hero-art{
+        background:linear-gradient(90deg,rgba(255,102,18,.055),transparent 72%)!important;
+      }
+      .release-hero .hero-info{
+        background:linear-gradient(90deg,rgba(49,27,19,.24),rgba(10,12,18,.62))!important;
+      }
+    `;
+    document.head.append(releaseHeroStyle);
+  }
+
   const signupBtn=document.querySelector('.light-signup-btn');
   if(signupBtn&&!document.querySelector('.light-signup-platforms')){
     const signupStyle=document.createElement('style');
