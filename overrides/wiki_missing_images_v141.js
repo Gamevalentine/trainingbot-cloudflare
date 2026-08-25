@@ -1,5 +1,4 @@
 (()=>{
-  if(!document.getElementById('tbWikiGrid'))return;
   const EXTRA={
     'Bộ nạp nhanh súng săn':'https://www.pubgmobile.com/images/event/PUBGMOBILE-WIKI9/attachments/Icon_Shotgun_Quick_Loader.png',
     'Khiên súng':'https://pbs.twimg.com/media/Fr3Fv8xWwAAH4SA.jpg',
@@ -12,8 +11,8 @@
   `;
   document.head.append(style);
 
-  function apply(){
-    document.querySelectorAll('#tbWikiGrid .tb-wiki-card').forEach(card=>{
+  function apply(grid){
+    grid.querySelectorAll('.tb-wiki-card').forEach(card=>{
       const name=card.querySelector('h3')?.textContent.trim()||'';
       const src=EXTRA[name];
       if(!src)return;
@@ -34,8 +33,18 @@
       img.src=src;
     });
   }
-  let queued=false;
-  const observer=new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;apply();});});
-  observer.observe(document.getElementById('tbWikiGrid'),{childList:true,subtree:true});
-  apply();
+
+  function boot(){
+    const grid=document.getElementById('tbWikiGrid');
+    if(!grid){setTimeout(boot,60);return;}
+    let queued=false;
+    const observer=new MutationObserver(()=>{
+      if(queued)return;
+      queued=true;
+      requestAnimationFrame(()=>{queued=false;apply(grid);});
+    });
+    observer.observe(grid,{childList:true,subtree:true});
+    apply(grid);
+  }
+  boot();
 })();
