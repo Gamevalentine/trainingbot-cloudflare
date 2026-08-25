@@ -66,6 +66,8 @@ test -f public/wiki_missing_images_v141.js
 test -f public/wiki_clean_mobile_weapons_v142.js
 test -f public/wiki_verified_data_v145.js
 test -f public/wiki_verified_fix_v146.js
+test -f public/wiki_catalog_verified_v147.js
+test -f public/wiki_vehicle_map_detail_v148.js
 test -f 'functions/api/[[path]].js'
 
 if grep -RIl --include='*.html' --include='*.css' --include='*.js' '\.vercel\.app' public | grep -q .; then
