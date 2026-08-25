@@ -29,8 +29,8 @@ body.tb-wiki-reference main{padding:0!important}
 .tb-wiki-tab{height:57px;padding:0 22px;border:1px solid #2b2b2e;border-radius:17px;background:#111112;color:#a9a9b1;display:inline-flex;align-items:center;gap:10px;font:800 .98rem Inter,sans-serif;white-space:nowrap;cursor:pointer}
 .tb-wiki-tab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2}
 .tb-wiki-tab small{font-size:.73rem;color:#6f7077}
-.tb-wiki-tab.active{border-color:#ff4e08;background:linear-gradient(135deg,#ff5f10,#ff3f05);color:#fff;box-shadow:0 10px 28px rgba(255,72,5,.16)}
-.tb-wiki-tab.active small{color:#ffe1d3}
+.tb-wiki-tab.active{border-color:rgba(255,128,72,.62);background:linear-gradient(135deg,rgba(181,82,43,.58),rgba(119,52,30,.72));color:#fff7f2;box-shadow:0 10px 26px rgba(153,65,28,.13)}
+.tb-wiki-tab.active small{color:#ffd9c7}
 .tb-wiki-filters{display:flex;gap:10px;margin:34px 0 40px;overflow:auto;scrollbar-width:none}
 .tb-wiki-filter{height:45px;padding:0 20px;border:1px solid #2b2b2f;border-radius:999px;background:#0d0d0e;color:#9e9ea7;font:600 .92rem Inter,sans-serif;white-space:nowrap;cursor:pointer}
 .tb-wiki-filter.active{background:#29292b;border-color:#545459;color:#fff}
