@@ -62,6 +62,8 @@ main{padding:34px 0 72px}
 .beta-versions[open] summary:after{transform:rotate(180deg)}
 .beta-version-list{display:flex;gap:10px;flex-wrap:wrap;padding:0 0 16px}
 .beta-version-item{padding:8px 12px;border:1px solid #303744;border-radius:9px;background:#171c24;color:#e8ecf2;font-weight:800}
+.beta-build-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
+.beta-build-card{min-height:74px;display:flex;align-items:center;justify-content:center;border:1px solid #303744;border-radius:12px;background:#11151c;color:#f5f7fb;font-size:18px;font-weight:900}
 .section{padding-top:54px}
 .section h2{font-size:clamp(30px,4vw,48px);letter-spacing:-.04em;margin:5px 0 8px}
 .section-lead{color:var(--muted);max-width:760px}
@@ -97,6 +99,7 @@ footer{border-top:1px solid #1d232c;padding:24px 0 42px;color:#7f8996;font-size:
   .version-row{justify-content:center;margin:18px 0 22px}
   .hero-info h1{font-size:clamp(18px,5vw,24px)}
   .hero-actions{width:100%;max-width:360px}
+  .beta-build-grid{grid-template-columns:repeat(2,1fr)}
   .cards,.changes{grid-template-columns:1fr}
   .card p{min-height:0}
 }
@@ -118,7 +121,7 @@ footer{border-top:1px solid #1d232c;padding:24px 0 42px;color:#7f8996;font-size:
 <div class="wrap nav">
 <a class="brand tb-brand-with-logo" href="/"><span aria-hidden="true" class="brand-logo"></span><span class="tb-brand-text">TRAININGBOT<small>Gaming Knowledge Hub</small></span></a>
 <nav class="navlinks">
-<a href="/">Trang chủ</a>
+<a href="/">Trang chỷ</a>
 <a aria-current="page" href="/ban-cap-nhat">Bản cập nhật</a>
 <a href="/news">Tin tức</a>
 <a href="/wiki">Wiki</a>
@@ -161,6 +164,12 @@ footer{border-top:1px solid #1d232c;padding:24px 0 42px;color:#7f8996;font-size:
 <span class="beta-version-item">V4.6</span>
 </div>
 </details>
+<div class="beta-build-grid">
+<div class="beta-build-card">V4.6.1</div>
+<div class="beta-build-card">V4.6.2</div>
+<div class="beta-build-card">V4.6.3</div>
+<div class="beta-build-card">V4.6.4</div>
+</div>
 <!-- PHẦN DƯỚI GIỮ NGUYÊN NỘI DUNG CỦA TRANG ĐANG CHẠY -->
 <section class="section" id="versions">
 <p class="eyebrow">Lựa chọn phiên bản</p>
