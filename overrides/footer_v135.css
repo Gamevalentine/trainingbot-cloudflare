@@ -17,3 +17,16 @@
   .tb-global-footer h2{font-size:1.3rem}
   .tb-global-about img{width:42px;height:42px}
 }
+@media(max-width:520px){
+  .beta-build-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  .beta-build-card{max-width:none!important;width:100%!important;margin:0!important;border-radius:12px!important}
+  .beta-build-art{padding:10px 8px 8px!important}
+  .beta-build-art img{width:min(30vw,105px)!important;border-radius:10px!important}
+  .beta-build-body{padding:10px 8px 12px!important}
+  .beta-build-title{font-size:11px!important}
+  .beta-build-version-row{gap:6px!important;margin:10px 0!important}
+  .beta-build-version{font-size:16px!important}
+  .beta-build-arch{padding:3px 6px!important;font-size:10px!important}
+  .beta-build-actions{gap:6px!important}
+  .beta-build-btn{height:34px!important;font-size:11px!important;border-radius:7px!important}
+}
