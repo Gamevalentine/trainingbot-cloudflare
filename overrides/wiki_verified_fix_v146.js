@@ -59,18 +59,28 @@
   }
 
   function watch(){
-    let queued=false;
-    const apply=()=>{
-      const root=document.querySelector('.tb-v145');
-      if(root)patchOpenDetail(root);
+    const attach=root=>{
+      let queued=false;
+      const apply=()=>patchOpenDetail(root);
+      const obs=new MutationObserver(()=>{
+        if(queued)return;
+        queued=true;
+        requestAnimationFrame(()=>{queued=false;apply();});
+      });
+      obs.observe(root,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+      apply();
     };
-    const obs=new MutationObserver(()=>{
-      if(queued)return;
-      queued=true;
-      requestAnimationFrame(()=>{queued=false;apply();});
+
+    const existing=document.querySelector('.tb-v145');
+    if(existing){attach(existing);return;}
+
+    const finder=new MutationObserver(()=>{
+      const root=document.querySelector('.tb-v145');
+      if(!root)return;
+      finder.disconnect();
+      attach(root);
     });
-    obs.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
-    apply();
+    finder.observe(document.body,{childList:true,subtree:true});
   }
 
   function loadV147(){
