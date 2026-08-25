@@ -22,6 +22,11 @@ rm -rf "$TMP_DIR" "$ARCHIVE"
 cp public/updates.html public/ban-cap-nhat.html
 
 while IFS= read -r -d '' page; do
+  case "$page" in
+    public/admin.html|public/admin/*.html|public/admin-*.html|public/contact-inbox.html)
+      continue
+      ;;
+  esac
   if ! grep -q 'footer_v135\.js' "$page"; then
     sed -i 's#</body>#  <script defer src="/footer_v135.js?v=135"></script>\n</body>#' "$page"
   fi
@@ -81,7 +86,18 @@ test -f public/wiki_catalog_verified_v147.js
 test -f public/wiki_vehicle_map_detail_v148.js
 test -f public/wiki_audit_v149.js
 node --check public/wiki_audit_v149.js >/dev/null
+
+test -f public/admin.html
+test -f public/admin/index.html
+grep -q 'TrainingBot Admin Center V2' public/admin.html
+grep -q 'TrainingBot Admin Center V2' public/admin/index.html
+if grep -q 'footer_v135\.js' public/admin.html public/admin/index.html; then
+  echo 'ERROR: public footer leaked into Admin Center V2' >&2
+  exit 1
+fi
+
 test -f 'functions/api/[[path]].js'
+test -f functions/admin.js
 
 if grep -RIl --include='*.html' --include='*.css' --include='*.js' '\.vercel\.app' public | grep -q .; then
   echo 'ERROR: Vercel reference found in public/' >&2
