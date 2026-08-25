@@ -1,5 +1,4 @@
 (()=>{
-  if(!document.getElementById('tbWikiGrid'))return;
   const style=document.createElement('style');
   style.id='tb-wiki-strict-v140';
   style.textContent=`
@@ -44,8 +43,8 @@
     img.src=better;
   }
 
-  function normalize(){
-    document.querySelectorAll('#tbWikiGrid .tb-wiki-card').forEach(card=>{
+  function normalize(grid){
+    grid.querySelectorAll('.tb-wiki-card').forEach(card=>{
       const name=card.querySelector('h3')?.textContent.trim()||'';
       card.classList.toggle('tb-v140-map',maps.has(name));
       card.classList.toggle('tb-v140-mobile-only',mobileOnly.has(name));
@@ -54,12 +53,17 @@
     });
   }
 
-  let queued=false;
-  const observer=new MutationObserver(()=>{
-    if(queued)return;
-    queued=true;
-    requestAnimationFrame(()=>{queued=false;normalize();});
-  });
-  observer.observe(document.getElementById('tbWikiGrid'),{childList:true,subtree:true});
-  normalize();
+  function boot(){
+    const grid=document.getElementById('tbWikiGrid');
+    if(!grid){setTimeout(boot,60);return;}
+    let queued=false;
+    const observer=new MutationObserver(()=>{
+      if(queued)return;
+      queued=true;
+      requestAnimationFrame(()=>{queued=false;normalize(grid);});
+    });
+    observer.observe(grid,{childList:true,subtree:true});
+    normalize(grid);
+  }
+  boot();
 })();
