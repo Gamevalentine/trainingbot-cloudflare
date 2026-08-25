@@ -49,6 +49,9 @@ fi
 if ! grep -q 'wiki_verified_fix_v146\.js' public/wiki.html; then
   sed -i 's#</body>#  <script defer src="/wiki_verified_fix_v146.js?v=146"></script>\n</body>#' public/wiki.html
 fi
+if ! grep -q 'wiki_audit_v149\.js' public/wiki.html; then
+  sed -i 's#</body>#  <script defer src="/wiki_audit_v149.js?v=149"></script>\n</body>#' public/wiki.html
+fi
 
 sed -i "s#'updates','/updates'#'updates','/ban-cap-nhat'#" public/navigation_v124.js
 sed -i 's#route:"/updates"#route:"/ban-cap-nhat"#g' public/mobile_menu_v5.js
@@ -68,6 +71,8 @@ test -f public/wiki_verified_data_v145.js
 test -f public/wiki_verified_fix_v146.js
 test -f public/wiki_catalog_verified_v147.js
 test -f public/wiki_vehicle_map_detail_v148.js
+test -f public/wiki_audit_v149.js
+node --check public/wiki_audit_v149.js >/dev/null
 test -f 'functions/api/[[path]].js'
 
 if grep -RIl --include='*.html' --include='*.css' --include='*.js' '\.vercel\.app' public | grep -q .; then
