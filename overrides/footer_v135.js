@@ -19,6 +19,16 @@
   </div>`;
   document.body.append(footer);
 
+  if(document.getElementById('wikiGrid')){
+    const wikiStyle=document.createElement('link');
+    wikiStyle.rel='stylesheet';
+    wikiStyle.href='/wiki_reference_v136.css?v=136';
+    document.head.append(wikiStyle);
+    const wikiScript=document.createElement('script');
+    wikiScript.src='/wiki_reference_v136.js?v=136';
+    document.body.append(wikiScript);
+  }
+
   if(document.querySelector('.release-hero')&&!document.querySelector('#tb-release-hero-highlight')){
     const releaseHeroStyle=document.createElement('style');
     releaseHeroStyle.id='tb-release-hero-highlight';
