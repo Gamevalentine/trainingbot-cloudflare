@@ -16,6 +16,109 @@
         line-height:1.55;
       }
       .tb-wiki-source-note b{color:#e8ebf2}
+
+      #tbWikiGrid{align-items:start}
+      #tbWikiGrid .tb-wiki-card{
+        display:flex;
+        flex-direction:column;
+        min-height:300px;
+        padding-bottom:16px;
+      }
+      #tbWikiGrid .tb-card-visual{
+        flex:0 0 158px;
+        height:158px;
+        padding:18px 18px 8px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        overflow:hidden;
+      }
+      #tbWikiGrid .tb-real-item-image,
+      #tbWikiGrid .tb-card-visual img{
+        display:block;
+        width:auto!important;
+        height:auto!important;
+        max-width:92%!important;
+        max-height:112px!important;
+        object-fit:contain!important;
+        object-position:center!important;
+        margin:0 auto!important;
+        filter:none!important;
+        border:0!important;
+        box-shadow:none!important;
+        background:transparent!important;
+      }
+      #tbWikiGrid .tb-real-map-card .tb-card-visual,
+      #tbWikiGrid .tb-completion-map .tb-card-visual{
+        flex-basis:126px;
+        height:126px;
+        padding:14px 16px 4px;
+      }
+      #tbWikiGrid .tb-real-map-card .tb-real-item-image,
+      #tbWikiGrid .tb-completion-map .tb-real-item-image{
+        width:100%!important;
+        height:112px!important;
+        max-width:100%!important;
+        max-height:112px!important;
+        object-fit:cover!important;
+        border-radius:8px!important;
+      }
+      #tbWikiGrid .tb-wiki-card h3{
+        min-height:2.5em;
+        margin:8px 16px 2px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        text-align:center;
+        line-height:1.25;
+      }
+      #tbWikiGrid .tb-wiki-card p{
+        min-height:2.45em;
+        margin:0 16px;
+        display:flex;
+        align-items:flex-start;
+        justify-content:center;
+        text-align:center;
+      }
+      #tbWikiGrid .tb-vehicle-speed{
+        min-height:1.3em;
+        margin:7px 16px 0;
+        text-align:center;
+        line-height:1.3;
+      }
+      #tbWikiGrid .tb-card-visual img[src*="pbs.twimg"],
+      #tbWikiGrid .tb-card-visual img[src*="idn.media"],
+      #tbWikiGrid .tb-card-visual img[src*="pubgmobile.com"],
+      #tbWikiGrid .tb-card-visual img[src*="topuplive.com"],
+      #tbWikiGrid .tb-card-visual img[src*="bluestacks.com"],
+      #tbWikiGrid .tb-card-visual img[src*="liquipedia.net"],
+      #tbWikiGrid .tb-card-visual img[src*="manabuy.com"],
+      #tbWikiGrid .tb-card-visual img[src*="krafton.com"]{
+        max-width:88%!important;
+        max-height:104px!important;
+        border-radius:8px!important;
+      }
+      @media(max-width:700px){
+        #tbWikiGrid .tb-wiki-card{min-height:238px;padding-bottom:12px}
+        #tbWikiGrid .tb-card-visual{flex-basis:122px;height:122px;padding:14px 10px 4px}
+        #tbWikiGrid .tb-real-item-image,
+        #tbWikiGrid .tb-card-visual img{max-width:94%!important;max-height:86px!important}
+        #tbWikiGrid .tb-real-map-card .tb-card-visual,
+        #tbWikiGrid .tb-completion-map .tb-card-visual{flex-basis:100px;height:100px;padding:10px 10px 2px}
+        #tbWikiGrid .tb-real-map-card .tb-real-item-image,
+        #tbWikiGrid .tb-completion-map .tb-real-item-image{height:86px!important;max-height:86px!important}
+        #tbWikiGrid .tb-wiki-card h3{min-height:2.45em;margin:5px 10px 1px}
+        #tbWikiGrid .tb-wiki-card p{min-height:2.35em;margin:0 10px}
+        #tbWikiGrid .tb-vehicle-speed{margin:5px 10px 0;font-size:.67rem}
+        #tbWikiGrid .tb-card-visual img[src*="pbs.twimg"],
+        #tbWikiGrid .tb-card-visual img[src*="idn.media"],
+        #tbWikiGrid .tb-card-visual img[src*="pubgmobile.com"],
+        #tbWikiGrid .tb-card-visual img[src*="topuplive.com"],
+        #tbWikiGrid .tb-card-visual img[src*="bluestacks.com"],
+        #tbWikiGrid .tb-card-visual img[src*="liquipedia.net"],
+        #tbWikiGrid .tb-card-visual img[src*="manabuy.com"],
+        #tbWikiGrid .tb-card-visual img[src*="krafton.com"]{max-width:92%!important;max-height:80px!important}
+      }
     `;
     document.head.append(style);
   }
