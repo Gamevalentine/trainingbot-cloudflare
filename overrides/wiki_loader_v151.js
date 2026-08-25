@@ -41,6 +41,18 @@
     else label.prepend(svg);
   }
 
+  function wireHeaderSearch(){
+    const button=document.getElementById('focusSearch');
+    if(!button||button.dataset.tbWikiFocus==='151')return;
+    button.dataset.tbWikiFocus='151';
+    button.addEventListener('click',()=>{
+      const input=document.getElementById('tbWikiSearch');
+      if(!input)return;
+      input.focus();
+      input.scrollIntoView({behavior:'smooth',block:'center'});
+    });
+  }
+
   function patchCard(card,manifest){
     const name=card.querySelector('h3')?.textContent.trim();
     const local=manifest[keyFor(name)]||manifest[name];
@@ -72,6 +84,7 @@
   function startPatcher(manifest){
     const apply=()=>{
       fixSearchIcon();
+      wireHeaderSearch();
       patchImages(document,manifest);
     };
     let queued=false;
