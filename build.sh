@@ -43,9 +43,6 @@ fi
 if ! grep -q 'wiki_clean_mobile_weapons_v142\.js' public/wiki.html; then
   sed -i 's#</body>#  <script defer src="/wiki_clean_mobile_weapons_v142.js?v=142"></script>\n</body>#' public/wiki.html
 fi
-if ! grep -q 'wiki_weapon_detail_v144\.js' public/wiki.html; then
-  sed -i 's#</body>#  <script defer src="/wiki_weapon_detail_v144.js?v=144"></script>\n</body>#' public/wiki.html
-fi
 if ! grep -q 'wiki_verified_data_v145\.js' public/wiki.html; then
   sed -i 's#</body>#  <script defer src="/wiki_verified_data_v145.js?v=145"></script>\n</body>#' public/wiki.html
 fi
@@ -67,7 +64,6 @@ test -f public/wiki_real_color_v139.js
 test -f public/wiki_strict_uniform_v140.js
 test -f public/wiki_missing_images_v141.js
 test -f public/wiki_clean_mobile_weapons_v142.js
-test -f public/wiki_weapon_detail_v144.js
 test -f public/wiki_verified_data_v145.js
 test -f public/wiki_verified_fix_v146.js
 test -f 'functions/api/[[path]].js'
