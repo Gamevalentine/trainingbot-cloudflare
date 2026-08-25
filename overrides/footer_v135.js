@@ -35,6 +35,10 @@
     const wikiRealScript=document.createElement('script');
     wikiRealScript.src='/wiki_real_images_v137.js?v=137';
     document.body.append(wikiRealScript);
+
+    const wikiCompletionScript=document.createElement('script');
+    wikiCompletionScript.src='/wiki_completion_v138.js?v=138';
+    document.body.append(wikiCompletionScript);
   }
 
   if(document.querySelector('.release-hero')&&!document.querySelector('#tb-release-hero-highlight')){
