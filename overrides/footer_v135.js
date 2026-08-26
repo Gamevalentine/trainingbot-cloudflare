@@ -78,7 +78,7 @@
 
     const platforms=document.createElement('div');
     platforms.className='light-signup-platforms';
-    platforms.innerHTML='<button class="light-platform-btn" type="button">Đăng kí IOS</button><a class="light-platform-btn" href="https://play.google.com/store/apps/details?id=com.tencent.igfit" target="_blank" rel="noopener noreferrer">Đăng kí Android</a>';
+    platforms.innerHTML='<a class="light-platform-btn" href="https://pubggo.go.link/pre-register" target="_blank" rel="noopener noreferrer">Đăng kí IOS</a><a class="light-platform-btn" href="https://play.google.com/store/apps/details?id=com.tencent.igfit" target="_blank" rel="noopener noreferrer">Đăng kí Android</a>';
     signupBtn.insertAdjacentElement('afterend',platforms);
 
     signupBtn.setAttribute('role','button');
