@@ -9,3 +9,23 @@
 .tb-social .tb-email svg{width:38px!important;height:38px!important;fill:none!important;stroke:#fff!important;stroke-width:2.2!important;filter:none!important}
 .tb-social .tb-discord{border-radius:11px!important;background:#5865f2!important;color:#fff!important}
 .tb-social .tb-discord svg{width:30px!important;height:30px!important;fill:#fff!important;stroke:none!important;filter:none!important}
+
+/* Desktop only: keep the right utility stack fixed while the main feed scrolls. */
+@media (min-width:1101px){
+  .tb-news-portal .tb-push-panel{
+    position:fixed!important;
+    top:104px!important;
+    right:max(16px,calc((100vw - 1420px)/2))!important;
+    width:420px!important;
+    box-sizing:border-box!important;
+    z-index:40!important;
+  }
+  .tb-news-portal .tb-right-column{
+    position:fixed!important;
+    top:194px!important;
+    right:max(16px,calc((100vw - 1420px)/2))!important;
+    width:315px!important;
+    box-sizing:border-box!important;
+    z-index:39!important;
+  }
+}
