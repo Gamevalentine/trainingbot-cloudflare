@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Tìm đồng đội PUBG Mobile trên TrainingBot theo server, rank, chế độ, khung giờ và mic; liên hệ nhanh qua Discord.">
+  <meta name="description" content="Tìm đồng đội PUBG Mobile trên TrainingBot theo server, rank, chế độ, khung giờ và mic; mỗi tin có thể tạo phòng thảo luận riêng trên Discord.">
   <title>Tìm đồng đội — TrainingBot</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -53,7 +53,7 @@
       <header class="tb-match-hero">
         <span class="tb-match-target" aria-hidden="true">⌖</span>
         <h1>TÌM <span>ĐỒNG ĐỘI</span></h1>
-        <p>Tìm người chơi phù hợp hoặc đăng tin tìm đồng đội để lập team chinh phục mọi chiến trường PUBG Mobile.</p>
+        <p>Lọc người chơi phù hợp trên web; mỗi tin đăng có thể tạo một phòng thảo luận riêng trong Discord TrainingBot để cả đội vào nói chuyện ngay.</p>
       </header>
 
       <section class="tb-match-filter-panel">
@@ -85,7 +85,7 @@
         <div class="tb-match-loading">Đang tải danh sách...</div>
       </section>
 
-      <div class="tb-match-bottom-tip">💡 Bấm <strong>“Liên hệ Discord”</strong> để mở Discord; lời nhắn làm quen sẽ được sao chép sẵn khi trình duyệt cho phép.</div>
+      <div class="tb-match-bottom-tip">💡 Tin có phòng riêng sẽ hiện nút <strong>“Vào phòng đội”</strong>. Bấm một lần để mở thẳng đúng thread trong Discord TrainingBot, không cần tự tìm kênh hay mò tin nhắn.</div>
     </section>
   </main>
 
@@ -95,13 +95,13 @@
       <button class="tb-match-close" type="button" data-close-modal aria-label="Đóng">×</button>
       <span class="tb-match-dialog-kicker">TÌM TEAM NHANH</span>
       <h2 id="tbPostTitle">Đăng tin tìm đồng đội</h2>
-      <p>Tin của bạn sẽ hiển thị tối đa 7 ngày. Không cần tạo tài khoản.</p>
+      <p>Tin hiển thị tối đa 7 ngày. Sau khi đăng, TrainingBot sẽ tự tạo một phòng thảo luận riêng trong kênh tìm đồng đội của Discord.</p>
       <form id="tbPostForm">
         <div class="tb-match-form-grid">
           <label>Tên hiển thị *<input name="name" required maxlength="40" placeholder="Ví dụ: EagleEyes"></label>
           <label>UID PUBG Mobile<input name="pubg_uid" maxlength="24" inputmode="numeric" placeholder="Không bắt buộc"></label>
           <label>Tên Discord *<input name="discord_name" required maxlength="64" placeholder="Ví dụ: eagle.eyes"></label>
-          <label>Discord User ID<input name="discord_user_id" maxlength="20" inputmode="numeric" placeholder="Để mở thẳng hồ sơ Discord"></label>
+          <label>Discord User ID<input name="discord_user_id" maxlength="20" inputmode="numeric" placeholder="Không bắt buộc"></label>
           <label>Server *<select name="server" required><option value="">Chọn server</option><option>Asia</option><option>KRJP</option><option>Europe</option><option>Middle East</option><option>North America</option><option>South America</option></select></label>
           <label>Rank *<select name="rank" required><option value="">Chọn rank</option><option>Bronze</option><option>Silver</option><option>Gold</option><option>Platinum</option><option>Diamond</option><option>Crown</option><option>Ace</option><option>Ace Master</option><option>Ace Dominator</option><option>Conqueror</option></select></label>
           <label>Chế độ *<select name="mode" required><option value="">Chọn chế độ</option><option>Ranked Classic</option><option>Classic</option><option>Metro Royale</option><option>Arena</option><option>WOW</option><option>Khác</option></select></label>
@@ -112,15 +112,15 @@
           <label class="tb-match-form-wide">Mô tả ngắn<textarea name="note" maxlength="180" rows="3" placeholder="Ví dụ: chơi nghiêm túc, giao tiếp tốt, push rank buổi tối..."></textarea></label>
           <label class="tb-match-honeypot" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
         </div>
-        <div class="tb-match-form-help">Discord User ID giúp nút liên hệ mở đúng hồ sơ của bạn. Nếu bỏ trống, nút sẽ mở server Discord TrainingBot và sao chép tên Discord của bạn.</div>
+        <div class="tb-match-form-help">Phòng Discord sẽ có tên theo người đăng, server, rank và khung giờ; thông tin trong form được đăng vào phòng để người phù hợp vào trao đổi. Khi bạn bấm “Đã tìm đủ đồng đội”, TrainingBot sẽ khóa và lưu trữ phòng đó.</div>
         <div class="tb-match-form-status" id="tbPostStatus"></div>
-        <button class="tb-match-submit" type="submit">ĐĂNG TIN TÌM ĐỒNG ĐỘI →</button>
+        <button class="tb-match-submit" type="submit">ĐĂNG TIN & TẠO PHÒNG ĐỘI →</button>
       </form>
     </section>
   </div>
 
   <script src="/script.js"></script>
   <script defer src="/navigation_v124.js?v=124"></script>
-  <script defer src="/teammate_finder_v161.js?v=161"></script>
+  <script defer src="/teammate_finder_v161.js?v=162"></script>
 </body>
 </html>
