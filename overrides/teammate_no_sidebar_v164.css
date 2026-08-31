@@ -1,0 +1,2 @@
+.tb-match-layout{grid-template-columns:minmax(0,1fr)!important}.tb-match-sidebar{display:none!important}.tb-match-content{width:100%;max-width:1500px;margin:0 auto;box-sizing:border-box}
+@media(max-width:900px){.tb-match-layout{grid-template-columns:minmax(0,1fr)!important}}
