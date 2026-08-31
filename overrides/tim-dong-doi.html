@@ -62,8 +62,8 @@
           <button class="tb-match-primary" id="tbOpenPost" type="button"><span>＋</span> ĐĂNG TIN TÌM ĐỒNG ĐỘI</button>
         </div>
         <div class="tb-match-filters">
-          <label>Server<select id="tbFilterServer"><option value="">Tất cả server</option><option>Asia</option><option>KRJP</option><option>Europe</option><option>Middle East</option><option>North America</option><option>South America</option></select></label>
-          <label>Rank<select id="tbFilterRank"><option value="">Tất cả rank</option><option>Bronze</option><option>Silver</option><option>Gold</option><option>Platinum</option><option>Diamond</option><option>Crown</option><option>Ace</option><option>Ace Master</option><option>Ace Dominator</option><option>Conqueror</option></select></label>
+          <label>Máy chủ<select id="tbFilterServer"><option value="">Tất cả máy chủ</option><option value="Asia">Châu Á</option><option value="KRJP">Hàn Quốc / Nhật Bản</option><option value="Europe">Châu Âu</option><option value="Middle East">Trung Đông</option><option value="North America">Bắc Mỹ</option><option value="South America">Nam Mỹ</option></select></label>
+          <label>Bậc xếp hạng<select id="tbFilterRank"><option value="">Tất cả bậc</option><option value="Bronze">Đồng (Bronze)</option><option value="Silver">Bạc (Silver)</option><option value="Gold">Vàng (Gold)</option><option value="Platinum">Bạch Kim (Platinum)</option><option value="Diamond">Kim Cương (Diamond)</option><option value="Crown">Tinh Anh (Crown)</option><option value="Ace">Cao Thủ (Ace)</option><option value="Ace Master">Cao Thủ Bậc Thầy (Ace Master)</option><option value="Ace Dominator">Cao Thủ Thống Trị (Ace Dominator)</option><option value="Conqueror">Chí Tôn (Conqueror)</option></select></label>
           <label>Chế độ<select id="tbFilterMode"><option value="">Tất cả chế độ</option><option>Ranked Classic</option><option>Classic</option><option>Metro Royale</option><option>Arena</option><option>WOW</option><option>Khác</option></select></label>
           <label>Số người cần tìm<select id="tbFilterNeeded"><option value="">Tất cả</option><option value="1">1 người</option><option value="2">2 người</option><option value="3">3 người</option></select></label>
           <label>Mic<select id="tbFilterMic"><option value="">Tất cả</option><option value="yes">Có mic</option><option value="no">Không yêu cầu</option></select></label>
@@ -93,7 +93,7 @@
     <div class="tb-match-modal-backdrop" data-close-modal></div>
     <section class="tb-match-dialog" role="dialog" aria-modal="true" aria-labelledby="tbPostTitle">
       <button class="tb-match-close" type="button" data-close-modal aria-label="Đóng">×</button>
-      <span class="tb-match-dialog-kicker">TÌM TEAM NHANH</span>
+      <span class="tb-match-dialog-kicker">TÌM ĐỘI NHANH</span>
       <h2 id="tbPostTitle">Đăng tin tìm đồng đội</h2>
       <p>Tin hiển thị tối đa 7 ngày. Sau khi đăng, TrainingBot sẽ tự tạo một phòng thảo luận riêng trong kênh tìm đồng đội của Discord.</p>
       <form id="tbPostForm">
@@ -101,9 +101,9 @@
           <label>Tên hiển thị *<input name="name" required maxlength="40" placeholder="Ví dụ: EagleEyes"></label>
           <label>UID PUBG Mobile<input name="pubg_uid" maxlength="24" inputmode="numeric" placeholder="Không bắt buộc"></label>
           <label>Tên Discord *<input name="discord_name" required maxlength="64" placeholder="Ví dụ: eagle.eyes"></label>
-          <label>Discord User ID<input name="discord_user_id" maxlength="20" inputmode="numeric" placeholder="Không bắt buộc"></label>
-          <label>Server *<select name="server" required><option value="">Chọn server</option><option>Asia</option><option>KRJP</option><option>Europe</option><option>Middle East</option><option>North America</option><option>South America</option></select></label>
-          <label>Rank *<select name="rank" required><option value="">Chọn rank</option><option>Bronze</option><option>Silver</option><option>Gold</option><option>Platinum</option><option>Diamond</option><option>Crown</option><option>Ace</option><option>Ace Master</option><option>Ace Dominator</option><option>Conqueror</option></select></label>
+          <label>ID người dùng Discord<input name="discord_user_id" maxlength="20" inputmode="numeric" placeholder="Không bắt buộc"></label>
+          <label>Máy chủ *<select name="server" required><option value="">Chọn máy chủ</option><option value="Asia">Châu Á</option><option value="KRJP">Hàn Quốc / Nhật Bản</option><option value="Europe">Châu Âu</option><option value="Middle East">Trung Đông</option><option value="North America">Bắc Mỹ</option><option value="South America">Nam Mỹ</option></select></label>
+          <label>Bậc xếp hạng *<select name="rank" required><option value="">Chọn bậc</option><option value="Bronze">Đồng (Bronze)</option><option value="Silver">Bạc (Silver)</option><option value="Gold">Vàng (Gold)</option><option value="Platinum">Bạch Kim (Platinum)</option><option value="Diamond">Kim Cương (Diamond)</option><option value="Crown">Tinh Anh (Crown)</option><option value="Ace">Cao Thủ (Ace)</option><option value="Ace Master">Cao Thủ Bậc Thầy (Ace Master)</option><option value="Ace Dominator">Cao Thủ Thống Trị (Ace Dominator)</option><option value="Conqueror">Chí Tôn (Conqueror)</option></select></label>
           <label>Chế độ *<select name="mode" required><option value="">Chọn chế độ</option><option>Ranked Classic</option><option>Classic</option><option>Metro Royale</option><option>Arena</option><option>WOW</option><option>Khác</option></select></label>
           <label>Cần thêm *<select name="needed" required><option value="">Chọn số người</option><option value="1">1 người</option><option value="2">2 người</option><option value="3">3 người</option></select></label>
           <label>Mic *<select name="mic" required><option value="yes">Có mic</option><option value="no">Không yêu cầu</option></select></label>
@@ -112,7 +112,7 @@
           <label class="tb-match-form-wide">Mô tả ngắn<textarea name="note" maxlength="180" rows="3" placeholder="Ví dụ: chơi nghiêm túc, giao tiếp tốt, push rank buổi tối..."></textarea></label>
           <label class="tb-match-honeypot" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
         </div>
-        <div class="tb-match-form-help">Phòng Discord sẽ có tên theo người đăng, server, rank và khung giờ; thông tin trong form được đăng vào phòng để người phù hợp vào trao đổi. Khi bạn bấm “Đã tìm đủ đồng đội”, TrainingBot sẽ khóa và lưu trữ phòng đó.</div>
+        <div class="tb-match-form-help">Phòng Discord sẽ có tên theo người đăng, máy chủ, bậc xếp hạng và khung giờ; thông tin trong form được đăng vào phòng để người phù hợp vào trao đổi. Khi bạn bấm “Đã tìm đủ đồng đội”, TrainingBot sẽ khóa và lưu trữ phòng đó.</div>
         <div class="tb-match-form-status" id="tbPostStatus"></div>
         <button class="tb-match-submit" type="submit">ĐĂNG TIN & TẠO PHÒNG ĐỘI →</button>
       </form>
@@ -121,6 +121,6 @@
 
   <script src="/script.js"></script>
   <script defer src="/navigation_v124.js?v=124"></script>
-  <script defer src="/teammate_finder_v161.js?v=162"></script>
+  <script defer src="/teammate_finder_v161.js?v=163"></script>
 </body>
 </html>
