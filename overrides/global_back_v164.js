@@ -15,14 +15,14 @@
     if(/^\/(?:ban-cap-nhat|updates|update)-/.test(path))return '/ban-cap-nhat';
     if(/^\/community-/.test(path))return '/community';
 
-    // Main sections are direct children of the homepage.
-    if(['/community','/news','/wiki','/ban-cap-nhat','/updates','/contact'].includes(path))return '/';
+    // Main navigation pages do not need a back button.
+    if(['/community','/news','/wiki','/ban-cap-nhat','/updates','/contact'].includes(path))return null;
 
     // For nested URL paths, go to the immediate URL parent.
     const parts=path.split('/').filter(Boolean);
     if(parts.length>1)return '/'+parts.slice(0,-1).join('/');
 
-    // Other public pages are treated as direct children of the homepage.
+    // Other standalone public pages can return to the homepage.
     return '/';
   }
 
@@ -31,7 +31,7 @@
     const path=normalizePath(location.pathname);
     let parent=parentFor(path);
 
-    // A detail state that lives on the same route (query/hash) returns to the clean parent page first.
+    // A detail state that lives on a main route (query/hash) can return to the clean parent page.
     if((location.search||location.hash)&&['/wiki','/news','/community','/ban-cap-nhat','/updates'].includes(path)){
       parent=path==='/updates'?'/ban-cap-nhat':path;
     }
