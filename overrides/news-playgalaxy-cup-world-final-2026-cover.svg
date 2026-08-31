@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Malaysia vô địch PlayGalaxy Cup PUBG Mobile tại Gamescom 2026</title>
+  <desc id="desc">Ảnh bìa đồ họa esports cho bài PlayGalaxy Cup World Final 2026 của TrainingBot.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#060b18"/>
+      <stop offset="0.48" stop-color="#101b3c"/>
+      <stop offset="1" stop-color="#07111f"/>
+    </linearGradient>
+    <radialGradient id="glowA" cx="80%" cy="18%" r="55%">
+      <stop offset="0" stop-color="#2f7cff" stop-opacity=".72"/>
+      <stop offset="1" stop-color="#2f7cff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="18%" cy="82%" r="48%">
+      <stop offset="0" stop-color="#7c3aed" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#7c3aed" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff2a8"/>
+      <stop offset=".45" stop-color="#f6c552"/>
+      <stop offset="1" stop-color="#b7791f"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000" flood-opacity=".42"/></filter>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect width="1600" height="900" fill="url(#glowA)"/>
+  <rect width="1600" height="900" fill="url(#glowB)"/>
+  <g opacity=".18" stroke="#8eb9ff" fill="none">
+    <path d="M0 690 C300 560 520 780 820 650 S1320 520 1600 620" stroke-width="2"/>
+    <path d="M0 735 C340 610 560 820 890 700 S1360 575 1600 675" stroke-width="1.4"/>
+    <path d="M0 785 C370 665 640 850 980 745 S1400 650 1600 725" stroke-width="1"/>
+  </g>
+  <g transform="translate(1040 150)" filter="url(#shadow)">
+    <path d="M170 64h220v74c0 132-64 228-110 268-46-40-110-136-110-268z" fill="url(#gold)"/>
+    <path d="M170 104H92c-10 0-18 8-18 18 0 90 54 162 128 190" fill="none" stroke="#e6b84b" stroke-width="28" stroke-linecap="round"/>
+    <path d="M390 104h78c10 0 18 8 18 18 0 90-54 162-128 190" fill="none" stroke="#e6b84b" stroke-width="28" stroke-linecap="round"/>
+    <rect x="248" y="404" width="64" height="112" rx="18" fill="#dcae41"/>
+    <rect x="184" y="500" width="192" height="38" rx="18" fill="#f1c75e"/>
+    <path d="M280 136l24 49 54 8-39 38 9 54-48-25-48 25 9-54-39-38 54-8z" fill="#fff5bf"/>
+  </g>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="110" y="130" fill="#6ea8ff" font-size="34" font-weight="700" letter-spacing="4">#PLAYGALAXY CUP · WORLD FINAL 2026</text>
+    <text x="110" y="300" fill="#ffffff" font-size="88" font-weight="900">MALAYSIA</text>
+    <text x="110" y="395" fill="#ffffff" font-size="88" font-weight="900">VÔ ĐỊCH</text>
+    <text x="110" y="480" fill="#d8e4ff" font-size="44" font-weight="700">PUBG MOBILE · GAMESCOM 2026</text>
+    <rect x="110" y="555" width="610" height="4" rx="2" fill="#4c8dff"/>
+    <text x="110" y="625" fill="#9fb1cf" font-size="31" font-weight="600">10 đội · 9 quốc gia · Cologne, Đức</text>
+    <text x="110" y="790" fill="#ffffff" font-size="30" font-weight="800" letter-spacing="2">TRAININGBOT</text>
+  </g>
+  <g transform="translate(825 690)" opacity=".95">
+    <rect width="620" height="96" rx="26" fill="#0d1529" stroke="#5f88d8" stroke-opacity=".35"/>
+    <text x="38" y="58" fill="#cfe1ff" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700">SAN GAMING · VRT1CAA · ADIKBOY · ACAD</text>
+  </g>
+</svg>
