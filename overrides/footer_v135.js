@@ -1,4 +1,22 @@
 (()=>{
+  if(!document.querySelector('link[href*="global_back_v164.css"]')){
+    const backStyle=document.createElement('link');
+    backStyle.rel='stylesheet';
+    backStyle.href='/global_back_v164.css?v=164';
+    document.head.append(backStyle);
+  }
+  if(!document.querySelector('script[src*="global_back_v164.js"]')){
+    const backScript=document.createElement('script');
+    backScript.src='/global_back_v164.js?v=164';
+    document.body.append(backScript);
+  }
+  if(/^\/tim-dong-doi(?:\.html)?\/?$/.test(location.pathname)&&!document.querySelector('link[href*="teammate_no_sidebar_v164.css"]')){
+    const noSidebarStyle=document.createElement('link');
+    noSidebarStyle.rel='stylesheet';
+    noSidebarStyle.href='/teammate_no_sidebar_v164.css?v=164';
+    document.head.append(noSidebarStyle);
+  }
+
   if(document.querySelector('.tb-global-footer'))return;
   const style=document.createElement('link');
   style.rel='stylesheet';
