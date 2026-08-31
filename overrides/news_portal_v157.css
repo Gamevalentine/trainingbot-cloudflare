@@ -10,22 +10,53 @@
 .tb-social .tb-discord{border-radius:11px!important;background:#5865f2!important;color:#fff!important}
 .tb-social .tb-discord svg{width:30px!important;height:30px!important;fill:#fff!important;stroke:none!important;filter:none!important}
 
-/* Desktop only: keep the right utility stack fixed while the main feed scrolls. */
+/* Desktop only: sticky utility stack constrained to the news content area. */
 @media (min-width:1101px){
+  .tb-news-portal>.container{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) 315px!important;
+    column-gap:18px!important;
+    align-items:start!important;
+  }
+  .tb-news-portal .tb-news-topbar,
+  .tb-news-portal .tb-portal-grid{
+    display:contents!important;
+  }
+  .tb-news-portal .tb-news-title{
+    grid-column:1!important;
+    grid-row:1!important;
+    align-self:center!important;
+    margin-bottom:16px!important;
+  }
   .tb-news-portal .tb-push-panel{
-    position:fixed!important;
-    top:104px!important;
-    right:max(16px,calc((100vw - 1420px)/2))!important;
-    width:420px!important;
+    grid-column:2!important;
+    grid-row:1!important;
+    position:sticky!important;
+    top:88px!important;
+    width:auto!important;
+    right:auto!important;
+    z-index:20!important;
     box-sizing:border-box!important;
-    z-index:40!important;
+    margin-bottom:16px!important;
+  }
+  .tb-news-portal .tb-main-column{
+    grid-column:1!important;
+    grid-row:2!important;
+    min-width:0!important;
   }
   .tb-news-portal .tb-right-column{
-    position:fixed!important;
-    top:194px!important;
-    right:max(16px,calc((100vw - 1420px)/2))!important;
-    width:315px!important;
+    grid-column:2!important;
+    grid-row:2!important;
+    position:sticky!important;
+    top:178px!important;
+    width:auto!important;
+    right:auto!important;
+    z-index:19!important;
+    align-self:start!important;
     box-sizing:border-box!important;
-    z-index:39!important;
+  }
+  .tb-news-portal .tb-trust-strip{
+    grid-column:1 / -1!important;
+    grid-row:3!important;
   }
 }
