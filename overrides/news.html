@@ -9,14 +9,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&display=swap">
   <link rel="stylesheet" href="/styles.css">
-  <link rel="stylesheet" href="/news_detail_v16.css?v=16">
   <link rel="stylesheet" href="/mobile_polish_v62.css?v=62">
   <link rel="stylesheet" href="/brand_logo_v116.css?v=116">
   <link rel="stylesheet" href="/navigation_v124.css?v=124">
-  <link rel="stylesheet" href="/news_grouped_v132.css?v=132">
-  <style>
-    .tb-news-push-wrap{margin-top:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}.tb-news-push-btn{appearance:none;border:1px solid rgba(96,165,250,.32);background:rgba(59,130,246,.1);color:#dcecff;min-height:42px;padding:0 15px;border-radius:12px;font:800 .86rem/1 Inter,sans-serif;cursor:pointer;transition:.18s ease}.tb-news-push-btn:hover{background:rgba(59,130,246,.17);border-color:rgba(96,165,250,.55);transform:translateY(-1px)}.tb-news-push-btn[data-state="on"]{color:#b7f7d0;border-color:rgba(74,222,128,.34);background:rgba(34,197,94,.1)}.tb-news-push-btn[data-state="denied"],.tb-news-push-btn[data-state="error"]{color:#ffd1d1;border-color:rgba(248,113,113,.3);background:rgba(239,68,68,.08)}.tb-news-push-btn:disabled{opacity:.62;cursor:not-allowed;transform:none}.tb-news-push-note{color:#7f8ba3;font-size:.78rem}@media(max-width:640px){.tb-news-push-wrap{align-items:flex-start;flex-direction:column}.tb-news-push-btn{width:100%}}
-  </style>
+  <link rel="stylesheet" href="/news_portal_v157.css?v=157">
 </head>
 <body>
   <header class="site-header">
@@ -38,61 +34,94 @@
     <nav class="mobile-nav" aria-label="Điều hướng di động"></nav>
   </header>
 
-  <div class="announcement">
-    <div class="container announcement-inner">
-      <span class="announcement-badge">MỚI</span>
-      <span>Malaysia vô địch #PlayGalaxy Cup PUBG Mobile tại Gamescom 2026.</span>
-      <a href="/news-playgalaxy-cup-world-final-2026">Đọc ngay →</a>
-    </div>
-  </div>
-
-  <main>
-    <section class="page-hero tb-news-hero">
-      <div class="container">
-        <h1>Theo dõi mọi chuyển động của PUBG Mobile</h1>
-        <p>Tin mới, bản cập nhật và những câu chuyện đáng chú ý từ cộng đồng.</p>
-        <nav class="tb-news-quick-links" aria-label="Chủ đề nổi bật"><a href="/news-versions">Phiên bản</a><a href="/news-esports">Giải đấu & Esports</a><a href="/news-community">Cộng đồng</a></nav>
-        <div class="tb-news-push-wrap">
-          <button class="tb-news-push-btn" type="button" data-news-push>🔔 Nhận thông báo tin mới</button>
-          <span class="tb-news-push-note">Chỉ gửi khi TrainingBot có bài tin mới.</span>
+  <main class="tb-news-portal">
+    <div class="container">
+      <section class="tb-news-topbar" aria-labelledby="news-title">
+        <div class="tb-news-title">
+          <h1 id="news-title">TIN TỨC</h1>
+          <p>Cập nhật tin tức PUBG Mobile mới nhất mỗi ngày.</p>
         </div>
-      </div>
-    </section>
+        <div class="tb-push-panel">
+          <div class="tb-push-copy"><i>♧</i><span><strong>NHẬN THÔNG BÁO TIN MỚI</strong><small>Không bỏ lỡ các tin PUBG Mobile quan trọng.</small></span></div>
+          <button class="tb-news-push-btn" type="button" data-news-push>🔔 Bật thông báo</button>
+        </div>
+      </section>
 
-    <section class="content-section tb-news-content">
-      <div class="container tb-news-layout">
-        <section class="tb-news-latest" aria-labelledby="tb-latest-title">
-          <header class="tb-news-section-head">
-            <div><span class="kicker">Cập nhật gần nhất</span><h2 id="tb-latest-title">Tin mới</h2></div>
-          </header>
-          <div class="tb-latest-grid">
-            <a class="content-card tb-news-cover-card tb-live-card" href="/news-playgalaxy-cup-world-final-2026">
-              <img class="tb-news-cover-thumb" src="/news-playgalaxy-cup-world-final-2026-cover.svg?v=156" alt="Malaysia vô địch PlayGalaxy Cup PUBG Mobile tại Gamescom 2026">
-              <div class="tb-news-card-body"><span class="number">MỚI · 31/08</span><h2>Malaysia vô địch #PlayGalaxy Cup PUBG Mobile tại Gamescom 2026</h2><p>10 đội từ 9 quốc gia tranh tài tại World Final; đại diện Malaysia giành chức vô địch.</p><span class="tb-read-link">Đọc bài →</span></div>
+      <div class="tb-portal-grid">
+        <div class="tb-main-column">
+          <section class="tb-hero-grid" aria-label="Tin nổi bật">
+            <a class="tb-hero tb-live-card" href="/news-playgalaxy-cup-world-final-2026">
+              <img src="/news-playgalaxy-cup-world-final-2026-cover.svg?v=156" alt="Malaysia vô địch PlayGalaxy Cup PUBG Mobile tại Gamescom 2026">
+              <div class="tb-hero-copy">
+                <span class="tb-badge">Tin nổi bật hôm nay</span>
+                <div style="margin-top:8px"><span class="tb-badge purple">Giải đấu & Esports</span></div>
+                <h2>Malaysia vô địch #PlayGalaxy Cup PUBG Mobile tại Gamescom 2026</h2>
+                <p>Đại diện Malaysia giành ngôi vương sau World Final quy tụ 10 đội đến từ 9 quốc gia tại Cologne, Đức.</p>
+                <div class="tb-meta"><span>◷ 31/08/2026</span><span>• World Final</span><span>Đọc bài →</span></div>
+              </div>
             </a>
-            <a class="content-card tb-news-cover-card" href="/news-pubg-mobile-light">
-              <img class="tb-news-cover-thumb" src="/news-pubg-mobile-light-cover.webp?v=154" alt="PUBG MOBILE LIGHT mở đăng ký trước">
-              <div class="tb-news-card-body"><span class="number">28/08</span><h2>PUBG MOBILE LIGHT mở đăng ký trước, ra mắt trong tháng 11</h2><p>Đăng ký trước đã mở trên Android và iOS; ngày phát hành chính thức chưa được công bố.</p><span class="tb-read-link">Đọc bài →</span></div>
-            </a>
-            <a class="content-card tb-news-cover-card" href="/news-mr-practice-arena-2026">
-              <img class="tb-news-cover-thumb" src="/news-mr-practice-arena-2026-cover.webp" alt="MR Practice Arena 2026 - ZCgsm dẫn đầu 94 điểm">
-              <div class="tb-news-card-body"><span class="number">22/08</span><h2>MR Practice Arena 2026: ZCgsm dẫn đầu với 94 điểm sau ngày 1</h2><p>ZCgsm tạo cách biệt lớn sau 5 trận đầu; ngày thi đấu thứ 2 tiếp tục với các trận 6–10.</p><span class="tb-read-link">Đọc bài →</span></div>
-            </a>
-          </div>
-        </section>
 
-        <section class="tb-news-topics" aria-labelledby="tb-topics-title">
-          <header class="tb-news-section-head">
-            <div><span class="kicker">Theo chủ đề</span><h2 id="tb-topics-title">Khám phá nội dung</h2></div>
-          </header>
-          <div class="tb-topic-groups">
-            <a class="tb-topic-group tb-topic-update" href="/news-versions"><span class="tb-topic-label">CẬP NHẬT & PHIÊN BẢN</span><span class="tb-topic-title">Thay đổi trong game</span><span class="tb-topic-desc">Tính năng, phiên bản thử nghiệm và tác động tới lối chơi.</span><i aria-hidden="true"></i></a>
-            <a class="tb-topic-group tb-topic-esports" href="/news-esports"><span class="tb-topic-label">GIẢI ĐẤU & ESPORTS</span><span class="tb-topic-title">Thi đấu cạnh tranh</span><span class="tb-topic-desc">Lịch thi đấu, kết quả và câu chuyện từ các giải đấu.</span><i aria-hidden="true"></i></a>
-            <a class="tb-topic-group tb-topic-community" href="/news-community"><span class="tb-topic-label">CỘNG ĐỒNG & XU HƯỚNG</span><span class="tb-topic-title">Góc nhìn người chơi</span><span class="tb-topic-desc">Nội dung nổi bật, chia sẻ và quan điểm từ cộng đồng.</span><i aria-hidden="true"></i></a>
-          </div>
-        </section>
+            <div class="tb-side-stories">
+              <a class="tb-side-story" href="/news-pubg-mobile-4-6">
+                <img src="/news-pubg-mobile-4-6-cover.webp?v=134" alt="PUBG Mobile 4.6">
+                <div class="tb-side-story-copy"><span class="tb-badge purple">Bản cập nhật</span><h3>PUBG Mobile 4.6 dự kiến phát hành ngày 09/09/2026</h3><div class="tb-meta"><span>21/08</span><span>Đọc bài →</span></div></div>
+              </a>
+              <a class="tb-side-story" href="/news-pubg-mobile-light">
+                <img src="/news-pubg-mobile-light-cover.webp?v=154" alt="PUBG MOBILE LIGHT">
+                <div class="tb-side-story-copy"><span class="tb-badge green">Tin mới</span><h3>PUBG MOBILE LIGHT mở đăng ký trước, ra mắt trong tháng 11</h3><div class="tb-meta"><span>28/08</span><span>Đọc bài →</span></div></div>
+              </a>
+            </div>
+          </section>
+
+          <section class="tb-section" aria-labelledby="latest-title">
+            <div class="tb-section-head"><h2 class="tb-section-title" id="latest-title">BÀI VIẾT MỚI NHẤT</h2><a href="/news">Xem tất cả →</a></div>
+            <div class="tb-tabs" aria-label="Bộ lọc bài viết"><span class="tb-tab active">Mới nhất</span><span class="tb-tab">Xu hướng</span><span class="tb-tab">Phổ biến</span></div>
+            <div class="tb-latest-grid-v157">
+              <a class="tb-latest-card" href="/news-playgalaxy-cup-world-final-2026"><div class="tb-latest-media"><img src="/news-playgalaxy-cup-world-final-2026-cover.svg?v=156" alt="PlayGalaxy Cup 2026"><span class="tb-badge purple">Giải đấu & Esports</span></div><div class="tb-latest-body"><h3>Malaysia vô địch #PlayGalaxy Cup PUBG Mobile tại Gamescom 2026</h3><p>World Final khép lại với chức vô địch thuộc về đại diện Malaysia.</p><div class="tb-meta"><span>31/08/2026</span><span>Đọc bài →</span></div></div></a>
+              <a class="tb-latest-card" href="/news-pubg-mobile-light"><div class="tb-latest-media"><img src="/news-pubg-mobile-light-cover.webp?v=154" alt="PUBG MOBILE LIGHT"><span class="tb-badge green">Tin mới</span></div><div class="tb-latest-body"><h3>PUBG MOBILE LIGHT mở đăng ký trước, ra mắt trong tháng 11</h3><p>Đăng ký trước đã mở trên Android và iOS.</p><div class="tb-meta"><span>28/08/2026</span><span>Đọc bài →</span></div></div></a>
+              <a class="tb-latest-card" href="/news-mr-practice-arena-2026"><div class="tb-latest-media"><img src="/news-mr-practice-arena-2026-cover.webp" alt="MR Practice Arena 2026"><span class="tb-badge purple">Giải đấu</span></div><div class="tb-latest-body"><h3>MR Practice Arena 2026: ZCgsm dẫn đầu với 94 điểm sau ngày 1</h3><p>Diễn biến năm trận đầu và lịch thi đấu tiếp theo.</p><div class="tb-meta"><span>22/08/2026</span><span>Đọc bài →</span></div></div></a>
+            </div>
+          </section>
+
+          <section class="tb-section" aria-labelledby="topic-title">
+            <div class="tb-section-head"><h2 class="tb-section-title" id="topic-title">THEO CHỦ ĐỀ</h2><a href="/news-versions">Xem tất cả chủ đề →</a></div>
+            <nav class="tb-topic-tabs" aria-label="Chủ đề tin tức"><a href="/news">Tất cả</a><a href="/news-esports">Giải đấu & Esports</a><a href="/news-versions">Bản cập nhật</a><a href="/news-community">Cộng đồng</a></nav>
+            <div class="tb-topic-grid-v157">
+              <a class="tb-topic-card" href="/news-versions"><div class="tb-topic-media"><img src="/news-pubg-mobile-4-6-cover.webp?v=134" alt="Bản cập nhật PUBG Mobile"><span class="tb-badge purple">Bản cập nhật</span></div><h3>Cập nhật & phiên bản PUBG Mobile</h3><div class="tb-meta"><span>Tính năng mới</span></div></a>
+              <a class="tb-topic-card" href="/news-esports"><div class="tb-topic-media"><img src="/news-playgalaxy-cup-world-final-2026-cover.svg?v=156" alt="Giải đấu PUBG Mobile"><span class="tb-badge purple">Giải đấu & Esports</span></div><h3>Kết quả, lịch thi đấu và câu chuyện Esports</h3><div class="tb-meta"><span>Theo dõi giải đấu</span></div></a>
+              <a class="tb-topic-card" href="/news-pubg-mobile-light"><div class="tb-topic-media"><img src="/news-pubg-mobile-light-cover.webp?v=154" alt="PUBG MOBILE LIGHT"><span class="tb-badge green">PUBG MOBILE LIGHT</span></div><h3>Tin mới về phiên bản nhẹ của PUBG MOBILE</h3><div class="tb-meta"><span>Đăng ký trước</span></div></a>
+              <a class="tb-topic-card" href="/news-community"><div class="tb-topic-media"><img src="/pubg-game-avatar.webp" alt="Cộng đồng PUBG Mobile"><span class="tb-badge blue">Cộng đồng</span></div><h3>Nội dung và câu chuyện từ cộng đồng PUBG Mobile</h3><div class="tb-meta"><span>Khám phá cộng đồng</span></div></a>
+            </div>
+          </section>
+        </div>
+
+        <aside class="tb-right-column" aria-label="Tin bên lề">
+          <section class="tb-side-panel">
+            <h2 class="tb-side-title">ĐANG ĐƯỢC QUAN TÂM</h2>
+            <div class="tb-trend-list">
+              <a class="tb-trend" href="/news-pubg-mobile-4-6"><span class="tb-rank">1</span><img src="/news-pubg-mobile-4-6-cover.webp?v=134" alt="PUBG Mobile 4.6"><span><strong>PUBG Mobile 4.6: ngày phát hành dự kiến</strong><small>Bản cập nhật</small></span></a>
+              <a class="tb-trend" href="/news-playgalaxy-cup-world-final-2026"><span class="tb-rank">2</span><img src="/news-playgalaxy-cup-world-final-2026-cover.svg?v=156" alt="PlayGalaxy Cup"><span><strong>Malaysia vô địch #PlayGalaxy Cup tại Gamescom 2026</strong><small>Giải đấu & Esports</small></span></a>
+              <a class="tb-trend" href="/news-pubg-mobile-light"><span class="tb-rank">3</span><img src="/news-pubg-mobile-light-cover.webp?v=154" alt="PUBG MOBILE LIGHT"><span><strong>PUBG MOBILE LIGHT mở đăng ký trước</strong><small>Tin mới</small></span></a>
+              <a class="tb-trend" href="/news-mr-practice-arena-2026"><span class="tb-rank">4</span><img src="/news-mr-practice-arena-2026-cover.webp" alt="MR Practice Arena"><span><strong>MR Practice Arena 2026: ZCgsm dẫn đầu ngày 1</strong><small>Giải đấu</small></span></a>
+              <a class="tb-trend" href="/news-versions"><span class="tb-rank">5</span><img src="/news-skin-smelting-cover.webp" alt="Tin phiên bản PUBG Mobile"><span><strong>Khám phá các thay đổi theo phiên bản</strong><small>Phiên bản</small></span></a>
+            </div>
+            <a class="tb-side-link" href="/news-versions">Xem thêm tin PUBG Mobile →</a>
+          </section>
+
+          <section class="tb-side-panel tb-social">
+            <h2 class="tb-side-title">FOLLOW CHÚNG TÔI</h2>
+            <div class="tb-social-links"><a href="https://www.tiktok.com/@trainingbot.ai2" aria-label="TikTok">♪</a><a href="mailto:trainingbot.ai2@gmail.com" aria-label="Email">✉</a><a href="https://trainingbot.ai" aria-label="Website">TB</a><a href="/community" aria-label="Cộng đồng">◎</a></div>
+          </section>
+        </aside>
       </div>
-    </section>
+
+      <section class="tb-trust-strip" aria-label="Cam kết TrainingBot">
+        <div class="tb-trust-item"><span class="tb-trust-icon">⚡</span><span><strong>Cập nhật nhanh chóng</strong><small>Tin mới được đưa lên khu vực nổi bật.</small></span></div>
+        <div class="tb-trust-item"><span class="tb-trust-icon">◇</span><span><strong>Nguồn tin rõ ràng</strong><small>Ưu tiên nguồn chính thức và có thể kiểm chứng.</small></span></div>
+        <div class="tb-trust-item"><span class="tb-trust-icon">♧</span><span><strong>Thông báo thông minh</strong><small>Chỉ nhận thông báo khi TrainingBot có tin mới.</small></span></div>
+        <div class="tb-trust-item"><span class="tb-trust-icon">◎</span><span><strong>Nội dung PUBG Mobile</strong><small>Tập trung vào tin tức, phiên bản và cộng đồng.</small></span></div>
+      </section>
+    </div>
   </main>
 
   <footer class="tb-rich-footer">
