@@ -51,6 +51,38 @@ const MODES=new Set(["Ranked Classic","Classic","Metro Royale","Arena","WOW","Kh
 const TIMES=new Set(["Sáng","Chiều","Tối","Đêm","Linh hoạt"]);
 const LANGUAGES=new Set(["Tiếng Việt","English","Khác"]);
 
+const SERVER_VI={
+  "Asia":"Châu Á",
+  "KRJP":"Hàn Quốc / Nhật Bản",
+  "Europe":"Châu Âu",
+  "Middle East":"Trung Đông",
+  "North America":"Bắc Mỹ",
+  "South America":"Nam Mỹ"
+};
+const RANK_VI={
+  "Bronze":"Đồng",
+  "Silver":"Bạc",
+  "Gold":"Vàng",
+  "Platinum":"Bạch Kim",
+  "Diamond":"Kim Cương",
+  "Crown":"Tinh Anh",
+  "Ace":"Cao Thủ",
+  "Ace Master":"Cao Thủ Bậc Thầy",
+  "Ace Dominator":"Cao Thủ Thống Trị",
+  "Conqueror":"Chí Tôn"
+};
+const MODE_VI={
+  "Ranked Classic":"Xếp hạng Cổ điển",
+  "Classic":"Cổ điển",
+  "Metro Royale":"Metro Royale",
+  "Arena":"Đấu trường",
+  "WOW":"WOW",
+  "Khác":"Khác"
+};
+function serverVi(value){return SERVER_VI[value]||value}
+function rankVi(value){return RANK_VI[value]||value}
+function modeVi(value){return MODE_VI[value]||value}
+
 function publicPost(row){return{id:row.id,name:row.name,pubg_uid:row.pubg_uid||"",discord_name:row.discord_name,discord_user_id:row.discord_user_id||"",server:row.server,rank:row.rank,mode:row.mode,needed:Number(row.needed||1),mic:row.mic,play_time:row.play_time,language:row.language,note:row.note||"",created_at:row.created_at,expires_at:row.expires_at,discord_invite:DISCORD_INVITE,discord_thread_url:row.discord_thread_url||""}}
 
 function discordConfigured(env){return Boolean(text(env.DISCORD_BOT_TOKEN,300))}
@@ -79,17 +111,17 @@ async function resolveTeamChannel(env){
   try{return await discordRequest(env,`/guilds/${guildId}/channels`,{method:'POST',body:JSON.stringify({...base,type:15})})}
   catch(error){console.warn('team-finder create forum fallback',error);return discordRequest(env,`/guilds/${guildId}/channels`,{method:'POST',body:JSON.stringify({...base,type:0})})}
 }
-function threadName(data){return text(`🎮 ${data.name} • ${data.server} • ${data.rank} • ${data.play_time}`,100)}
+function threadName(data){return text(`🎮 ${data.name} • ${serverVi(data.server)} • ${rankVi(data.rank)} • ${data.play_time}`,100)}
 function starterMessage(data){
   const lines=[
     `## 🎮 ${safeDiscord(data.name,40)} đang tìm đồng đội`,
-    `**Server:** ${safeDiscord(data.server,30)}  •  **Rank:** ${safeDiscord(data.rank,30)}  •  **Chế độ:** ${safeDiscord(data.mode,40)}`,
+    `**Máy chủ:** ${safeDiscord(serverVi(data.server),40)}  •  **Bậc:** ${safeDiscord(rankVi(data.rank),40)}  •  **Chế độ:** ${safeDiscord(modeVi(data.mode),40)}`,
     `**Cần thêm:** ${data.needed} người  •  **Mic:** ${data.mic==='yes'?'Có mic':'Không yêu cầu'}  •  **Khung giờ:** ${safeDiscord(data.play_time,20)}`,
     `**Ngôn ngữ:** ${safeDiscord(data.language,30)}  •  **Discord:** ${safeDiscord(data.discord_name,64)}`,
-    data.pubg_uid?`**PUBG UID:** ${safeDiscord(data.pubg_uid,24)}`:'',
+    data.pubg_uid?`**UID PUBG Mobile:** ${safeDiscord(data.pubg_uid,24)}`:'',
     data.note?`> ${safeDiscord(data.note,180)}`:'',
     '',
-    `👉 Ai phù hợp có thể nhắn ngay trong thread này. Khi đã đủ đội, chủ tin hãy bấm **“Đã tìm đủ đồng đội”** trên TrainingBot để phòng được khóa tự động.`
+    `👉 Ai phù hợp có thể nhắn ngay trong phòng này. Khi đã đủ đội, chủ tin hãy bấm **“Đã tìm đủ đồng đội”** trên TrainingBot để phòng được khóa tự động.`
   ];
   return lines.filter(Boolean).join('\n');
 }
