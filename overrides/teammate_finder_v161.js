@@ -50,12 +50,11 @@
     }).join('');
     grid.querySelectorAll('.tb-player-card').forEach((card,index)=>{
       const post=posts[index];
-      card.querySelector('[data-contact]')?.addEventListener('click',async()=>{
+      card.querySelector('[data-contact]')?.addEventListener('click',()=>{
         const msg=contactMessage(post);
-        const copied=await copy(msg);
         const url=/^\d{17,20}$/.test(String(post.discord_user_id||''))?`https://discord.com/users/${post.discord_user_id}`:DISCORD_INVITE;
         window.open(url,'_blank','noopener,noreferrer');
-        toast(copied?'Đã sao chép lời nhắn. Discord đang được mở.':'Discord đang được mở.');
+        copy(msg).then(copied=>toast(copied?'Đã sao chép lời nhắn. Discord đang được mở.':'Discord đang được mở.'));
       });
       card.querySelector('[data-copy]')?.addEventListener('click',async()=>{
         const lines=[`Discord: ${post.discord_name}`,post.pubg_uid?`PUBG UID: ${post.pubg_uid}`:'',contactMessage(post)].filter(Boolean).join('\n');
