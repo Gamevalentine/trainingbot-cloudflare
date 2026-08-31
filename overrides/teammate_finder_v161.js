@@ -12,6 +12,11 @@
   const statusEl=$('#tbPostStatus');
   let loading=false;
 
+  const RANK_LABELS={Bronze:'Đồng',Silver:'Bạc',Gold:'Vàng',Platinum:'Bạch Kim',Diamond:'Kim Cương',Crown:'Tinh Anh',Ace:'Cao Thủ','Ace Master':'Cao Thủ Bậc Thầy','Ace Dominator':'Cao Thủ Thống Trị',Conqueror:'Chí Tôn'};
+  const SERVER_LABELS={Asia:'Châu Á',KRJP:'Hàn Quốc / Nhật Bản',Europe:'Châu Âu','Middle East':'Trung Đông','North America':'Bắc Mỹ','South America':'Nam Mỹ'};
+  function rankLabel(value){return RANK_LABELS[value]||value;}
+  function serverLabel(value){return SERVER_LABELS[value]||value;}
+
   function escapeHtml(value){return String(value??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
   function initials(name){const parts=String(name||'?').trim().split(/\s+/).filter(Boolean);return (parts.length>1?parts[0][0]+parts[parts.length-1][0]:parts[0]?.slice(0,2)||'?').toUpperCase();}
   function ago(iso){const ms=Date.now()-Date.parse(iso);if(!Number.isFinite(ms)||ms<0)return 'MỚI';const h=Math.floor(ms/36e5);if(h<24)return 'MỚI';const d=Math.max(1,Math.floor(h/24));return `${d}N`;}
@@ -34,9 +39,9 @@
       return `<article class="tb-player-card" data-id="${escapeHtml(post.id)}">
         <span class="tb-player-badge">${ago(post.created_at)}</span>
         <div class="tb-player-top"><div class="tb-player-avatar">${escapeHtml(initials(post.name))}</div><div class="tb-player-name"><strong>${escapeHtml(post.name)}</strong><span>Discord: ${escapeHtml(post.discord_name)}</span></div></div>
-        <div class="tb-player-rank">✦ ${escapeHtml(post.rank)}</div>
+        <div class="tb-player-rank">✦ ${escapeHtml(rankLabel(post.rank))}</div>
         <div class="tb-player-meta">
-          <div><span>◎ Server</span><span>${escapeHtml(post.server)}</span></div>
+          <div><span>◎ Máy chủ</span><span>${escapeHtml(serverLabel(post.server))}</span></div>
           <div><span>◈ Chế độ</span><span>${escapeHtml(post.mode)}</span></div>
           <div><span>♙ Số người cần tìm</span><span>${escapeHtml(post.needed)} người</span></div>
           <div><span>◷ Khung giờ</span><span>${escapeHtml(post.play_time)}</span></div>
