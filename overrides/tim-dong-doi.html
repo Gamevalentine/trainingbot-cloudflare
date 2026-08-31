@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Tìm đồng đội PUBG Mobile trên TrainingBot theo server, rank, chế độ, khung giờ và mic; liên hệ nhanh qua Discord.">
+  <title>Tìm đồng đội — TrainingBot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&display=swap">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/mobile_polish_v62.css?v=62">
+  <link rel="stylesheet" href="/brand_logo_v116.css?v=116">
+  <link rel="stylesheet" href="/navigation_v124.css?v=124">
+  <link rel="stylesheet" href="/teammate_finder_v161.css?v=161">
+</head>
+<body class="tb-match-page">
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/"><span class="brand-logo"></span><span>TRAININGBOT<small>Gaming Knowledge Hub</small></span></a>
+      <nav class="desktop-nav" aria-label="Điều hướng chính">
+        <a class="nav-link" href="/">Trang chủ</a>
+        <a class="nav-link" href="/ban-cap-nhat">Bản cập nhật</a>
+        <a class="nav-link" href="/news">Tin tức</a>
+        <a class="nav-link" href="/wiki">Wiki</a>
+        <a class="nav-link active" href="/community">Cộng đồng</a>
+        <a class="nav-link" href="/contact">Liên hệ</a>
+      </nav>
+      <div class="header-actions">
+        <button class="icon-button" aria-label="Tìm kiếm"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3-3"></path></svg></button>
+        <button class="menu-button" aria-label="Mở menu" aria-expanded="false"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+    <nav class="mobile-nav" aria-label="Điều hướng di động"></nav>
+  </header>
+
+  <main class="tb-match-layout">
+    <aside class="tb-match-sidebar" aria-label="Cộng đồng">
+      <div class="tb-match-side-title">CỘNG ĐỒNG</div>
+      <a href="https://discord.com/invite/5u5PbZMqx" target="_blank" rel="noopener noreferrer">
+        <span class="tb-side-icon">◉</span><span>Nhóm cộng đồng</span>
+      </a>
+      <a class="active" href="/tim-dong-doi">
+        <span class="tb-side-icon">♙</span><span>Tìm đồng đội</span>
+      </a>
+      <a href="/contact">
+        <span class="tb-side-icon">✎</span><span>Đóng góp & Nhà sáng tạo</span>
+      </a>
+      <div class="tb-match-side-note"><strong>TrainingBot PUBG Mobile</strong><span>Cùng nhau kết nối, chia sẻ và chinh phục đỉnh cao.</span></div>
+    </aside>
+
+    <section class="tb-match-content">
+      <header class="tb-match-hero">
+        <span class="tb-match-target" aria-hidden="true">⌖</span>
+        <h1>TÌM <span>ĐỒNG ĐỘI</span></h1>
+        <p>Tìm người chơi phù hợp hoặc đăng tin tìm đồng đội để lập team chinh phục mọi chiến trường PUBG Mobile.</p>
+      </header>
+
+      <section class="tb-match-filter-panel">
+        <div class="tb-match-filter-head">
+          <h2>BỘ LỌC TÌM KIẾM</h2>
+          <button class="tb-match-primary" id="tbOpenPost" type="button"><span>＋</span> ĐĂNG TIN TÌM ĐỒNG ĐỘI</button>
+        </div>
+        <div class="tb-match-filters">
+          <label>Server<select id="tbFilterServer"><option value="">Tất cả server</option><option>Asia</option><option>KRJP</option><option>Europe</option><option>Middle East</option><option>North America</option><option>South America</option></select></label>
+          <label>Rank<select id="tbFilterRank"><option value="">Tất cả rank</option><option>Bronze</option><option>Silver</option><option>Gold</option><option>Platinum</option><option>Diamond</option><option>Crown</option><option>Ace</option><option>Ace Master</option><option>Ace Dominator</option><option>Conqueror</option></select></label>
+          <label>Chế độ<select id="tbFilterMode"><option value="">Tất cả chế độ</option><option>Ranked Classic</option><option>Classic</option><option>Metro Royale</option><option>Arena</option><option>WOW</option><option>Khác</option></select></label>
+          <label>Số người cần tìm<select id="tbFilterNeeded"><option value="">Tất cả</option><option value="1">1 người</option><option value="2">2 người</option><option value="3">3 người</option></select></label>
+          <label>Mic<select id="tbFilterMic"><option value="">Tất cả</option><option value="yes">Có mic</option><option value="no">Không yêu cầu</option></select></label>
+          <label>Khung giờ chơi<select id="tbFilterTime"><option value="">Tất cả khung giờ</option><option>Sáng</option><option>Chiều</option><option>Tối</option><option>Đêm</option><option>Linh hoạt</option></select></label>
+          <label>Ngôn ngữ<select id="tbFilterLanguage"><option value="">Tất cả</option><option>Tiếng Việt</option><option>English</option><option>Khác</option></select></label>
+          <label class="tb-match-search-label">Tìm theo tên / UID / Discord<input id="tbFilterQuery" type="search" maxlength="80" placeholder="Nhập tên, UID hoặc Discord"></label>
+          <label>Sắp xếp<select id="tbFilterSort"><option value="latest">Mới nhất</option><option value="oldest">Cũ nhất</option></select></label>
+          <button class="tb-match-reset" id="tbResetFilters" type="button">↻ XÓA BỘ LỌC</button>
+          <button class="tb-match-search" id="tbSearch" type="button">⌕ TÌM KIẾM</button>
+        </div>
+      </section>
+
+      <div class="tb-match-results-head">
+        <p><strong id="tbResultCount">0</strong> tin đang tìm đồng đội</p>
+        <label class="tb-match-live-toggle">Chỉ hiển thị tin đang tìm <input type="checkbox" checked disabled><span></span></label>
+      </div>
+
+      <section class="tb-match-grid" id="tbMatchGrid" aria-live="polite">
+        <div class="tb-match-loading">Đang tải danh sách...</div>
+      </section>
+
+      <div class="tb-match-bottom-tip">💡 Bấm <strong>“Liên hệ Discord”</strong> để mở Discord; lời nhắn làm quen sẽ được sao chép sẵn khi trình duyệt cho phép.</div>
+    </section>
+  </main>
+
+  <div class="tb-match-modal" id="tbPostModal" hidden>
+    <div class="tb-match-modal-backdrop" data-close-modal></div>
+    <section class="tb-match-dialog" role="dialog" aria-modal="true" aria-labelledby="tbPostTitle">
+      <button class="tb-match-close" type="button" data-close-modal aria-label="Đóng">×</button>
+      <span class="tb-match-dialog-kicker">TÌM TEAM NHANH</span>
+      <h2 id="tbPostTitle">Đăng tin tìm đồng đội</h2>
+      <p>Tin của bạn sẽ hiển thị tối đa 7 ngày. Không cần tạo tài khoản.</p>
+      <form id="tbPostForm">
+        <div class="tb-match-form-grid">
+          <label>Tên hiển thị *<input name="name" required maxlength="40" placeholder="Ví dụ: EagleEyes"></label>
+          <label>UID PUBG Mobile<input name="pubg_uid" maxlength="24" inputmode="numeric" placeholder="Không bắt buộc"></label>
+          <label>Tên Discord *<input name="discord_name" required maxlength="64" placeholder="Ví dụ: eagle.eyes"></label>
+          <label>Discord User ID<input name="discord_user_id" maxlength="20" inputmode="numeric" placeholder="Để mở thẳng hồ sơ Discord"></label>
+          <label>Server *<select name="server" required><option value="">Chọn server</option><option>Asia</option><option>KRJP</option><option>Europe</option><option>Middle East</option><option>North America</option><option>South America</option></select></label>
+          <label>Rank *<select name="rank" required><option value="">Chọn rank</option><option>Bronze</option><option>Silver</option><option>Gold</option><option>Platinum</option><option>Diamond</option><option>Crown</option><option>Ace</option><option>Ace Master</option><option>Ace Dominator</option><option>Conqueror</option></select></label>
+          <label>Chế độ *<select name="mode" required><option value="">Chọn chế độ</option><option>Ranked Classic</option><option>Classic</option><option>Metro Royale</option><option>Arena</option><option>WOW</option><option>Khác</option></select></label>
+          <label>Cần thêm *<select name="needed" required><option value="">Chọn số người</option><option value="1">1 người</option><option value="2">2 người</option><option value="3">3 người</option></select></label>
+          <label>Mic *<select name="mic" required><option value="yes">Có mic</option><option value="no">Không yêu cầu</option></select></label>
+          <label>Khung giờ *<select name="play_time" required><option value="">Chọn khung giờ</option><option>Sáng</option><option>Chiều</option><option>Tối</option><option>Đêm</option><option>Linh hoạt</option></select></label>
+          <label>Ngôn ngữ *<select name="language" required><option>Tiếng Việt</option><option>English</option><option>Khác</option></select></label>
+          <label class="tb-match-form-wide">Mô tả ngắn<textarea name="note" maxlength="180" rows="3" placeholder="Ví dụ: chơi nghiêm túc, giao tiếp tốt, push rank buổi tối..."></textarea></label>
+          <label class="tb-match-honeypot" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
+        </div>
+        <div class="tb-match-form-help">Discord User ID giúp nút liên hệ mở đúng hồ sơ của bạn. Nếu bỏ trống, nút sẽ mở server Discord TrainingBot và sao chép tên Discord của bạn.</div>
+        <div class="tb-match-form-status" id="tbPostStatus"></div>
+        <button class="tb-match-submit" type="submit">ĐĂNG TIN TÌM ĐỒNG ĐỘI →</button>
+      </form>
+    </section>
+  </div>
+
+  <script src="/script.js"></script>
+  <script defer src="/navigation_v124.js?v=124"></script>
+  <script defer src="/teammate_finder_v161.js?v=161"></script>
+</body>
+</html>
