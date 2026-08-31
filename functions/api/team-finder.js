@@ -1,5 +1,6 @@
 const JSON_HEADERS={"content-type":"application/json; charset=UTF-8","cache-control":"no-store, max-age=0","x-content-type-options":"nosniff"};
 const DISCORD_INVITE="https://discord.com/invite/5u5PbZMqx";
+const DISCORD_INVITE_CODE="5u5PbZMqx";
 const DISCORD_API="https://discord.com/api/v10";
 
 function json(data,status=200,extra={}){return new Response(JSON.stringify(data),{status,headers:{...JSON_HEADERS,...extra}})}
@@ -9,6 +10,7 @@ function maskIp(ip){const value=text(ip,100);if(!value)return"unknown";if(value.
 async function readJson(request){if(!(request.headers.get("Content-Type")||"").toLowerCase().includes("application/json"))throw new Error("Dữ liệu gửi lên phải có định dạng JSON.");return request.json()}
 async function sha256(value){const bytes=new TextEncoder().encode(String(value||""));const hash=await crypto.subtle.digest("SHA-256",bytes);return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,"0")).join("")}
 function safeDiscord(value,max=500){return text(value,max).replace(/@/g,"@\u200b")}
+function slug(value){return String(value||"").normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/đ/g,'d').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
 
 async function ensureTable(env){
   if(!env.DB)throw new Error("Cloudflare D1 chưa được liên kết với Pages project.");
@@ -51,7 +53,7 @@ const LANGUAGES=new Set(["Tiếng Việt","English","Khác"]);
 
 function publicPost(row){return{id:row.id,name:row.name,pubg_uid:row.pubg_uid||"",discord_name:row.discord_name,discord_user_id:row.discord_user_id||"",server:row.server,rank:row.rank,mode:row.mode,needed:Number(row.needed||1),mic:row.mic,play_time:row.play_time,language:row.language,note:row.note||"",created_at:row.created_at,expires_at:row.expires_at,discord_invite:DISCORD_INVITE,discord_thread_url:row.discord_thread_url||""}}
 
-function discordConfigured(env){return Boolean(text(env.DISCORD_BOT_TOKEN,300)&&text(env.DISCORD_TEAM_CHANNEL_ID,30))}
+function discordConfigured(env){return Boolean(text(env.DISCORD_BOT_TOKEN,300))}
 async function discordRequest(env,path,options={}){
   const token=text(env.DISCORD_BOT_TOKEN,300);
   if(!token)throw new Error('DISCORD_BOT_TOKEN chưa được cấu hình.');
@@ -59,6 +61,23 @@ async function discordRequest(env,path,options={}){
   let data=null;try{data=await res.json()}catch{}
   if(!res.ok){const message=text(data?.message,300)||`Discord API lỗi ${res.status}`;throw new Error(message)}
   return data;
+}
+async function inviteGuildId(){
+  const res=await fetch(`${DISCORD_API}/invites/${DISCORD_INVITE_CODE}?with_counts=false&with_expiration=false`,{headers:{accept:'application/json'}});
+  let data=null;try{data=await res.json()}catch{}
+  if(!res.ok||!data?.guild?.id)throw new Error('Không xác định được Discord server từ link mời TrainingBot.');
+  return text(data.guild.id,30);
+}
+async function resolveTeamChannel(env){
+  const configured=text(env.DISCORD_TEAM_CHANNEL_ID,30);
+  if(configured)return discordRequest(env,`/channels/${configured}`);
+  const guildId=await inviteGuildId();
+  const channels=await discordRequest(env,`/guilds/${guildId}/channels`);
+  const existing=(Array.isArray(channels)?channels:[]).find(channel=>[0,15].includes(Number(channel.type))&&slug(channel.name)==='tim-dong-doi');
+  if(existing)return existing;
+  const base={name:'tìm-đồng-đội',topic:'Phòng ghép đội tự động từ TrainingBot. Mỗi tin tìm đồng đội có một thread riêng.'};
+  try{return await discordRequest(env,`/guilds/${guildId}/channels`,{method:'POST',body:JSON.stringify({...base,type:15})})}
+  catch(error){console.warn('team-finder create forum fallback',error);return discordRequest(env,`/guilds/${guildId}/channels`,{method:'POST',body:JSON.stringify({...base,type:0})})}
 }
 function threadName(data){return text(`🎮 ${data.name} • ${data.server} • ${data.rank} • ${data.play_time}`,100)}
 function starterMessage(data){
@@ -76,8 +95,9 @@ function starterMessage(data){
 }
 async function createDiscordThread(env,data){
   if(!discordConfigured(env))return{created:false,reason:'Discord chưa được cấu hình'};
-  const channelId=text(env.DISCORD_TEAM_CHANNEL_ID,30);
-  const channel=await discordRequest(env,`/channels/${channelId}`);
+  const channel=await resolveTeamChannel(env);
+  const channelId=text(channel?.id,30);
+  if(!channelId)throw new Error('Không xác định được kênh tìm đồng đội trên Discord.');
   const name=threadName(data),content=starterMessage(data);
   let thread;
   if(channel?.type===15||channel?.type===16){
@@ -154,7 +174,7 @@ async function createPost(request,env){
   let discord={created:false,url:'',id:''},warning='';
   try{discord=await createDiscordThread(env,data);if(discord.created)await env.DB.prepare('UPDATE team_finder_posts SET discord_thread_id = ?, discord_thread_url = ?, updated_at = ? WHERE id = ?').bind(discord.id,discord.url,new Date().toISOString(),id).run()}
   catch(error){console.error('team-finder create discord',error);warning='Tin đã đăng trên web nhưng chưa tạo được phòng Discord.'}
-  if(!discordConfigured(env))warning='Tin đã đăng trên web. Phòng Discord sẽ hoạt động sau khi quản trị viên hoàn tất kết nối bot.';
+  if(!discordConfigured(env))warning='Tin đã đăng trên web. Phòng Discord sẽ hoạt động sau khi quản trị viên kết nối bot TrainingBot.';
   const post=publicPost({...data,id,created_at:now.toISOString(),expires_at:expires,discord_thread_url:discord.url});
   return json({ok:true,id,manage_token:manageToken,post,discord_thread_created:Boolean(discord.created),discord_thread_url:discord.url||'',warning,message:discord.created?"Đăng tin và tạo phòng Discord thành công.":"Đăng tin tìm đồng đội thành công."},201);
 }
