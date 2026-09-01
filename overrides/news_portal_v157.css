@@ -9,3 +9,6 @@
 .tb-social .tb-email svg{width:38px!important;height:38px!important;fill:none!important;stroke:#fff!important;stroke-width:2.2!important;filter:none!important}
 .tb-social .tb-discord{border-radius:11px!important;background:#5865f2!important;color:#fff!important}
 .tb-social .tb-discord svg{width:30px!important;height:30px!important;fill:#fff!important;stroke:none!important;filter:none!important}
+.tb-hero-grid+.tb-section{margin-top:30px!important;position:relative;z-index:1}
+.tb-hero-grid{position:relative;z-index:2}
+@media(max-width:820px){.tb-hero-grid+.tb-section{margin-top:22px!important}}
