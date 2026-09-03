@@ -1,4 +1,4 @@
-/* TrainingBot Admin - homepage videos v166 */
+/* TrainingBot Admin - homepage videos v167 */
 (() => {
   "use strict";
 
@@ -17,6 +17,7 @@
       .tb-hv-add{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px}.tb-hv-add input{min-height:42px;border:1px solid #28344e;border-radius:11px;background:#071022;color:#fff;padding:0 12px;outline:none}.tb-hv-add button,.tb-hv-row button{min-height:42px;border:0;border-radius:11px;padding:0 15px;background:linear-gradient(135deg,#745cff,#2acbea);color:#fff;font-weight:800;cursor:pointer}
       .tb-hv-status{min-height:18px;margin:9px 0;color:#8391a9;font-size:10px}.tb-hv-status.ok{color:#86efac}.tb-hv-status.error{color:#fda4af}
       .tb-hv-list{display:grid;gap:8px}.tb-hv-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px;border:1px solid #202c43;border-radius:13px;background:#071022}.tb-hv-order{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:#121d33;color:#aebbd1;font-size:10px;font-weight:900}.tb-hv-copy{min-width:0}.tb-hv-copy b{display:flex;align-items:center;gap:7px;font-size:11px}.tb-hv-copy small{display:block;margin-top:4px;color:#718098;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tb-hv-new{padding:3px 6px;border-radius:999px;background:rgba(38,211,238,.11);color:#aef5ff;font-size:8px;font-weight:900}.tb-hv-row button{min-height:34px;padding:0 11px;background:#111b2e;border:1px solid #2b3852;color:#c4cde0}
+      .tb-dashboard-empty{padding:18px;border:1px dashed #26344d;border-radius:14px;color:#8290a8;text-align:center;font-size:11px}
       @media(max-width:650px){.tb-hv-head{align-items:stretch;flex-direction:column}.tb-hv-edit{width:100%}.tb-hv-add{grid-template-columns:1fr}.tb-hv-row{grid-template-columns:auto minmax(0,1fr)}.tb-hv-row button{grid-column:1/-1}}
     `;
     document.head.appendChild(node);
@@ -120,8 +121,51 @@
     return true;
   }
 
+  const cleanText=node=>String(node?.textContent||"").replace(/\s+/g," ").trim();
+  const findText=(selector,text)=>[...document.querySelectorAll(selector)].find(node=>cleanText(node)===text);
+
+  function cleanupDashboard(){
+    if(!location.hash.includes("dashboard"))return;
+
+    const studio=findText("a,button","Mở Studio V2");
+    const media=findText("a,button","Tải media");
+    if(studio&&media&&studio.parentElement===media.parentElement){
+      studio.parentElement.hidden=true;
+    }else{
+      if(studio)studio.hidden=true;
+      if(media)media.hidden=true;
+    }
+
+    const quickTitle=findText("h1,h2,h3,h4,b,strong","Lối tắt quản trị");
+    const quickPanel=quickTitle?.closest(".panel");
+    if(quickPanel)quickPanel.hidden=true;
+
+    const recentTitle=findText("h1,h2,h3,h4,b,strong","Hoạt động cộng đồng");
+    const recentPanel=recentTitle?.closest(".panel");
+    if(recentPanel)recentPanel.style.gridColumn="1 / -1";
+
+    const actionTitle=findText("h1,h2,h3,h4,b,strong","Trung tâm hành động");
+    const actionPanel=actionTitle?.closest(".panel");
+    if(!actionPanel)return;
+    const rows=[...actionPanel.querySelectorAll(".action-row")];
+    const inactive=["Không có thư mới","Không có đăng ký mới","0 mục trong Media Library","Studio V2 sẵn sàng"];
+    rows.forEach(row=>{row.hidden=inactive.some(text=>cleanText(row).includes(text));});
+    let empty=actionPanel.querySelector(".tb-dashboard-empty");
+    const allHidden=rows.length>0&&rows.every(row=>row.hidden);
+    if(allHidden&&!empty){
+      empty=document.createElement("div");
+      empty.className="tb-dashboard-empty";
+      empty.textContent="Không có việc cần xử lý lúc này.";
+      const last=rows.at(-1);
+      if(last)last.insertAdjacentElement("afterend",empty);
+    }else if(empty){
+      empty.hidden=!allHidden;
+    }
+  }
+
   style();
   let tries=0;
-  const boot=()=>{if(inject())return;if(++tries<100)setTimeout(boot,150);};
+  const boot=()=>{inject();cleanupDashboard();if(++tries<100)setTimeout(boot,150);};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
+  window.addEventListener("hashchange",()=>setTimeout(cleanupDashboard,0));
 })();
