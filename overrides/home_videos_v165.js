@@ -1,4 +1,4 @@
-/* TrainingBot homepage video shelf v165 */
+/* TrainingBot homepage video shelf v169 */
 (() => {
   "use strict";
 
@@ -19,6 +19,19 @@
       created_at: "2026-09-01T00:00:00Z"
     }
   ];
+
+  function updateCommunityCta() {
+    for (const el of document.querySelectorAll("a,button")) {
+      const label = String(el.textContent || "").replace(/\s+/g, " ").trim();
+      if (!label.startsWith("Tra cứu Wiki")) continue;
+      el.textContent = "Tham gia cộng đồng";
+      if (el.tagName === "A") el.setAttribute("href", "/community");
+      else el.addEventListener("click", () => { location.href = "/community"; }, {once:true});
+      break;
+    }
+  }
+
+  updateCommunityCta();
 
   const host = document.querySelector(".hero-tiktok");
   const heroLayout = host?.closest(".hero-layout");
