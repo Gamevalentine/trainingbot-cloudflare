@@ -1,4 +1,4 @@
-/* TrainingBot homepage video shelf v170 */
+/* TrainingBot homepage video shelf v171 */
 (() => {
   "use strict";
 
@@ -13,13 +13,13 @@
     {
       external_id: "7680817497632820501",
       url: "https://www.tiktok.com/@trainingbot.ai2/video/7680817497632820501?is_from_webapp=1&sender_device=pc",
-      title: "Video TrainingBot",
+      title: "",
       created_at: "2026-09-03T13:00:00Z"
     },
     {
       external_id: "7677790316665031957",
-      url: "https://www.tiktok.com/player/v1/7677790316665031957",
-      title: "Video TrainingBot",
+      url: "https://www.tiktok.com/@trainingbot.ai2/video/7677790316665031957",
+      title: "",
       created_at: "2026-09-01T00:00:00Z"
     }
   ];
@@ -55,7 +55,7 @@
       .map(item => ({
         external_id: String(item?.external_id || "").trim(),
         url: String(item?.url || "").trim(),
-        title: String(item?.title || "Video TrainingBot").trim().slice(0, 140),
+        title: String(item?.title || "").replace(/\s+/g, " ").trim().slice(0, 140),
         created_at: String(item?.created_at || "")
       }))
       .filter(item => /^\d{10,25}$/.test(item.external_id) && !seen.has(item.external_id) && seen.add(item.external_id));
@@ -93,10 +93,6 @@
     play.setAttribute("aria-hidden", "true");
     play.textContent = "▶";
 
-    const title = document.createElement("div");
-    title.className = "tb-home-video-title";
-    title.textContent = video.title || "Video TrainingBot";
-
     const choose = () => select(video.external_id);
     card.addEventListener("click", choose);
     card.addEventListener("keydown", event => {
@@ -107,7 +103,13 @@
     });
 
     thumb.append(iframe, play);
-    card.append(thumb, title);
+    card.append(thumb);
+    if (video.title) {
+      const title = document.createElement("div");
+      title.className = "tb-home-video-title";
+      title.textContent = video.title;
+      card.append(title);
+    }
     return card;
   }
 
