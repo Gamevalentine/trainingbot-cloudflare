@@ -4,6 +4,9 @@ const SEEDS=[
   ["7681293376775277832","https://www.tiktok.com/@trainingbot.ai2/video/7681293376775277832?is_from_webapp=1&sender_device=pc","","2026-09-03T13:08:20Z"],
   ["7677790316665031957","https://www.tiktok.com/player/v1/7677790316665031957","","2026-09-01T00:00:00Z"]
 ];
+const FIXED=[
+  {external_id:"7680817497632820501",url:"https://www.tiktok.com/@trainingbot.ai2/video/7680817497632820501?is_from_webapp=1&sender_device=pc",title:"",created_at:"2026-09-03T13:00:00Z"}
+];
 
 async function ensureTable(env){
   if(!env.DB)throw new Error("Cloudflare D1 chưa được liên kết với Pages project.");
@@ -20,12 +23,17 @@ async function ensureTable(env){
     }
   }
 }
+function mergeFixed(rows){
+  const map=new Map((rows||[]).map(item=>[String(item.external_id),item]));
+  for(const item of FIXED)if(!map.has(item.external_id))map.set(item.external_id,item);
+  return [...map.values()].sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at))||String(b.external_id).localeCompare(String(a.external_id)));
+}
 
 export async function onRequestGet({env}){
   try{
     await ensureTable(env);
     const result=await env.DB.prepare("SELECT external_id,url,title,created_at FROM home_videos ORDER BY created_at DESC, external_id DESC").all();
-    return json({ok:true,videos:result.results||[]});
+    return json({ok:true,videos:mergeFixed(result.results)});
   }catch(error){
     console.error("home videos",error);
     return json({ok:false,message:"Không thể tải danh sách video trang chủ."},500);
