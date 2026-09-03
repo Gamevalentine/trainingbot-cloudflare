@@ -1,9 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import './polish.css'
 import './social.css'
-import './profile-fix.css'
-import './facebook.css'
 
 export const metadata: Metadata = {
   title: 'Kết Nối',
