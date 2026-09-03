@@ -1,4 +1,4 @@
-/* TrainingBot Admin - homepage videos v165 */
+/* TrainingBot Admin - homepage videos v166 */
 (() => {
   "use strict";
 
@@ -13,11 +13,11 @@
     node.id="tbHomeVideosAdminStyle";
     node.textContent=`
       .tb-hv-admin{margin:0 0 16px;padding:16px;border:1px solid rgba(118,92,255,.22);border-radius:18px;background:rgba(8,15,30,.86)}
-      .tb-hv-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}.tb-hv-head h3{margin:3px 0 4px;font-size:18px}.tb-hv-head p{margin:0;color:#8391a9;font-size:10px!important}
+      .tb-hv-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}.tb-hv-head h3{margin:3px 0 4px;font-size:18px}.tb-hv-head p{margin:0;color:#8391a9;font-size:10px!important}.tb-hv-edit{min-height:38px;border:0;border-radius:11px;padding:0 14px;background:linear-gradient(135deg,#745cff,#2acbea);color:#fff;font-weight:800;cursor:pointer;white-space:nowrap}
       .tb-hv-add{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px}.tb-hv-add input{min-height:42px;border:1px solid #28344e;border-radius:11px;background:#071022;color:#fff;padding:0 12px;outline:none}.tb-hv-add button,.tb-hv-row button{min-height:42px;border:0;border-radius:11px;padding:0 15px;background:linear-gradient(135deg,#745cff,#2acbea);color:#fff;font-weight:800;cursor:pointer}
       .tb-hv-status{min-height:18px;margin:9px 0;color:#8391a9;font-size:10px}.tb-hv-status.ok{color:#86efac}.tb-hv-status.error{color:#fda4af}
       .tb-hv-list{display:grid;gap:8px}.tb-hv-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px;border:1px solid #202c43;border-radius:13px;background:#071022}.tb-hv-order{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:#121d33;color:#aebbd1;font-size:10px;font-weight:900}.tb-hv-copy{min-width:0}.tb-hv-copy b{display:flex;align-items:center;gap:7px;font-size:11px}.tb-hv-copy small{display:block;margin-top:4px;color:#718098;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tb-hv-new{padding:3px 6px;border-radius:999px;background:rgba(38,211,238,.11);color:#aef5ff;font-size:8px;font-weight:900}.tb-hv-row button{min-height:34px;padding:0 11px;background:#111b2e;border:1px solid #2b3852;color:#c4cde0}
-      @media(max-width:650px){.tb-hv-add{grid-template-columns:1fr}.tb-hv-row{grid-template-columns:auto minmax(0,1fr)}.tb-hv-row button{grid-column:1/-1}}
+      @media(max-width:650px){.tb-hv-head{align-items:stretch;flex-direction:column}.tb-hv-edit{width:100%}.tb-hv-add{grid-template-columns:1fr}.tb-hv-row{grid-template-columns:auto minmax(0,1fr)}.tb-hv-row button{grid-column:1/-1}}
     `;
     document.head.appendChild(node);
   }
@@ -60,17 +60,27 @@
     }catch(error){status(error.message||"Không tải được video.","error");}
   }
 
+  async function saveUrl(url,message="Đang thêm video…"){
+    const value=String(url||"").trim();
+    if(!value)return status("Dán link TikTok trước khi cập nhật.","error");
+    status(message);
+    try{
+      const data=await adminApi({method:"POST",body:JSON.stringify({url:value})});
+      rows(data.videos||[]);
+      status("✓ Đã cập nhật. Video này đang là video mới nhất trên trang chủ.","ok");
+      return true;
+    }catch(error){status(error.message||"Không cập nhật được video.","error");return false;}
+  }
+
   async function add(){
     const input=$("tbHomeVideoUrl");
-    const url=String(input?.value||"").trim();
-    if(!url)return status("Dán link TikTok trước khi thêm.","error");
-    status("Đang thêm video…");
-    try{
-      const data=await adminApi({method:"POST",body:JSON.stringify({url})});
-      input.value="";
-      rows(data.videos||[]);
-      status("✓ Đã thêm. Video này sẽ lên khung lớn, video cũ tự xuống hàng dưới.","ok");
-    }catch(error){status(error.message||"Không thêm được video.","error");}
+    if(await saveUrl(input?.value,"Đang thêm video…"))input.value="";
+  }
+
+  async function editLatest(){
+    const url=prompt("Dán link TikTok muốn đặt làm video mới nhất:","");
+    if(url===null)return;
+    await saveUrl(url,"Đang cập nhật video mới nhất…");
   }
 
   async function remove(id,button){
@@ -93,12 +103,13 @@
     box.id="tbHomeVideosAdmin";
     box.className="tb-hv-admin";
     box.innerHTML=`
-      <div class="tb-hv-head"><div><span class="eyebrow">TRANG CHỦ</span><h3>Video TikTok</h3><p>Video mới nhất ở khung lớn. Các video cũ tự xếp ngang bên dưới.</p></div></div>
+      <div class="tb-hv-head"><div><span class="eyebrow">TRANG CHỦ</span><h3>Video TikTok</h3><p>Video mới nhất ở khung lớn. Các video cũ tự xếp ngang bên dưới.</p></div><button id="tbHomeVideoEdit" class="tb-hv-edit" type="button">Sửa video mới nhất</button></div>
       <div class="tb-hv-add"><input id="tbHomeVideoUrl" type="url" placeholder="Dán link TikTok mới"><button id="tbHomeVideoAdd" type="button">Thêm video</button></div>
       <div id="tbHomeVideosStatus" class="tb-hv-status"></div>
       <div id="tbHomeVideosList" class="tb-hv-list"></div>`;
     const title=panel.querySelector(".section-title");
     if(title)title.after(box);else panel.prepend(box);
+    $("tbHomeVideoEdit").addEventListener("click",editLatest);
     $("tbHomeVideoAdd").addEventListener("click",add);
     $("tbHomeVideoUrl").addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();add();}});
     $("tbHomeVideosList").addEventListener("click",event=>{
