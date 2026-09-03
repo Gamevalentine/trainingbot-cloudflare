@@ -1,4 +1,4 @@
-/* TrainingBot homepage video shelf v166 */
+/* TrainingBot homepage video shelf v165 */
 (() => {
   "use strict";
 
@@ -9,6 +9,11 @@
       created_at: "2026-09-03T13:08:20Z"
     },
     {
+      external_id: "7680817497632820501",
+      url: "https://www.tiktok.com/@trainingbot.ai2/video/7680817497632820501?is_from_webapp=1&sender_device=pc",
+      created_at: "2026-09-03T13:00:00Z"
+    },
+    {
       external_id: "7677790316665031957",
       url: "https://www.tiktok.com/player/v1/7677790316665031957",
       created_at: "2026-09-01T00:00:00Z"
@@ -16,7 +21,7 @@
   ];
 
   const host = document.querySelector(".hero-tiktok");
-  const heroLayout = document.querySelector(".hero-layout");
+  const heroLayout = host?.closest(".hero-layout");
   if (!host || !heroLayout) return;
 
   const playerUrl = (id, compact = false) =>
