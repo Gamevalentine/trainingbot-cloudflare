@@ -6,12 +6,42 @@ const SEEDS=[
   ["7677790316665031957","https://www.tiktok.com/@trainingbot.ai2/video/7677790316665031957","","2026-09-01T00:00:00Z"]
 ];
 
-async function resolveTitle(url){
+function cleanText(value){
+  return String(value||"")
+    .replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&#39;|&#x27;/g,"'")
+    .replace(/&lt;/g,"<").replace(/&gt;/g,">")
+    .replace(/\s+/g," ").trim()
+    .replace(/\s*[|·-]\s*TikTok(?:\s|$).*$/i,"")
+    .slice(0,140);
+}
+function canonicalUrl(raw){
+  try{const u=new URL(raw);u.search="";u.hash="";return u.toString();}catch{return String(raw||"");}
+}
+function meta(html,key){
+  const escaped=key.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+  const patterns=[
+    new RegExp(`<meta[^>]+(?:property|name)=["']${escaped}["'][^>]+content=["']([^"']+)["']`,`i`),
+    new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${escaped}["']`,`i`)
+  ];
+  for(const pattern of patterns){const match=html.match(pattern);if(match?.[1])return cleanText(match[1]);}
+  return "";
+}
+async function resolveTitle(rawUrl){
+  const url=canonicalUrl(rawUrl);
   try{
     const response=await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`,{headers:{accept:"application/json"}});
+    if(response.ok){
+      const data=await response.json();
+      const title=cleanText(data?.title);
+      if(title)return title;
+    }
+  }catch{}
+  try{
+    const response=await fetch(url,{headers:{"user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/152 Safari/537.36","accept":"text/html,application/xhtml+xml"}});
     if(!response.ok)return "";
-    const data=await response.json();
-    return String(data?.title||"").replace(/\s+/g," ").trim().slice(0,140);
+    const html=await response.text();
+    const title=meta(html,"og:description")||meta(html,"description")||meta(html,"og:title")||cleanText((html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)||[])[1]);
+    return /^(TikTok|Make Your Day)$/i.test(title)?"":title;
   }catch{return "";}
 }
 async function ensureTable(env){
