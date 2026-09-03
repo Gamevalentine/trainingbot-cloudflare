@@ -11,6 +11,7 @@ const supabase = createClient(
 )
 
 type Profile = { id:string; display_name:string; birth_date:string; gender:string; looking_for:string; city:string|null; bio:string|null; photo_path:string|null; is_complete:boolean }
+type RailProfile = Pick<Profile,'id'|'display_name'|'birth_date'|'city'|'photo_path'> & { photo?:string|null }
 type Match = { id:string; user_a:string; user_b:string; created_at:string; other?:Profile; photo?:string|null }
 type Message = { id:string; match_id:string; sender_id:string; body:string; created_at:string }
 type View = 'home'|'discover'|'chat'|'notifications'|'profile'
@@ -27,12 +28,19 @@ async function signed(path:string|null|undefined){
   return data?.signedUrl||null
 }
 
+function ProfileAvatar({profile,className='avatar'}:{profile:Pick<Profile,'display_name'|'photo_path'>;className?:string}){
+  const [src,setSrc]=useState<string|null>(null)
+  useEffect(()=>{void signed(profile.photo_path).then(setSrc)},[profile.photo_path])
+  return src?<img className={className} src={src} alt=""/>:<div className={className}>{initials(profile.display_name)}</div>
+}
+
 export default function Page(){
   const [session,setSession]=useState<Session|null>(null)
   const [ready,setReady]=useState(false)
   const [profile,setProfile]=useState<Profile|null>(null)
   const [view,setView]=useState<View>('home')
   const [chatMatch,setChatMatch]=useState<Match|null>(null)
+  const [query,setQuery]=useState('')
 
   const loadProfile=useCallback(async(user:User)=>{ const {data}=await supabase.from('profiles').select('*').eq('id',user.id).maybeSingle(); setProfile(data as Profile|null) },[])
 
@@ -47,10 +55,11 @@ export default function Page(){
   if(!profile?.is_complete)return <ProfileEditor user={session.user} profile={profile} onSaved={()=>loadProfile(session.user)}/>
 
   const openChat=(m:Match)=>{setChatMatch(m);setView('chat')}
+  const go=(v:View)=>{if(v!=='chat')setChatMatch(null);setView(v)}
   return <div className="shell">
-    <Top profile={profile}/>
+    <Top profile={profile} view={view} setView={go} query={query} setQuery={setQuery}/>
     <div className="app social-app">
-      <Nav profile={profile} view={view} setView={v=>{if(v!=='chat')setChatMatch(null);setView(v)}}/>
+      <Nav profile={profile} view={view} setView={go}/>
       <main className="content">
         {view==='home'&&<SocialHome client={supabase} user={session.user} me={profile} signedProfile={signed}/>} 
         {view==='discover'&&<Discover user={session.user} me={profile}/>} 
@@ -58,9 +67,9 @@ export default function Page(){
         {view==='notifications'&&<SocialNotifications client={supabase} user={session.user} signedProfile={signed}/>} 
         {view==='profile'&&<><ProfileEditor user={session.user} profile={profile} onSaved={()=>loadProfile(session.user)} embedded/><ProfilePosts client={supabase} user={session.user} signedProfile={signed}/></>}
       </main>
-      <RightRail me={profile}/>
+      <RightRail me={profile} query={query}/>
     </div>
-    <MobileNav view={view} setView={v=>{if(v!=='chat')setChatMatch(null);setView(v)}}/>
+    <MobileNav view={view} setView={go}/>
   </div>
 }
 
@@ -70,11 +79,18 @@ function Auth(){
   return <div className="auth-wrap"><form className="auth-card" onSubmit={submit}><div className="brand"><span>♥</span>Kết Nối</div><h1>{signup?'Tạo tài khoản':'Đăng nhập'}</h1><p>Chia sẻ cuộc sống, làm quen người mới và hẹn hò khi bạn muốn.</p><label className="field">Email<input type="email" required value={email} onChange={e=>setEmail(e.target.value)}/></label><label className="field">Mật khẩu<input type="password" minLength={8} required value={password} onChange={e=>setPassword(e.target.value)}/></label>{msg&&<div className="message">{msg}</div>}<button className="btn primary full" disabled={busy}>{busy?'Đang xử lý…':signup?'Đăng ký':'Đăng nhập'}</button><button type="button" className="btn ghost full" onClick={()=>{setSignup(!signup);setMsg('')}}>{signup?'Đã có tài khoản? Đăng nhập':'Chưa có tài khoản? Đăng ký'}</button><small className="muted">Cộng đồng dành cho người từ 18 tuổi.</small></form></div>
 }
 
-function Top({profile}:{profile:Profile}){return <header className="topbar"><div className="brand"><span>♥</span>Kết Nối</div><div className="top-note"><b>Cộng đồng</b><span>Chia sẻ · Kết nối · Hẹn hò</span></div><div className="user-mini"><div><strong>{profile.display_name}</strong><div className="muted">{profile.city||'Chưa đặt địa điểm'}</div></div><div className="avatar">{initials(profile.display_name)}</div></div></header>}
+function Top({profile,view,setView,query,setQuery}:{profile:Profile;view:View;setView:(v:View)=>void;query:string;setQuery:(v:string)=>void}){
+  const items:[View,string,string][]=[['home','⌂','Trang chủ'],['discover','✦','Hẹn hò'],['chat','◉','Tin nhắn'],['notifications','◆','Thông báo']]
+  return <header className="topbar">
+    <div className="top-left"><div className="brand"><span>♥</span><b>Kết Nối</b></div><label className="top-search"><span>⌕</span><input aria-label="Tìm người trong Kết Nối" placeholder="Tìm người trong Kết Nối" value={query} onChange={e=>setQuery(e.target.value)}/></label></div>
+    <nav className="top-nav">{items.map(([v,icon,label])=><button key={v} className={view===v?'active':''} title={label} onClick={()=>setView(v)}><i>{icon}</i><span>{label}</span></button>)}</nav>
+    <button className={`user-mini ${view==='profile'?'active':''}`} onClick={()=>setView('profile')}><ProfileAvatar profile={profile}/><strong>{profile.display_name}</strong></button>
+  </header>
+}
 
 function Nav({profile,view,setView}:{profile:Profile;view:View;setView:(v:View)=>void}){
-  const items:[View,string,string][]=[['home','⌂','Trang chủ'],['discover','✦','Hẹn hò'],['chat','♥','Kết nối & chat'],['notifications','◆','Thông báo'],['profile','◉','Hồ sơ']]
-  return <aside className="side"><div className="side-profile"><div className="side-avatar">{initials(profile.display_name)}</div><div><strong>{profile.display_name}</strong><span>{profile.city||'Chưa đặt địa điểm'}</span></div></div><div className="side-title"><span>KẾT NỐI</span><b>Cộng đồng của bạn</b></div><div className="nav">{items.map(([v,icon,t])=><button key={v} className={view===v?'active':''} onClick={()=>setView(v)}><i>{icon}</i><span>{t}</span></button>)}<button className="logout" onClick={()=>void supabase.auth.signOut()}><i>↗</i><span>Đăng xuất</span></button></div><div className="side-foot">Bạn có thể theo dõi, đăng bài và trò chuyện trong cộng đồng. Hẹn hò chỉ mở chat khi hai người cùng thích nhau.</div></aside>
+  const items:[View,string,string][]=[['home','⌂','Trang chủ'],['discover','✦','Hẹn hò'],['chat','●','Tin nhắn'],['notifications','◆','Thông báo'],['profile','◉','Trang cá nhân']]
+  return <aside className="side"><button className="side-profile" onClick={()=>setView('profile')}><ProfileAvatar profile={profile} className="side-avatar"/><span><strong>{profile.display_name}</strong><small>{profile.city||'Chưa đặt địa điểm'}</small></span></button><div className="nav">{items.map(([v,icon,t])=><button key={v} className={view===v?'active':''} onClick={()=>setView(v)}><i>{icon}</i><span>{t}</span></button>)}<div className="side-divider"/><button className="logout" onClick={()=>void supabase.auth.signOut()}><i>↗</i><span>Đăng xuất</span></button></div><div className="side-links">Kết Nối · Cộng đồng 18+ · An toàn & riêng tư</div></aside>
 }
 
 function MobileNav({view,setView}:{view:View;setView:(v:View)=>void}){
@@ -82,7 +98,19 @@ function MobileNav({view,setView}:{view:View;setView:(v:View)=>void}){
   return <nav className="mobile-nav social-mobile-nav">{items.map(([v,t])=><button key={v} className={view===v?'active':''} onClick={()=>setView(v)}>{t}</button>)}</nav>
 }
 
-function RightRail({me}:{me:Profile}){return <aside className="right-rail"><section className="rail-card warm"><span className="rail-kicker">KẾT NỐI CỦA BẠN</span><h3>{me.city||'Chưa đặt địa điểm'}</h3><p>Chia sẻ bài viết và theo dõi người bạn thấy thú vị.</p><div className="rail-progress"><span style={{width:'92%'}}/></div><small>Hồ sơ của bạn đã sẵn sàng xuất hiện trong cộng đồng.</small></section><section className="rail-card"><div className="rail-icon">✦</div><h3>Hẹn hò vẫn ở đây</h3><p>Vào mục Hẹn hò để tìm người phù hợp. Chỉ khi cả hai cùng thích nhau, cuộc trò chuyện mới được mở.</p></section><section className="rail-card safety"><div className="rail-icon">✓</div><h3>An toàn trước tiên</h3><p>Không gửi tiền, mật khẩu hay mã xác minh cho người mới quen. Hãy gặp ở nơi công cộng trong lần đầu.</p></section></aside>}
+function RightRail({me,query}:{me:Profile;query:string}){
+  const [people,setPeople]=useState<RailProfile[]>([])
+  useEffect(()=>{void (async()=>{const {data}=await supabase.from('profiles').select('id,display_name,birth_date,city,photo_path').eq('is_complete',true).neq('id',me.id).limit(16);const rows=(data||[]) as RailProfile[];setPeople(await Promise.all(rows.map(async p=>({...p,photo:await signed(p.photo_path)}))))})()},[me.id])
+  const q=query.trim().toLocaleLowerCase('vi')
+  const shown=q?people.filter(p=>`${p.display_name} ${p.city||''}`.toLocaleLowerCase('vi').includes(q)):people
+  const now=new Date()
+  const birthdays=people.filter(p=>{const d=new Date(`${p.birth_date}T00:00:00`);return d.getDate()===now.getDate()&&d.getMonth()===now.getMonth()})
+  return <aside className="right-rail">
+    {!q&&birthdays.length>0&&<section className="rail-section"><h3>Sinh nhật</h3>{birthdays.map(p=><div className="birthday" key={p.id}><span>🎁</span><p>Hôm nay là sinh nhật của <b>{p.display_name}</b>.</p></div>)}</section>}
+    <section className="rail-section"><div className="rail-head"><h3>{q?'Kết quả tìm kiếm':'Người trong cộng đồng'}</h3><span>{shown.length}</span></div><div className="contacts">{shown.slice(0,12).map(p=><div className="contact-row" key={p.id}>{p.photo?<img src={p.photo} alt=""/>:<div className="contact-avatar">{initials(p.display_name)}</div>}<span><b>{p.display_name}</b><small>{p.city||'Kết Nối'}</small></span></div>)}{shown.length===0&&<p className="rail-empty">Không tìm thấy thành viên phù hợp.</p>}</div></section>
+    {!q&&<section className="rail-section rail-safety"><h3>An toàn khi kết nối</h3><p>Không gửi tiền, mật khẩu hay mã xác minh cho người mới quen.</p></section>}
+  </aside>
+}
 
 function ProfileEditor({user,profile,onSaved,embedded=false}:{user:User;profile:Profile|null;onSaved:()=>void;embedded?:boolean}){
   const [name,setName]=useState(profile?.display_name||''),[birth,setBirth]=useState(profile?.birth_date||''),[gender,setGender]=useState(profile?.gender||'man'),[looking,setLooking]=useState(profile?.looking_for||'all'),[city,setCity]=useState(profile?.city||''),[bio,setBio]=useState(profile?.bio||''),[photoPath,setPhotoPath]=useState(profile?.photo_path||null),[photo,setPhoto]=useState<string|null>(null),[msg,setMsg]=useState(''),[busy,setBusy]=useState(false)
