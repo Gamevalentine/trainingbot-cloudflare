@@ -3,7 +3,7 @@ const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:
 const SEEDS=[
   ["7681293376775277832","https://www.tiktok.com/@trainingbot.ai2/video/7681293376775277832?is_from_webapp=1&sender_device=pc","HỢP TÁC PUBG MOBILE x LINCOLN","2026-09-03T13:08:20Z"],
   ["7680817497632820501","https://www.tiktok.com/@trainingbot.ai2/video/7680817497632820501?is_from_webapp=1&sender_device=pc","","2026-09-03T13:00:00Z"],
-  ["7677790316665031957","https://www.tiktok.com/player/v1/7677790316665031957","","2026-09-01T00:00:00Z"]
+  ["7677790316665031957","https://www.tiktok.com/@trainingbot.ai2/video/7677790316665031957","","2026-09-01T00:00:00Z"]
 ];
 
 function isAdmin(request,env){
@@ -21,12 +21,42 @@ function parseTikTok(raw){
     return {external_id:match[1],url:value};
   }catch{return null;}
 }
-async function resolveTitle(url){
+function cleanText(value){
+  return String(value||"")
+    .replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&#39;|&#x27;/g,"'")
+    .replace(/&lt;/g,"<").replace(/&gt;/g,">")
+    .replace(/\s+/g," ").trim()
+    .replace(/\s*[|·-]\s*TikTok(?:\s|$).*$/i,"")
+    .slice(0,140);
+}
+function canonicalUrl(raw){
+  try{const u=new URL(raw);u.search="";u.hash="";return u.toString();}catch{return String(raw||"");}
+}
+function meta(html,key){
+  const escaped=key.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+  const patterns=[
+    new RegExp(`<meta[^>]+(?:property|name)=["']${escaped}["'][^>]+content=["']([^"']+)["']`,`i`),
+    new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${escaped}["']`,`i`)
+  ];
+  for(const pattern of patterns){const match=html.match(pattern);if(match?.[1])return cleanText(match[1]);}
+  return "";
+}
+async function resolveTitle(rawUrl){
+  const url=canonicalUrl(rawUrl);
   try{
     const response=await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`,{headers:{accept:"application/json"}});
+    if(response.ok){
+      const data=await response.json();
+      const title=cleanText(data?.title);
+      if(title)return title;
+    }
+  }catch{}
+  try{
+    const response=await fetch(url,{headers:{"user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/152 Safari/537.36","accept":"text/html,application/xhtml+xml"}});
     if(!response.ok)return "";
-    const data=await response.json();
-    return String(data?.title||"").replace(/\s+/g," ").trim().slice(0,140);
+    const html=await response.text();
+    const title=meta(html,"og:description")||meta(html,"description")||meta(html,"og:title")||cleanText((html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)||[])[1]);
+    return /^(TikTok|Make Your Day)$/i.test(title)?"":title;
   }catch{return "";}
 }
 async function ensureTable(env){
@@ -37,11 +67,8 @@ async function ensureTable(env){
     title TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL
   )`).run();
-  const row=await env.DB.prepare("SELECT COUNT(*) AS total FROM home_videos").first();
-  if(Number(row?.total||0)===0){
-    for(const seed of SEEDS){
-      await env.DB.prepare("INSERT OR IGNORE INTO home_videos(external_id,url,title,created_at) VALUES(?,?,?,?)").bind(...seed).run();
-    }
+  for(const seed of SEEDS){
+    await env.DB.prepare("INSERT OR IGNORE INTO home_videos(external_id,url,title,created_at) VALUES(?,?,?,?)").bind(...seed).run();
   }
 }
 async function list(env){
@@ -57,7 +84,7 @@ export async function onRequestPost({request,env}){
     const body=await request.json().catch(()=>({}));
     const video=parseTikTok(body.url);
     if(!video)return json({ok:false,message:"Link TikTok không hợp lệ."},400);
-    const suppliedTitle=String(body.title||"").replace(/\s+/g," ").trim().slice(0,140);
+    const suppliedTitle=cleanText(body.title);
     const title=suppliedTitle||await resolveTitle(video.url);
     const now=new Date().toISOString();
     await env.DB.prepare(`INSERT INTO home_videos(external_id,url,title,created_at) VALUES(?,?,?,?)
