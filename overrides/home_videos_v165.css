@@ -1,0 +1,14 @@
+/* TrainingBot homepage video shelf v165 */
+.hero-tiktok{flex-direction:column}
+.tb-home-videos{width:min(100%,390px)}
+.tb-home-video-main{width:100%}
+.hero-tiktok .tb-home-video-main-frame{display:block;width:100%;height:auto;aspect-ratio:9/16;border:1px solid rgba(148,163,184,.22);border-radius:24px;background:#000;box-shadow:0 28px 70px rgba(0,0,0,.35)}
+.tb-home-video-strip{display:flex;gap:10px;width:100%;margin-top:14px;padding:2px 1px 7px;overflow-x:auto;overscroll-behavior-inline:contain;scroll-snap-type:x proximity;scrollbar-width:thin}
+.tb-home-video-strip[hidden]{display:none}
+.tb-home-video-card{position:relative;flex:0 0 110px;aspect-ratio:9/16;overflow:hidden;scroll-snap-align:start;border:1px solid rgba(148,163,184,.22);border-radius:14px;background:#05070d;cursor:pointer;box-shadow:0 12px 30px rgba(0,0,0,.22);transition:transform .18s ease,border-color .18s ease,filter .18s ease}
+.tb-home-video-card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.34);filter:brightness(1.06)}
+.hero-tiktok .tb-home-video-card iframe{display:block;width:100%;height:100%;aspect-ratio:auto;border:0;border-radius:0;box-shadow:none;background:#000;pointer-events:none}
+.tb-home-video-play{position:absolute;left:50%;top:50%;display:grid;place-items:center;width:34px;height:34px;transform:translate(-50%,-50%);border:1px solid rgba(255,255,255,.28);border-radius:50%;background:rgba(4,7,14,.72);color:#fff;font-size:13px;line-height:1;padding-left:2px;backdrop-filter:blur(8px)}
+@media(max-width:900px){.tb-home-videos{width:min(100%,360px)}}
+@media(max-width:520px){.tb-home-videos{width:min(86vw,330px)}.hero-tiktok .tb-home-video-main-frame{border-radius:18px}.tb-home-video-strip{gap:8px;margin-top:11px}.tb-home-video-card{flex-basis:96px;border-radius:12px}.tb-home-video-play{width:30px;height:30px;font-size:11px}}
+@media(hover:none){.tb-home-video-card:hover{transform:none;filter:none}}
