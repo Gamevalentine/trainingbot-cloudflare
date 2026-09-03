@@ -1,7 +1,8 @@
 const JSON_HEADERS={"content-type":"application/json; charset=UTF-8","cache-control":"no-store, max-age=0","x-content-type-options":"nosniff"};
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:JSON_HEADERS});
 const SEEDS=[
-  ["7681293376775277832","https://www.tiktok.com/@trainingbot.ai2/video/7681293376775277832?is_from_webapp=1&sender_device=pc","","2026-09-03T13:08:20Z"],
+  ["7681293376775277832","https://www.tiktok.com/@trainingbot.ai2/video/7681293376775277832?is_from_webapp=1&sender_device=pc","HỢP TÁC PUBG MOBILE x LINCOLN","2026-09-03T13:08:20Z"],
+  ["7680817497632820501","https://www.tiktok.com/@trainingbot.ai2/video/7680817497632820501?is_from_webapp=1&sender_device=pc","","2026-09-03T13:00:00Z"],
   ["7677790316665031957","https://www.tiktok.com/player/v1/7677790316665031957","","2026-09-01T00:00:00Z"]
 ];
 
@@ -19,6 +20,14 @@ function parseTikTok(raw){
     if(!match)return null;
     return {external_id:match[1],url:value};
   }catch{return null;}
+}
+async function resolveTitle(url){
+  try{
+    const response=await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`,{headers:{accept:"application/json"}});
+    if(!response.ok)return "";
+    const data=await response.json();
+    return String(data?.title||"").replace(/\s+/g," ").trim().slice(0,140);
+  }catch{return "";}
 }
 async function ensureTable(env){
   if(!env.DB)throw new Error("Cloudflare D1 chưa được liên kết với Pages project.");
@@ -48,7 +57,8 @@ export async function onRequestPost({request,env}){
     const body=await request.json().catch(()=>({}));
     const video=parseTikTok(body.url);
     if(!video)return json({ok:false,message:"Link TikTok không hợp lệ."},400);
-    const title=String(body.title||"").trim().slice(0,120);
+    const suppliedTitle=String(body.title||"").replace(/\s+/g," ").trim().slice(0,140);
+    const title=suppliedTitle||await resolveTitle(video.url);
     const now=new Date().toISOString();
     await env.DB.prepare(`INSERT INTO home_videos(external_id,url,title,created_at) VALUES(?,?,?,?)
       ON CONFLICT(external_id) DO UPDATE SET url=excluded.url,title=excluded.title,created_at=excluded.created_at`)
