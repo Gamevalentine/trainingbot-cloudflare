@@ -1,21 +1,25 @@
-/* TrainingBot homepage video shelf v169 */
+/* TrainingBot homepage video shelf v170 */
 (() => {
   "use strict";
 
+  const COMMUNITY_URL = "https://discord.com/invite/5u5PbZMqx";
   const FALLBACK = [
     {
       external_id: "7681293376775277832",
       url: "https://www.tiktok.com/@trainingbot.ai2/video/7681293376775277832?is_from_webapp=1&sender_device=pc",
+      title: "HỢP TÁC PUBG MOBILE x LINCOLN",
       created_at: "2026-09-03T13:08:20Z"
     },
     {
       external_id: "7680817497632820501",
       url: "https://www.tiktok.com/@trainingbot.ai2/video/7680817497632820501?is_from_webapp=1&sender_device=pc",
+      title: "Video TrainingBot",
       created_at: "2026-09-03T13:00:00Z"
     },
     {
       external_id: "7677790316665031957",
       url: "https://www.tiktok.com/player/v1/7677790316665031957",
+      title: "Video TrainingBot",
       created_at: "2026-09-01T00:00:00Z"
     }
   ];
@@ -23,10 +27,15 @@
   function updateCommunityCta() {
     for (const el of document.querySelectorAll("a,button")) {
       const label = String(el.textContent || "").replace(/\s+/g, " ").trim();
-      if (!label.startsWith("Tra cứu Wiki")) continue;
+      if (!label.startsWith("Tra cứu Wiki") && !label.startsWith("Tham gia cộng đồng")) continue;
       el.textContent = "Tham gia cộng đồng";
-      if (el.tagName === "A") el.setAttribute("href", "/community");
-      else el.addEventListener("click", () => { location.href = "/community"; }, {once:true});
+      if (el.tagName === "A") {
+        el.setAttribute("href", COMMUNITY_URL);
+        el.setAttribute("target", "_blank");
+        el.setAttribute("rel", "noopener noreferrer");
+      } else {
+        el.onclick = () => window.open(COMMUNITY_URL, "_blank", "noopener,noreferrer");
+      }
       break;
     }
   }
@@ -46,6 +55,7 @@
       .map(item => ({
         external_id: String(item?.external_id || "").trim(),
         url: String(item?.url || "").trim(),
+        title: String(item?.title || "Video TrainingBot").trim().slice(0, 140),
         created_at: String(item?.created_at || "")
       }))
       .filter(item => /^\d{10,25}$/.test(item.external_id) && !seen.has(item.external_id) && seen.add(item.external_id));
@@ -55,7 +65,7 @@
     const iframe = document.createElement("iframe");
     iframe.className = "tb-home-video-main-frame";
     iframe.src = playerUrl(video.external_id, false);
-    iframe.title = "Video TikTok nổi bật của TrainingBot";
+    iframe.title = video.title || "Video TikTok nổi bật của TrainingBot";
     iframe.loading = "eager";
     iframe.allow = "fullscreen; autoplay; encrypted-media; picture-in-picture";
     return iframe;
@@ -66,7 +76,10 @@
     card.className = "tb-home-video-card";
     card.tabIndex = 0;
     card.setAttribute("role", "button");
-    card.setAttribute("aria-label", `Xem video ${index + 1}`);
+    card.setAttribute("aria-label", `Xem ${video.title || `video ${index + 1}`}`);
+
+    const thumb = document.createElement("div");
+    thumb.className = "tb-home-video-thumb";
 
     const iframe = document.createElement("iframe");
     iframe.src = playerUrl(video.external_id, true);
@@ -80,6 +93,10 @@
     play.setAttribute("aria-hidden", "true");
     play.textContent = "▶";
 
+    const title = document.createElement("div");
+    title.className = "tb-home-video-title";
+    title.textContent = video.title || "Video TrainingBot";
+
     const choose = () => select(video.external_id);
     card.addEventListener("click", choose);
     card.addEventListener("keydown", event => {
@@ -89,7 +106,8 @@
       }
     });
 
-    card.append(iframe, play);
+    thumb.append(iframe, play);
+    card.append(thumb, title);
     return card;
   }
 
