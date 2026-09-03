@@ -49,6 +49,33 @@ while IFS= read -r -d '' page; do
   fi
 done < <(find public -type f -name '*.html' -print0)
 
+# Homepage video shelf: newest TikTok stays large, older videos form a horizontal row.
+test -f public/home_videos_v165.css
+test -f public/home_videos_v165.js
+if ! grep -q 'home_videos_v165\.css' public/index.html; then
+  sed -i 's#</head>#  <link rel="stylesheet" href="/home_videos_v165.css?v=165">\n</head>#' public/index.html
+fi
+if ! grep -q 'home_videos_v165\.js' public/index.html; then
+  sed -i 's#</body>#  <script defer src="/home_videos_v165.js?v=165"></script>\n</body>#' public/index.html
+fi
+node --check public/home_videos_v165.js >/dev/null
+
+# Inject the homepage video manager into the reconstructed Admin V2 document.
+test -f public/admin_home_videos_v165.js
+node --check public/admin_home_videos_v165.js >/dev/null
+node <<'NODE'
+const fs=require('fs');
+const file='public/admin.html';
+let source=fs.readFileSync(file,'utf8');
+if(!source.includes('admin_home_videos_v165.js')){
+  const marker='document.open();document.write(h);document.close()';
+  if(!source.includes(marker))throw new Error('Admin V2 loader marker not found');
+  const patch=`h=h.replace('</body>','<script defer src="/admin_home_videos_v165.js?v=165"><\\/script></body>');${marker}`;
+  source=source.replace(marker,patch);
+  fs.writeFileSync(file,source);
+}
+NODE
+
 # Build a lightweight client-side search index from public HTML only.
 # Admin pages and duplicate legacy update routes are intentionally excluded.
 node <<'NODE'
@@ -174,6 +201,8 @@ test -f public/footer_v135.css
 test -f public/header_search_v152.css
 test -f public/header_search_v152.js
 test -f public/search-index-v152.json
+grep -q 'home_videos_v165\.css' public/index.html
+grep -q 'home_videos_v165\.js' public/index.html
 node --check public/header_search_v152.js >/dev/null
 node -e "const x=require('./public/search-index-v152.json'); if(!Array.isArray(x)||x.length<3) process.exit(1)" >/dev/null
 grep -q 'trainingbot.ai2@gmail.com' public/contact.html
@@ -195,6 +224,7 @@ node --check public/wiki_audit_v149.js >/dev/null
 test -f public/admin.html
 test ! -e public/admin
 grep -q 'TrainingBot Admin Center V2' public/admin.html
+grep -q 'admin_home_videos_v165\.js' public/admin.html
 if grep -q 'footer_v135\.js' public/admin.html; then
   echo 'ERROR: public footer leaked into Admin Center V2' >&2
   exit 1
