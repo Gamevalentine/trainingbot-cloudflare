@@ -1,4 +1,4 @@
-/* TrainingBot homepage video shelf v171 */
+/* TrainingBot homepage video shelf v172 */
 (() => {
   "use strict";
 
@@ -59,6 +59,28 @@
         created_at: String(item?.created_at || "")
       }))
       .filter(item => /^\d{10,25}$/.test(item.external_id) && !seen.has(item.external_id) && seen.add(item.external_id));
+  }
+
+  function canonicalUrl(video) {
+    try {
+      const url = new URL(video.url);
+      if (/\/video\/\d{10,25}/.test(url.pathname)) return `${url.origin}${url.pathname}`;
+    } catch {}
+    return `https://www.tiktok.com/@trainingbot.ai2/video/${video.external_id}`;
+  }
+
+  async function hydrateClientTitles(items) {
+    const videos = normalize(items);
+    await Promise.all(videos.map(async video => {
+      if (video.title) return;
+      try {
+        const response = await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(canonicalUrl(video))}`, {cache: "force-cache"});
+        if (!response.ok) return;
+        const data = await response.json();
+        video.title = String(data?.title || "").replace(/\s+/g, " ").trim().slice(0, 140);
+      } catch {}
+    }));
+    return videos;
   }
 
   function mainFrame(video) {
@@ -155,9 +177,9 @@
       const response = await fetch("/api/home-videos", {cache: "no-store"});
       const data = await response.json();
       if (!response.ok || !data?.ok) throw new Error("home videos unavailable");
-      render(data.videos);
+      render(await hydrateClientTitles(data.videos));
     } catch {
-      render(FALLBACK);
+      render(await hydrateClientTitles(FALLBACK));
     }
   }
 
