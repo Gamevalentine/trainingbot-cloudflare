@@ -1,4 +1,4 @@
-/* TrainingBot homepage video shelf v165 */
+/* TrainingBot homepage video shelf v166 */
 (() => {
   "use strict";
 
@@ -16,7 +16,8 @@
   ];
 
   const host = document.querySelector(".hero-tiktok");
-  if (!host) return;
+  const heroLayout = document.querySelector(".hero-layout");
+  if (!host || !heroLayout) return;
 
   const playerUrl = (id, compact = false) =>
     `https://www.tiktok.com/player/v1/${encodeURIComponent(id)}?controls=${compact ? 0 : 1}&description=${compact ? 0 : 1}&music_info=0&rel=0&autoplay=0`;
@@ -47,7 +48,7 @@
     card.className = "tb-home-video-card";
     card.tabIndex = 0;
     card.setAttribute("role", "button");
-    card.setAttribute("aria-label", `Xem video cũ ${index + 1}`);
+    card.setAttribute("aria-label", `Xem video ${index + 1}`);
 
     const iframe = document.createElement("iframe");
     iframe.src = playerUrl(video.external_id, true);
@@ -79,25 +80,32 @@
     if (!videos.length) return;
 
     let activeId = videos[0].external_id;
-    const root = document.createElement("div");
-    root.className = "tb-home-videos";
     const main = document.createElement("div");
     main.className = "tb-home-video-main";
+    host.replaceChildren(main);
+
+    let shelf = document.querySelector(".tb-home-video-shelf");
+    if (!shelf) {
+      shelf = document.createElement("div");
+      shelf.className = "tb-home-video-shelf";
+      heroLayout.insertAdjacentElement("afterend", shelf);
+    }
+
     const strip = document.createElement("div");
     strip.className = "tb-home-video-strip";
     strip.setAttribute("aria-label", "Các video trước của TrainingBot");
-    root.append(main, strip);
-    host.replaceChildren(root);
+    shelf.replaceChildren(strip);
 
     const paint = () => {
       const active = videos.find(video => video.external_id === activeId) || videos[0];
       main.replaceChildren(mainFrame(active));
       strip.replaceChildren();
-      const older = videos.filter(video => video.external_id !== active.external_id);
-      strip.hidden = older.length === 0;
-      older.forEach((video, index) => strip.appendChild(miniCard(video, index, id => {
+      const others = videos.filter(video => video.external_id !== active.external_id);
+      shelf.hidden = others.length === 0;
+      others.forEach((video, index) => strip.appendChild(miniCard(video, index, id => {
         activeId = id;
         paint();
+        window.scrollTo({top: host.getBoundingClientRect().top + window.scrollY - 90, behavior: "smooth"});
       })));
     };
 
