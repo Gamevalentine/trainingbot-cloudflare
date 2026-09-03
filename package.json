@@ -2,7 +2,7 @@
   "name": "ket-noi-dating-cloudflare",
   "version": "1.0.0",
   "private": true,
-  "scripts": { "build": "bash build.sh" },
+  "scripts": {"build":"next build && rm -rf public && mv out public"},
   "dependencies": {
     "@supabase/supabase-js": "2.112.4",
     "next": "16.3.4",
