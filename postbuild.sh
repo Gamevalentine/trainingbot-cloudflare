@@ -17,7 +17,7 @@ const script='admin_posts_manual_v171.js';
 if(!source.includes(script)){
   const marker='document.open();document.write(h);document.close()';
   if(!source.includes(marker))throw new Error('Admin V2 loader marker not found');
-  source=source.replace(marker,`h=h.replace('</body>','<script defer src="/${script}?v=171"><\\/script></body>');${marker}`);
+  source=source.replace(marker,`h=h.replace('</body>','<script defer src="/${script}?v=172"><\\/script></body>');${marker}`);
   fs.writeFileSync(file,source);
 }
 NODE
