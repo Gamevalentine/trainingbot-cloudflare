@@ -1,4 +1,4 @@
-/* TrainingBot public featured posts v173 */
+/* TrainingBot public featured posts v174 */
 (()=>{
   "use strict";
   const make=(tag,className,text)=>{const el=document.createElement(tag);if(className)el.className=className;if(text!==undefined)el.textContent=text;return el;};
@@ -16,25 +16,45 @@
     return make("div","tb-featured-fallback","TRAININGBOT");
   }
 
+  function staticPost(card){
+    const img=card.querySelector("img");
+    const badges=[...card.querySelectorAll(".tb-badge")];
+    const category=(badges.at(-1)?.textContent||"Tin mới").trim();
+    const meta=[...card.querySelectorAll(".tb-meta span")].map(x=>x.textContent.trim());
+    return {
+      url:card.getAttribute("href")||"/news",
+      cover_url:img?.getAttribute("src")||"",
+      title:(card.querySelector("h2,h3")?.textContent||"Bài viết").trim(),
+      summary:(card.querySelector("p")?.textContent||"").trim(),
+      category,
+      published_label:(meta[0]||"").replace(/^◷\s*/,"")
+    };
+  }
+
   function mainCard(post){
     const card=make("a","tb-hero tb-live-card tb-manual-featured");card.href=post.url;card.appendChild(image(post));
     const copy=make("div","tb-hero-copy");copy.append(make("span","tb-badge","Tin nổi bật hôm nay"));
     const tagWrap=make("div","");tagWrap.style.marginTop="8px";tagWrap.append(make("span","tb-badge purple",post.category||"Tin mới"));copy.appendChild(tagWrap);
-    copy.append(make("h2","",post.title||"Bài viết"),make("p","",post.summary||""));
-    const meta=make("div","tb-meta");meta.append(make("span","",date(post.published_at)),make("span","","• TrainingBot"),make("span","","Đọc bài →"));copy.appendChild(meta);card.appendChild(copy);return card;
+    copy.append(make("h2","",post.title||"Bài viết"));if(post.summary)copy.append(make("p","",post.summary));
+    const meta=make("div","tb-meta");meta.append(make("span","",post.published_at?date(post.published_at):(post.published_label||"")),make("span","","• TrainingBot"),make("span","","Đọc bài →"));copy.appendChild(meta);card.appendChild(copy);return card;
   }
 
   function sideCard(post){
     const card=make("a","tb-side-story tb-manual-featured");card.href=post.url;card.appendChild(image(post));
     const copy=make("div","tb-side-story-copy");copy.append(make("span","tb-badge green",post.category||"Tin mới"),make("h3","",post.title||"Bài viết"));
-    const meta=make("div","tb-meta");meta.append(make("span","",date(post.published_at).slice(0,5)),make("span","","Đọc bài →"));copy.appendChild(meta);card.appendChild(copy);return card;
+    const label=post.published_at?date(post.published_at).slice(0,5):(post.published_label||"");
+    const meta=make("div","tb-meta");meta.append(make("span","",label),make("span","","Đọc bài →"));copy.appendChild(meta);card.appendChild(copy);return card;
   }
 
   function render(posts){
-    const hero=document.querySelector(".tb-hero-grid"),main=hero?.querySelector(".tb-hero"),sideWrap=hero?.querySelector(".tb-side-stories");if(!hero||!main)return;
-    const featured=posts.filter(post=>post.featured_at).sort((a,b)=>String(b.featured_at).localeCompare(String(a.featured_at))).slice(0,3);if(!featured.length)return;
-    main.replaceWith(mainCard(featured[0]));
-    if(sideWrap){const current=[...sideWrap.children];featured.slice(1).forEach((post,index)=>{const node=sideCard(post);if(current[index])current[index].replaceWith(node);else sideWrap.appendChild(node);});}
+    const hero=document.querySelector(".tb-hero-grid"),main=hero?.querySelector(".tb-hero"),sideWrap=hero?.querySelector(".tb-side-stories");if(!hero||!main||!sideWrap)return;
+    const baseline=[main,...sideWrap.querySelectorAll(":scope > .tb-side-story")].map(staticPost);
+    const featured=posts.filter(post=>post.featured_at).sort((a,b)=>String(b.featured_at).localeCompare(String(a.featured_at))).slice(0,3);
+    if(!featured.length)return;
+    const used=new Set(featured.map(post=>post.url));
+    const queue=[...featured,...baseline.filter(post=>!used.has(post.url))].slice(0,3);
+    main.replaceWith(mainCard(queue[0]));
+    sideWrap.replaceChildren(...queue.slice(1).map(sideCard));
   }
 
   async function boot(){
