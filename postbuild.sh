@@ -35,11 +35,5 @@ for page in public/index.html public/news.html; do
 done
 
 if ! grep -q 'site_featured_posts_v173\.js' public/news.html; then
-  sed -i 's#</body>#  <script defer src="/site_featured_posts_v173.js?v=173"></script>\n</body>#' public/news.html
+  sed -i 's#</body>#  <script defer src="/site_featured_posts_v173.js?v=174"></script>\n</body>#' public/news.html
 fi
-
-grep -q 'admin_posts_manual_v171\.js' public/admin.html
-grep -q 'admin_posts_feature_v173\.js' public/admin.html
-grep -q 'site_posts_v171\.js' public/index.html
-grep -q 'site_posts_v171\.js' public/news.html
-grep -q 'site_featured_posts_v173\.js' public/news.html
