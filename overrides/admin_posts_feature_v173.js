@@ -22,9 +22,10 @@
     document.querySelectorAll("button[data-delete-post]").forEach(del=>{
       const id=del.dataset.deletePost;if(!id)return;const actions=del.closest(".tb-post-row-actions");if(!actions)return;
       let button=actions.querySelector(`[data-feature-post="${CSS.escape(id)}"]`);
-      const post=posts.get(id);const active=!!post?.featured_at;
+      const active=!!posts.get(id)?.featured_at;
       if(!button){button=document.createElement("button");button.type="button";button.className="tb-post-feature";button.dataset.featurePost=id;actions.insertBefore(button,del);}
-      button.classList.toggle("active",active);button.textContent=active?"Gỡ khỏi Tin tức":"Đẩy lên Tin tức";button.dataset.featured=active?"1":"0";
+      const label=active?"Gỡ khỏi Tin tức":"Đẩy lên Tin tức";
+      button.classList.toggle("active",active);if(button.textContent!==label)button.textContent=label;button.dataset.featured=active?"1":"0";button.disabled=false;
     });
   }
 
@@ -42,5 +43,5 @@
   document.addEventListener("click",event=>{const button=event.target.closest("button[data-feature-post]");if(button)toggle(button);});
   style();
   const observer=new MutationObserver(()=>decorate());observer.observe(document.documentElement,{childList:true,subtree:true});
-  let tries=0;const boot=()=>{load();if(++tries<20)setTimeout(boot,500);};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load,{once:true});else load();
 })();
