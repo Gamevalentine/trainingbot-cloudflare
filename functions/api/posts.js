@@ -1,4 +1,4 @@
-const H={"content-type":"application/json; charset=UTF-8","cache-control":"public, max-age=30"};
+const H={"content-type":"application/json; charset=UTF-8","cache-control":"public, max-age=0, must-revalidate"};
 const reply=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:H});
 
 async function setup(db){
