@@ -41,6 +41,8 @@ async function uniqueSlug(db,title){
   return `${base}-${crypto.randomUUID().slice(0,8)}`;
 }
 
+function imageKey(path){return `site-overrides/${encodeURIComponent(path)}`;}
+
 export async function onRequestGet({request,env}){
   if(!env.DB)return reply({ok:false,message:"Cloudflare D1 chưa được liên kết."},503);
   if(!allowed(request,env))return reply({ok:false,message:"Unauthorized"},401);
@@ -68,4 +70,23 @@ export async function onRequestPost({request,env}){
   const id=`tb-post-${crypto.randomUUID()}`;
   await env.DB.prepare("INSERT INTO tb_manual_posts_v1 (id,slug,title,summary,content,category,cover_url,status,created_at,updated_at,published_at) VALUES (?,?,?,?,?,?,?,'published',?,?,?)").bind(id,slug,title,summary,content,category,coverUrl,now,now,now).run();
   return reply({ok:true,post:{id,slug,title,summary,category,cover_url:coverUrl,published_at:now,url:`/bai-viet/${slug}`}},201);
+}
+
+export async function onRequestDelete({request,env}){
+  if(!env.DB)return reply({ok:false,message:"Cloudflare D1 chưa được liên kết."},503);
+  if(!allowed(request,env))return reply({ok:false,message:"Unauthorized"},401);
+  let body;
+  try{body=await request.json()}catch{return reply({ok:false,message:"Dữ liệu xóa bài không hợp lệ."},400)}
+  const id=clean(body.id,160);
+  if(!id)return reply({ok:false,message:"Thiếu mã bài viết cần xóa."},400);
+  await setup(env.DB);
+  const post=await env.DB.prepare("SELECT id,slug,title,cover_url FROM tb_manual_posts_v1 WHERE id=? LIMIT 1").bind(id).first();
+  if(!post)return reply({ok:false,message:"Không tìm thấy bài viết."},404);
+  const result=await env.DB.prepare("DELETE FROM tb_manual_posts_v1 WHERE id=?").bind(id).run();
+  if(!result.meta?.changes)return reply({ok:false,message:"Không xóa được bài viết."},500);
+  let coverDeleted=false;
+  if(env.VIDEO_BUCKET && String(post.cover_url||"").startsWith("/user-posts/")){
+    try{await env.VIDEO_BUCKET.delete(imageKey(post.cover_url));coverDeleted=true}catch(error){console.error("delete post cover",error)}
+  }
+  return reply({ok:true,deleted:{id:post.id,slug:post.slug,title:post.title,cover_deleted:coverDeleted},message:"Đã xóa bài viết."});
 }
