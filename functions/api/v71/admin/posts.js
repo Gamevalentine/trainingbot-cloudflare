@@ -1,6 +1,7 @@
 const H={"content-type":"application/json; charset=UTF-8","cache-control":"no-store"};
 const reply=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:H});
 const clean=(value,max=100000)=>String(value??"").trim().slice(0,max);
+const imageKey=path=>`site-overrides/${encodeURIComponent(path)}`;
 
 function allowed(request,env){
   const expected=String(env.ADMIN_TOKEN||"");
@@ -17,10 +18,13 @@ async function setup(db){
     category TEXT NOT NULL DEFAULT 'Tin mới',
     cover_url TEXT NOT NULL DEFAULT '',
     status TEXT NOT NULL DEFAULT 'published',
+    featured_at TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     published_at TEXT NOT NULL
   )`).run();
+  const columns=await db.prepare("PRAGMA table_info(tb_manual_posts_v1)").all();
+  if(!(columns.results||[]).some(column=>column.name==="featured_at"))await db.prepare("ALTER TABLE tb_manual_posts_v1 ADD COLUMN featured_at TEXT NOT NULL DEFAULT ''").run();
 }
 
 function slugify(value){
@@ -41,13 +45,11 @@ async function uniqueSlug(db,title){
   return `${base}-${crypto.randomUUID().slice(0,8)}`;
 }
 
-function imageKey(path){return `site-overrides/${encodeURIComponent(path)}`;}
-
 export async function onRequestGet({request,env}){
   if(!env.DB)return reply({ok:false,message:"Cloudflare D1 chưa được liên kết."},503);
   if(!allowed(request,env))return reply({ok:false,message:"Unauthorized"},401);
   await setup(env.DB);
-  const result=await env.DB.prepare("SELECT id,slug,title,summary,category,cover_url,status,published_at FROM tb_manual_posts_v1 ORDER BY published_at DESC LIMIT 100").all();
+  const result=await env.DB.prepare("SELECT id,slug,title,summary,category,cover_url,status,featured_at,published_at FROM tb_manual_posts_v1 ORDER BY published_at DESC LIMIT 100").all();
   return reply({ok:true,posts:(result.results||[]).map(row=>({...row,url:`/bai-viet/${row.slug}`}))});
 }
 
@@ -68,8 +70,26 @@ export async function onRequestPost({request,env}){
   const slug=await uniqueSlug(env.DB,title);
   const now=new Date().toISOString();
   const id=`tb-post-${crypto.randomUUID()}`;
-  await env.DB.prepare("INSERT INTO tb_manual_posts_v1 (id,slug,title,summary,content,category,cover_url,status,created_at,updated_at,published_at) VALUES (?,?,?,?,?,?,?,'published',?,?,?)").bind(id,slug,title,summary,content,category,coverUrl,now,now,now).run();
-  return reply({ok:true,post:{id,slug,title,summary,category,cover_url:coverUrl,published_at:now,url:`/bai-viet/${slug}`}},201);
+  await env.DB.prepare("INSERT INTO tb_manual_posts_v1 (id,slug,title,summary,content,category,cover_url,status,featured_at,created_at,updated_at,published_at) VALUES (?,?,?,?,?,?,?,'published','',?,?,?)").bind(id,slug,title,summary,content,category,coverUrl,now,now,now).run();
+  return reply({ok:true,post:{id,slug,title,summary,category,cover_url:coverUrl,featured_at:"",published_at:now,url:`/bai-viet/${slug}`}},201);
+}
+
+export async function onRequestPatch({request,env}){
+  if(!env.DB)return reply({ok:false,message:"Cloudflare D1 chưa được liên kết."},503);
+  if(!allowed(request,env))return reply({ok:false,message:"Unauthorized"},401);
+  let body;
+  try{body=await request.json()}catch{return reply({ok:false,message:"Dữ liệu cập nhật không hợp lệ."},400)}
+  const id=clean(body.id,160);
+  if(!id||typeof body.featured!=="boolean")return reply({ok:false,message:"Thiếu thông tin bài viết hoặc trạng thái nổi bật."},400);
+  await setup(env.DB);
+  const post=await env.DB.prepare("SELECT id,slug,title FROM tb_manual_posts_v1 WHERE id=? LIMIT 1").bind(id).first();
+  if(!post)return reply({ok:false,message:"Không tìm thấy bài viết."},404);
+  const featuredAt=body.featured?new Date().toISOString():"";
+  await env.DB.prepare("UPDATE tb_manual_posts_v1 SET featured_at=?,updated_at=? WHERE id=?").bind(featuredAt,new Date().toISOString(),id).run();
+  if(body.featured){
+    await env.DB.prepare("UPDATE tb_manual_posts_v1 SET featured_at='' WHERE featured_at<>'' AND id NOT IN (SELECT id FROM tb_manual_posts_v1 WHERE featured_at<>'' ORDER BY featured_at DESC LIMIT 3)").run();
+  }
+  return reply({ok:true,post:{...post,featured_at:featuredAt,url:`/bai-viet/${post.slug}`},message:body.featured?"Đã đẩy bài lên khu Tin tức.":"Đã gỡ bài khỏi khu Tin tức."});
 }
 
 export async function onRequestDelete({request,env}){
