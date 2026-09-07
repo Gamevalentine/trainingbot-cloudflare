@@ -2,7 +2,7 @@ import { db } from './cloudflare';
 import type { AppRecord, Category, Tag } from './types';
 import { normalizeSearch, tokenizeSearch } from './utils';
 
-const PUBLIC_COLUMNS = `a.id,a.name,a.slug,a.production_url,a.icon_key,a.cover_key,a.short_description,a.description,a.primary_use,a.audience,a.features,a.category_id,a.status,a.visibility,a.featured,a.pricing_type,a.platform,a.tech_stack,a.version,a.search_keywords,a.created_at,a.updated_at,c.name category_name,c.slug category_slug`;
+const PUBLIC_COLUMNS = `SELECT a.id,a.name,a.slug,a.production_url,a.icon_key,a.cover_key,a.short_description,a.description,a.primary_use,a.audience,a.features,a.category_id,a.status,a.visibility,a.featured,a.pricing_type,a.platform,a.tech_stack,a.version,a.search_keywords,a.created_at,a.updated_at,c.name category_name,c.slug category_slug`;
 const PUBLIC_FROM = `FROM apps a LEFT JOIN categories c ON c.id=a.category_id`;
 
 export async function listCategories(activeOnly = true) {
