@@ -1,5 +1,66 @@
 ---
-import PublicLayout from '../layouts/PublicLayout.astro'; import AppGrid from '../components/AppGrid.astro'; import Icon from '../components/Icon.astro'; import { listCategories, listPublicApps } from '../lib/db';
-const [categories,featured,updated]=await Promise.all([listCategories(),listPublicApps({featured:true,limit:4}),listPublicApps({sort:'updated',limit:4})]); const visibleCategories=categories.filter(c=>(c.app_count||0)>0).slice(0,8);
+import PublicLayout from '../layouts/PublicLayout.astro';
+import AppGrid from '../components/AppGrid.astro';
+import Icon from '../components/Icon.astro';
+import { listCategories, listPublicApps } from '../lib/db';
+
+const [categories, featured, updated] = await Promise.all([
+  listCategories(),
+  listPublicApps({ featured: true, limit: 4 }),
+  listPublicApps({ sort: 'updated', limit: 4 }),
+]);
+const browseCategories = categories.slice(0, 7);
 ---
-<PublicLayout title="Toolpick · Tìm đúng công cụ bạn cần" description="Tìm kiếm và sử dụng các website, web app và công cụ nhỏ phù hợp với điều bạn muốn làm."><section class="hero"><div class="container hero-inner"><p class="eyebrow">Toolpick</p><h1>Tìm công cụ phù hợp với điều bạn muốn làm</h1><p class="hero-copy">Không cần nhớ tên ứng dụng. Mô tả việc bạn cần, hệ thống sẽ giúp bạn tìm đúng công cụ.</p><form class="hero-search" action="/search"><Icon name="search" size={24}/><input name="q" placeholder="Bạn đang muốn làm gì?" autocomplete="off"/><button type="submit">Tìm</button></form><div class="search-examples"><span>Thử:</span><a href="/search?q=học cấp cứu">học cấp cứu</a><a href="/search?q=chỉnh sửa video">chỉnh sửa video</a><a href="/search?q=tạo website">tạo website</a></div></div></section>{visibleCategories.length>0&&<section class="container category-strip" aria-label="Danh mục">{visibleCategories.map(c=><a href={`/category/${c.slug}`}><Icon name={c.icon} size={18}/>{c.name}</a>)}<a href="/categories">Tất cả →</a></section>}<section class="container section-block"><div class="section-heading"><div><p class="eyebrow">Chọn nhanh</p><h2>Được đề xuất</h2></div><a href="/explore">Khám phá tất cả →</a></div><AppGrid apps={featured}/></section><section class="container section-block"><div class="section-heading"><div><p class="eyebrow">Gần đây</p><h2>Mới cập nhật</h2></div><a href="/explore#new">Xem thêm →</a></div><AppGrid apps={updated}/></section></PublicLayout>
+
+<PublicLayout title="Toolpick · Tìm đúng công cụ bạn cần" description="Tìm kiếm và sử dụng các website, web app và công cụ nhỏ phù hợp với điều bạn muốn làm.">
+  <section class="hero home-hero">
+    <div class="container hero-inner">
+      <p class="eyebrow">Toolpick</p>
+      <h1>Một nơi để tìm đúng công cụ cho việc bạn đang làm</h1>
+      <p class="hero-copy">Mô tả nhu cầu thay vì phải nhớ tên ứng dụng. Toolpick giúp bạn đi thẳng tới công cụ phù hợp.</p>
+      <form class="hero-search" action="/search">
+        <Icon name="search" size={24}/>
+        <input name="q" placeholder="Ví dụ: tạo website, học cấp cứu, chỉnh sửa video..." autocomplete="off"/>
+        <button type="submit">Tìm</button>
+      </form>
+      <div class="search-examples"><span>Thử nhanh:</span><a href="/search?q=học cấp cứu">học cấp cứu</a><a href="/search?q=chỉnh sửa video">chỉnh sửa video</a><a href="/search?q=tạo website">tạo website</a></div>
+    </div>
+  </section>
+  <section class="container home-actions" aria-label="Bắt đầu nhanh">
+    <a class="home-action-card" href="/search">
+      <span class="home-action-icon"><Icon name="search" size={21}/></span>
+      <strong>Tìm theo nhu cầu</strong>
+      <span>Gõ việc bạn muốn làm, không cần nhớ tên công cụ.</span>
+      <em>Tìm ngay →</em>
+    </a>
+    <a class="home-action-card" href="/categories">
+      <span class="home-action-icon"><Icon name="folder" size={21}/></span>
+      <strong>Duyệt theo danh mục</strong>
+      <span>Đi từ chủ đề lớn đến đúng nhóm công cụ cần dùng.</span>
+      <em>Xem danh mục →</em>
+    </a>
+    <a class="home-action-card" href="/explore">
+      <span class="home-action-icon"><Icon name="compass" size={21}/></span>
+      <strong>Khám phá toàn bộ</strong>
+      <span>Xem những công cụ đang có trong kho công khai.</span>
+      <em>Khám phá →</em>
+    </a>
+  </section>
+
+  {browseCategories.length > 0 && <section class="container home-category-panel">
+    <div class="home-panel-heading"><div><p class="eyebrow">Khám phá</p><h2>Bắt đầu từ một chủ đề</h2></div><a href="/categories">Tất cả danh mục →</a></div>
+    <div class="home-category-grid">{browseCategories.map(c => <a href={`/category/${c.slug}`}><span><Icon name={c.icon} size={20}/></span><strong>{c.name}</strong><em>→</em></a>)}</div>
+  </section>}
+  {featured.length > 0 && <section class="container section-block">
+    <div class="section-heading"><div><p class="eyebrow">Chọn nhanh</p><h2>Được đề xuất</h2></div><a href="/explore">Khám phá tất cả →</a></div>
+    <AppGrid apps={featured}/>
+  </section>}
+
+  {updated.length > 0 ? <section class="container section-block">
+    <div class="section-heading"><div><p class="eyebrow">Gần đây</p><h2>Mới cập nhật</h2></div><a href="/explore#new">Xem thêm →</a></div>
+    <AppGrid apps={updated}/>
+  </section> : <section class="container home-empty-panel">
+    <div><p class="eyebrow">Kho công cụ</p><h2>Nội dung công khai sẽ xuất hiện tại đây</h2><p>Toolpick hiện chưa có công cụ công khai để hiển thị. Bạn vẫn có thể dùng tìm kiếm, duyệt danh mục hoặc quay lại khi kho được bổ sung.</p></div>
+    <div class="home-empty-actions"><a class="button primary" href="/search">Tìm kiếm</a><a class="button ghost" href="/categories">Xem danh mục</a></div>
+  </section>}
+</PublicLayout>
