@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "web-tools-hub",
+  "name": "toolpick",
   "main": "@astrojs/cloudflare/entrypoints/server",
   "compatibility_date": "2026-09-07",
   "compatibility_flags": ["nodejs_compat"],
@@ -24,7 +24,7 @@
   ],
   "vars": {
     "SITE_NAME": "Toolpick",
-    "SITE_URL": "https://web-tools-hub.ai-vn.workers.dev",
+    "SITE_URL": "https://toolpick.ai-vn.workers.dev",
     "OWNER_EMAIL": "",
     "ACCESS_TEAM_DOMAIN": "",
     "ACCESS_AUD": "",
