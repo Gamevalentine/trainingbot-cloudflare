@@ -1,0 +1,64 @@
+---
+const { q = '', filters = {}, categories = [] } = Astro.props;
+---
+<form class="filters" action="/search">
+  <input type="hidden" name="q" value={q} />
+
+  <label>
+    Danh mục
+    <select name="category">
+      <option value="">Tất cả</option>
+      {categories.map((category) => (
+        <option value={category.slug} selected={filters.category === category.slug}>
+          {category.name}
+        </option>
+      ))}
+    </select>
+  </label>
+
+  <label>
+    Trạng thái
+    <select name="status">
+      <option value="">Tất cả</option>
+      <option value="active" selected={filters.status === 'active'}>Đang hoạt động</option>
+      <option value="development" selected={filters.status === 'development'}>Đang phát triển</option>
+      <option value="beta" selected={filters.status === 'beta'}>Beta</option>
+    </select>
+  </label>
+
+  <label>
+    Nền tảng
+    <select name="platform">
+      <option value="">Tất cả</option>
+      <option value="web" selected={filters.platform === 'web'}>Web</option>
+      <option value="mobile" selected={filters.platform === 'mobile'}>Mobile</option>
+      <option value="desktop" selected={filters.platform === 'desktop'}>Desktop</option>
+    </select>
+  </label>
+
+  <label>
+    Loại
+    <select name="pricing">
+      <option value="">Tất cả</option>
+      <option value="free" selected={filters.pricing === 'free'}>Miễn phí</option>
+      <option value="experimental" selected={filters.pricing === 'experimental'}>Thử nghiệm</option>
+    </select>
+  </label>
+
+  <label>
+    Sắp xếp
+    <select name="sort">
+      <option value="" selected={!filters.sort}>Phù hợp nhất</option>
+      <option value="updated" selected={filters.sort === 'updated'}>Mới cập nhật</option>
+      <option value="new" selected={filters.sort === 'new'}>Mới thêm</option>
+      <option value="popular" selected={filters.sort === 'popular'}>Phổ biến</option>
+    </select>
+  </label>
+
+  <label class="checkbox-row">
+    <input type="checkbox" name="featured" value="1" checked={filters.featured} />
+    Được đề xuất
+  </label>
+
+  <button class="button primary" type="submit">Áp dụng</button>
+</form>
