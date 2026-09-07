@@ -1,5 +1,5 @@
 .site-footer--rich{padding:72px 0 28px;border-top:1px solid rgba(15,18,26,.08);background:rgba(255,255,255,.46);backdrop-filter:blur(14px)}
-.footer-main{display:grid;grid-template-columns:minmax(280px,1.7fr) repeat(3,minmax(150px,1fr));gap:56px;align-items:start}
+.footer-main{display:grid;grid-template-columns:minmax(320px,1.7fr) repeat(2,minmax(180px,1fr));gap:56px;align-items:start}
 .footer-about{max-width:420px}.footer-about .brand{margin-bottom:18px}.footer-about h2{margin:0 0 10px;font-size:15px;letter-spacing:-.02em}.footer-about p{margin:0;color:var(--muted);line-height:1.75}
 .footer-column{display:grid;align-content:start;gap:10px}.footer-column h2{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
 .footer-column a{width:max-content;max-width:100%;color:var(--text);font-size:14px}.footer-column a:hover{color:var(--brand)}
