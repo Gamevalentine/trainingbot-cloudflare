@@ -1,0 +1,78 @@
+---
+import type { AppRecord, Category, Tag } from '../lib/types';
+import { statusLabel } from '../lib/utils';
+
+interface Props {
+  app?: AppRecord | null;
+  categories: Category[];
+  tags: Tag[];
+  selectedTagIds?: number[];
+}
+
+const { app = null, categories, tags, selectedTagIds = [] } = Astro.props;
+const selected = new Set(selectedTagIds);
+const isNew = !app;
+---
+
+<form class="admin-form" method="post" action={isNew ? '/api/admin/apps' : `/api/admin/apps/${app!.id}`} enctype="multipart/form-data">
+  <section class="form-section">
+    <div><p class="eyebrow">Nội dung</p><h2>Thông tin cơ bản</h2></div>
+    <div class="field-grid">
+      <label>Tên ứng dụng<input name="name" required value={app?.name ?? ''} /></label>
+      <label>Slug<input name="slug" required value={app?.slug ?? ''} placeholder="medical-training" /></label>
+      <label class="full">Mô tả ngắn<textarea name="short_description" rows="2">{app?.short_description ?? ''}</textarea></label>
+      <label class="full">Mô tả đầy đủ<textarea name="description" rows="6">{app?.description ?? ''}</textarea></label>
+      <label class="full">Công dụng chính<textarea name="primary_use" rows="3">{app?.primary_use ?? ''}</textarea></label>
+      <label class="full">Phù hợp với ai<textarea name="audience" rows="3">{app?.audience ?? ''}</textarea></label>
+      <label class="full">Tính năng <span class="field-note">Mỗi dòng một tính năng</span><textarea name="features" rows="6">{app?.features ?? ''}</textarea></label>
+      <label class="full">Từ khóa tìm kiếm <span class="field-note">Cách nhau bằng dấu phẩy</span><textarea name="search_keywords" rows="3">{app?.search_keywords ?? ''}</textarea></label>
+    </div>
+  </section>
+
+  <section class="form-section">
+    <div><p class="eyebrow">Phân loại</p><h2>Hiển thị & trạng thái</h2></div>
+    <div class="field-grid">
+      <label>Danh mục<select name="category_id"><option value="">Không chọn</option>{categories.map((c) => <option value={c.id} selected={c.id === app?.category_id}>{c.name}</option>)}</select></label>
+      <label>Trạng thái<select name="status">{['active','development','beta','paused','archived','offline'].map((s) => <option value={s} selected={s === (app?.status ?? 'development')}>{statusLabel(s)}</option>)}</select></label>
+      <label>Quyền xem<select name="visibility"><option value="private" selected={(app?.visibility ?? 'private') === 'private'}>Private</option><option value="public" selected={app?.visibility === 'public'}>Public</option></select></label>
+      <label>Loại<select name="pricing_type"><option value="free" selected={(app?.pricing_type ?? 'free') === 'free'}>Miễn phí</option><option value="experimental" selected={app?.pricing_type === 'experimental'}>Thử nghiệm</option><option value="private" selected={app?.pricing_type === 'private'}>Riêng tư</option></select></label>
+      <label>Nền tảng<input name="platform" value={app?.platform ?? 'web'} /></label>
+      <label>Phiên bản<input name="version" value={app?.version ?? ''} /></label>
+      <label class="checkbox-row"><input type="checkbox" name="featured" value="1" checked={app?.featured === 1} /> Được đề xuất / nổi bật</label>
+    </div>
+    <div class="tag-picker">
+      <span>Tags</span>
+      <div class="tag-options">{tags.map((tag) => <label class="tag-check"><input type="checkbox" name="tag_ids" value={tag.id} checked={selected.has(tag.id)} />{tag.name}</label>)}</div>
+    </div>
+  </section>
+
+  <section class="form-section">
+    <div><p class="eyebrow">Media</p><h2>Hình ảnh</h2></div>
+    <div class="field-grid">
+      <label>Icon<input type="file" name="icon" accept="image/*" /></label>
+      <label>Cover<input type="file" name="cover" accept="image/*" /></label>
+      <label class="full">Screenshots<input type="file" name="screenshots" accept="image/*" multiple /></label>
+    </div>
+    {(app?.icon_key || app?.cover_key) && <div class="media-current">{app?.icon_key && <img src={`/media/${app.icon_key}`} alt="Icon hiện tại" />}{app?.cover_key && <img src={`/media/${app.cover_key}`} alt="Cover hiện tại" />}</div>}
+  </section>
+
+  <section class="form-section">
+    <div><p class="eyebrow">Ứng dụng</p><h2>Thông tin kỹ thuật công khai</h2></div>
+    <div class="field-grid">
+      <label class="full">Production URL<input type="url" name="production_url" required value={app?.production_url ?? ''} /></label>
+      <label class="full">Tech Stack<input name="tech_stack" value={app?.tech_stack ?? ''} /></label>
+    </div>
+  </section>
+
+  <section class="form-section private-section">
+    <div><p class="eyebrow">Chỉ Admin</p><h2>Thông tin riêng tư</h2><p>Không được trả về từ Public API hay trang public.</p></div>
+    <div class="field-grid">
+      <label class="full">Admin URL<input type="url" name="admin_url" value={app?.admin_url ?? ''} /></label>
+      <label class="full">GitHub repo<input name="github_repo" value={app?.github_repo ?? ''} /></label>
+      <label class="full">Cloudflare project<input name="cloudflare_project" value={app?.cloudflare_project ?? ''} /></label>
+      <label class="full">Source archive<input type="file" name="source_archive" accept=".zip,.tar,.gz,.tgz" /></label>
+    </div>
+  </section>
+
+  <div class="sticky-actions"><a class="button ghost" href="/admin/apps">Hủy</a><button class="button primary" type="submit">{isNew ? 'Tạo website' : 'Lưu thay đổi'}</button></div>
+</form>

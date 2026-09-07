@@ -1,0 +1,17 @@
+INSERT OR IGNORE INTO categories (name, slug, icon, sort_order) VALUES
+('AI', 'ai', 'sparkles', 10),
+('Y khoa', 'y-khoa', 'heart-pulse', 20),
+('Học tập', 'hoc-tap', 'book-open', 30),
+('Công cụ', 'cong-cu', 'wrench', 40),
+('Game', 'game', 'gamepad', 50),
+('Giải trí', 'giai-tri', 'play', 60),
+('Thiết kế', 'thiet-ke', 'palette', 70),
+('Video', 'video', 'video', 80),
+('Hình ảnh', 'hinh-anh', 'image', 90),
+('Năng suất', 'nang-suat', 'check-square', 100),
+('Quản lý', 'quan-ly', 'layout-dashboard', 110),
+('Tin tức', 'tin-tuc', 'newspaper', 120),
+('Mạng xã hội', 'mang-xa-hoi', 'users', 130),
+('Developer Tools', 'developer-tools', 'code', 140),
+('Cá nhân', 'ca-nhan', 'user', 150),
+('Thử nghiệm', 'thu-nghiem', 'flask-conical', 160);

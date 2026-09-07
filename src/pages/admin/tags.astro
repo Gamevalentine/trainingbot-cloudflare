@@ -1,0 +1,4 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro'; import { listTags } from '../../lib/db'; const tags = await listTags();
+---
+<AdminLayout title="Tags"><section class="split-admin"><form class="setting-panel" method="post" action="/api/admin/tags"><p class="eyebrow">Tag mới</p><h2>Thêm tag</h2><label>Tên<input name="name" required /></label><label>Slug<input name="slug" /></label><button class="button primary" type="submit">Thêm</button></form><div class="stack-list">{tags.map((tag) => <form class="inline-edit compact" method="post" action={`/api/admin/tags/${tag.id}`}><input name="name" value={tag.name} required/><input name="slug" value={tag.slug} required/><button class="button small" type="submit">Lưu</button><button class="button danger small" formmethod="post" formaction={`/api/admin/tags/${tag.id}?_method=DELETE`} onclick="return confirm('Xóa tag?')">Xóa</button></form>)}</div></section></AdminLayout>

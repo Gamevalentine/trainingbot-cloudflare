@@ -1,0 +1,33 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "web-tools-hub",
+  "main": "./dist/_worker.js/index.js",
+  "compatibility_date": "2026-09-07",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "web-tools-hub-db",
+      "database_id": "7b7b3320-566b-44b9-bda5-f0249f487874",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "web-tools-hub-media"
+    }
+  ],
+  "vars": {
+    "SITE_NAME": "Web Tools Hub",
+    "SITE_URL": "https://web-tools-hub.ai-vn.workers.dev",
+    "OWNER_EMAIL": "",
+    "ACCESS_TEAM_DOMAIN": "",
+    "ACCESS_AUD": "",
+    "REQUIRE_ACCESS": "true"
+  }
+}

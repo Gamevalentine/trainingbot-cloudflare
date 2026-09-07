@@ -1,0 +1,5 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro'; import AdminAppForm from '../../../components/AdminAppForm.astro'; import { listCategories, listTags } from '../../../lib/db';
+const [categories,tags] = await Promise.all([listCategories(false),listTags()]);
+---
+<AdminLayout title="Thêm website"><AdminAppForm categories={categories} tags={tags} /></AdminLayout>

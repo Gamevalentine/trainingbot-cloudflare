@@ -1,0 +1,20 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+interface Props { title: string; description?: string; }
+const { title, description = 'Web Tools Hub Admin' } = Astro.props;
+const path = Astro.url.pathname;
+const nav = [
+  ['/admin','Tổng quan','home'], ['/admin/apps','Website','grid'], ['/admin/categories','Danh mục','folder'], ['/admin/tags','Tags','tags'], ['/admin/media','Media','media'], ['/admin/backup','Backup','backup'], ['/admin/settings','Cài đặt','settings']
+];
+---
+<BaseLayout title={`${title} · Admin`} description={description} noIndex={true}>
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <a class="admin-brand" href="/admin"><span class="brand-mark">W</span><span>Web Tools Hub<small>Owner Console</small></span></a>
+      <nav>{nav.map(([href,label,icon]) => <a class:list={[path === href || (href !== '/admin' && path.startsWith(href)), 'admin-nav-link']} href={href}><Icon name={icon} size={19} /><span>{label}</span></a>)}</nav>
+      <div class="admin-sidebar-bottom"><a href="/" target="_blank">Mở trang công khai ↗</a></div>
+    </aside>
+    <main class="admin-main"><div class="admin-topbar"><div><p class="eyebrow">Owner Console</p><h1>{title}</h1></div><button class="theme-toggle" data-theme-toggle aria-label="Đổi giao diện">◐</button></div><slot /></main>
+  </div>
+</BaseLayout>

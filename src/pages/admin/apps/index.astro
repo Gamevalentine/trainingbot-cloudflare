@@ -1,0 +1,6 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { adminApps } from '../../../lib/db'; import { statusLabel, dateLabel } from '../../../lib/utils';
+const apps = await adminApps();
+---
+<AdminLayout title="Website"><section class="admin-toolbar"><form class="admin-search" data-table-search><input placeholder="Tìm website..." /></form><a class="button primary" href="/admin/apps/new">+ Thêm website</a></section><div class="table-wrap"><table><thead><tr><th>Tên</th><th>Danh mục</th><th>Trạng thái</th><th>Quyền xem</th><th>Cập nhật</th><th></th></tr></thead><tbody>{apps.map((app) => <tr data-search-row={app.name.toLowerCase()}><td><strong>{app.name}</strong><small>{app.production_url}</small></td><td>{app.category_name || '—'}</td><td><span class="badge">{statusLabel(app.status)}</span></td><td>{app.visibility === 'public' ? 'Public' : 'Private'}</td><td>{dateLabel(app.updated_at)}</td><td><a href={`/admin/apps/${app.id}`}>Sửa</a></td></tr>)}</tbody></table></div><script is:inline>document.querySelector('[data-table-search] input')?.addEventListener('input',(e)=>{const q=e.target.value.toLowerCase();document.querySelectorAll('[data-search-row]').forEach(r=>r.hidden=!r.dataset.searchRow.includes(q));});</script></AdminLayout>

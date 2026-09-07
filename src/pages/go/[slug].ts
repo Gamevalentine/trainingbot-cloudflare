@@ -1,0 +1,2 @@
+import type { APIRoute } from 'astro'; import { db } from '../../lib/cloudflare'; import { incrementMetric } from '../../lib/db';
+export const GET:APIRoute=async({params})=>{const app=await db().prepare("SELECT id,production_url FROM apps WHERE slug=? AND visibility='public'").bind(params.slug).first<{id:number;production_url:string}>();if(!app)return new Response('Không tìm thấy',{status:404});await incrementMetric(app.id,'opens').catch(()=>{});return new Response(null,{status:302,headers:{Location:app.production_url,'Cache-Control':'no-store'}});};

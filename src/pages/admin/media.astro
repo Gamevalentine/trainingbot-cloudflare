@@ -1,0 +1,4 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro'; import { db } from '../../lib/cloudflare'; const media = (await db().prepare(`SELECT s.id,s.app_id,s.r2_key,s.alt_text,s.created_at,a.name app_name FROM screenshots s JOIN apps a ON a.id=s.app_id ORDER BY s.created_at DESC LIMIT 100`).all()).results;
+---
+<AdminLayout title="Media"><div class="media-admin-grid">{media.length ? media.map((item:any) => <article><img src={`/media/${item.r2_key}`} alt={item.alt_text}/><div><strong>{item.app_name}</strong><small>{item.alt_text || item.r2_key}</small><form method="post" action={`/api/admin/media/${encodeURIComponent(item.r2_key)}?_method=DELETE&screen=${item.id}`}><button class="text-danger" type="submit">Xóa</button></form></div></article>) : <div class="empty-state"><h3>Chưa có screenshot</h3><p>Upload ảnh trong màn hình sửa website.</p></div>}</div></AdminLayout>

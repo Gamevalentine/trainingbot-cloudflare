@@ -1,0 +1,9 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import AdminAppForm from '../../../components/AdminAppForm.astro';
+import { adminApp, listCategories, listTags } from '../../../lib/db';
+import { db } from '../../../lib/cloudflare';
+const id = Number(Astro.params.id); const app = await adminApp(id); if (!app) return Astro.redirect('/admin/apps');
+const categories = await listCategories(false); const tags = await listTags(); const selectedTagIds = (await db().prepare('SELECT tag_id FROM app_tags WHERE app_id=?').bind(id).all<{tag_id:number}>()).results.map((x) => x.tag_id);
+---
+<AdminLayout title={`Sửa: ${app.name}`}><AdminAppForm app={app} categories={categories} tags={tags} selectedTagIds={selectedTagIds} /><section class="danger-zone"><div><h2>Xóa website</h2><p>Xóa metadata và media liên quan khỏi catalog.</p></div><form method="post" action={`/api/admin/apps/${id}?_method=DELETE`} onsubmit="return confirm('Xóa website này?')"><button class="button danger" type="submit">Xóa website</button></form></section></AdminLayout>

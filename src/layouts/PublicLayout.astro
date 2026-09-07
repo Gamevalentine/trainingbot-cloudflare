@@ -1,0 +1,13 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+interface Props { title?: string; description?: string; image?: string; canonical?: string; structuredData?: Record<string, unknown> | null; }
+const { title = 'Web Tools Hub', description, image, canonical, structuredData } = Astro.props;
+const path = Astro.url.pathname;
+---
+<BaseLayout title={title} description={description} image={image} canonical={canonical} structuredData={structuredData}>
+  <header class="site-header"><div class="container header-inner"><a class="brand" href="/"><span class="brand-mark">W</span><span>Web Tools Hub</span></a><nav class="desktop-nav"><a class:list={[path === '/explore' && 'active']} href="/explore">Khám phá</a><a class:list={[path.startsWith('/category') && 'active']} href="/categories">Danh mục</a><a href="/explore#new">Mới</a></nav><form class="header-search" action="/search"><Icon name="search" size={18}/><input name="q" aria-label="Tìm kiếm" placeholder="Tìm công cụ..." /></form><button class="theme-toggle" data-theme-toggle aria-label="Đổi giao diện">◐</button></div></header>
+  <main><slot /></main>
+  <footer class="site-footer"><div class="container"><div><a class="brand" href="/"><span class="brand-mark">W</span><span>Web Tools Hub</span></a><p>Tìm đúng công cụ web cho điều bạn muốn làm.</p></div><div class="footer-links"><a href="/explore">Khám phá</a><a href="/categories">Danh mục</a><a href="/search">Tìm kiếm</a></div></div></footer>
+  <nav class="mobile-bottom-nav"><a class:list={[path === '/' && 'active']} href="/"><Icon name="home"/><span>Trang chủ</span></a><a class:list={[path === '/explore' && 'active']} href="/explore"><Icon name="compass"/><span>Khám phá</span></a><a class:list={[path === '/search' && 'active']} href="/search"><Icon name="search"/><span>Tìm kiếm</span></a><a class:list={[path.startsWith('/categor') && 'active']} href="/categories"><Icon name="folder"/><span>Danh mục</span></a></nav>
+</BaseLayout>

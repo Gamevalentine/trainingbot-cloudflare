@@ -1,0 +1,23 @@
+---
+import type { AppRecord } from '../lib/types';
+import { mediaUrl, statusLabel } from '../lib/utils';
+interface Props { app: AppRecord; compact?: boolean; }
+const { app, compact = false } = Astro.props;
+---
+<article class:list={["app-card", compact && "app-card--compact"]}>
+  <a class="app-card__visual" href={`/apps/${app.slug}`} aria-label={`Xem ${app.name}`}>
+    {app.cover_key ? <img src={mediaUrl(app.cover_key)} alt={`Ảnh xem trước ${app.name}`} loading="lazy" /> : <div class="app-card__placeholder" aria-hidden="true"><span>{app.name.slice(0, 1).toUpperCase()}</span></div>}
+  </a>
+  <div class="app-card__body">
+    <div class="app-card__title-row">
+      <div class="app-card__identity">
+        {app.icon_key ? <img class="app-icon" src={mediaUrl(app.icon_key)} alt="" loading="lazy" /> : <div class="app-icon app-icon--fallback">{app.name.slice(0, 1).toUpperCase()}</div>}
+        <div><h3><a href={`/apps/${app.slug}`}>{app.name}</a></h3><p class="app-card__category">{app.category_name ?? 'Công cụ web'}</p></div>
+      </div>
+      {app.featured === 1 && <span class="badge badge--featured">Đề xuất</span>}
+    </div>
+    <p class="app-card__desc">{app.short_description || app.primary_use || 'Công cụ web sẵn sàng để khám phá.'}</p>
+    <div class="app-card__meta"><span class="badge">{statusLabel(app.status)}</span><span>{app.pricing_type === 'free' ? 'Miễn phí' : app.pricing_type === 'experimental' ? 'Thử nghiệm' : 'Riêng tư'}</span>{typeof app.total_opens === 'number' && <span>{app.total_opens.toLocaleString('vi-VN')} lượt mở</span>}</div>
+    <div class="app-card__actions"><a class="button primary small" href={`/go/${app.slug}`} target="_blank" rel="noopener">Mở ứng dụng</a><a class="button ghost small" href={`/apps/${app.slug}`}>Xem chi tiết</a></div>
+  </div>
+</article>

@@ -1,0 +1,4 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro'; import { env } from 'cloudflare:workers';
+---
+<AdminLayout title="Cài đặt"><section class="settings-grid"><article class="setting-panel"><p class="eyebrow">Hệ thống</p><h2>Web Tools Hub</h2><dl class="meta-list"><div><dt>Site URL</dt><dd>{String(env.SITE_URL || 'Chưa cấu hình')}</dd></div><div><dt>Admin protection</dt><dd>{String(env.REQUIRE_ACCESS || 'true') === 'false' ? 'Tắt (local)' : 'Cloudflare Access'}</dd></div><div><dt>Database</dt><dd>D1 · DB</dd></div><div><dt>Media</dt><dd>R2 · MEDIA</dd></div></dl></article><article class="setting-panel"><p class="eyebrow">Bảo mật</p><h2>Thông tin riêng tư</h2><p>Admin URL, GitHub repo, Cloudflare project và source archive chỉ được truy xuất qua Owner Console. Public pages chỉ chọn tập cột công khai.</p></article></section></AdminLayout>

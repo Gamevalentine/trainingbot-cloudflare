@@ -1,0 +1,31 @@
+---
+import '../styles/global.css';
+interface Props { title: string; description?: string; image?: string; canonical?: string; noIndex?: boolean; structuredData?: Record<string, unknown> | null; }
+const { title, description = 'Khám phá và tìm đúng công cụ web cho nhu cầu của bạn.', image, canonical, noIndex = false, structuredData = null } = Astro.props;
+const siteUrl = Astro.locals.runtime?.env?.SITE_URL || Astro.url.origin;
+const canonicalUrl = canonical || new URL(Astro.url.pathname, siteUrl).toString();
+const ogImage = image ? new URL(image, siteUrl).toString() : new URL('/favicon.svg', siteUrl).toString();
+---
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width" />
+  <meta name="theme-color" content="#f7f7f5" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonicalUrl} />
+  {noIndex && <meta name="robots" content="noindex,nofollow" />}
+  <meta property="og:type" content="website" /><meta property="og:title" content={title} /><meta property="og:description" content={description} /><meta property="og:url" content={canonicalUrl} /><meta property="og:image" content={ogImage} />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  {structuredData && <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />}
+  <script is:inline>
+    (() => { const saved = localStorage.getItem('wth-theme') || 'system'; const dark = saved === 'dark' || (saved === 'system' && matchMedia('(prefers-color-scheme: dark)').matches); document.documentElement.dataset.theme = dark ? 'dark' : 'light'; document.documentElement.dataset.themePreference = saved; })();
+  </script>
+</head>
+<body><slot />
+<script is:inline>
+  document.querySelectorAll('[data-theme-toggle]').forEach((button) => button.addEventListener('click', () => { const current = document.documentElement.dataset.themePreference || 'system'; const next = current === 'system' ? 'light' : current === 'light' ? 'dark' : 'system'; localStorage.setItem('wth-theme', next); const dark = next === 'dark' || (next === 'system' && matchMedia('(prefers-color-scheme: dark)').matches); document.documentElement.dataset.theme = dark ? 'dark' : 'light'; document.documentElement.dataset.themePreference = next; button.setAttribute('title', `Giao diện: ${next}`); }));
+</script>
+</body></html>

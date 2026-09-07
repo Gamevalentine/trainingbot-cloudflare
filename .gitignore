@@ -1,2 +1,7 @@
-TrainingBot_SOURCE_CLEAN.zip
-.cf_unpack/
+node_modules/
+dist/
+.astro/
+.wrangler/
+.dev.vars
+.env
+.DS_Store

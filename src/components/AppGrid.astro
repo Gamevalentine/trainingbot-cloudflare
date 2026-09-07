@@ -1,0 +1,7 @@
+---
+import AppCard from './AppCard.astro';
+import type { AppRecord } from '../lib/types';
+interface Props { apps: AppRecord[]; emptyText?: string; }
+const { apps, emptyText = 'Chưa có công cụ phù hợp.' } = Astro.props;
+---
+{apps.length ? <div class="app-grid">{apps.map((app) => <AppCard app={app} />)}</div> : <div class="empty-state"><h3>Chưa có kết quả</h3><p>{emptyText}</p></div>}

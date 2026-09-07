@@ -1,0 +1,2 @@
+import type { APIRoute } from 'astro'; import { db } from '../../../../lib/cloudflare'; import { redirect } from '../../../../lib/admin'; import { slugify } from '../../../../lib/utils';
+export const POST:APIRoute=async({request})=>{const f=await request.formData();const name=String(f.get('name')||'').trim();if(!name)return new Response('Thiếu tên',{status:400});await db().prepare('INSERT INTO tags (name,slug) VALUES (?,?)').bind(name,slugify(String(f.get('slug')||name))).run();return redirect('/admin/tags');};
