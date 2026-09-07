@@ -9,7 +9,7 @@ const ownerEmail = String(env.OWNER_EMAIL || '').trim();
 const year = new Date().getFullYear();
 ---
 <BaseLayout title={title} description={description} image={image} canonical={canonical} structuredData={structuredData}>
-  <header class="site-header"><div class="container header-inner"><a class="brand" href="/"><span class="brand-mark">T</span><span>Toolpick</span></a><nav class="desktop-nav"><a class:list={[path === '/explore' && 'active']} href="/explore">Khám phá</a><a class:list={[path.startsWith('/category') && 'active']} href="/categories">Danh mục</a><a href="/explore#new">Mới</a></nav><form class="header-search" action="/search"><Icon name="search" size={18}/><input name="q" aria-label="Tìm kiếm" placeholder="Tìm công cụ..." /></form><button class="theme-toggle" data-theme-toggle aria-label="Đổi giao diện">◐</button></div></header>
+  <header class="site-header"><div class="container header-inner"><a class="brand" href="/"><span class="brand-mark">T</span><span>Toolpick</span></a><nav class="desktop-nav"><a class:list={[path === '/explore' && 'active']} href="/explore">Công cụ</a><a class:list={[path.startsWith('/categor') && 'active']} href="/categories">Danh mục</a><a class:list={[path === '/favorites' && 'active']} href="/favorites">Yêu thích</a></nav><form class="header-search" action="/search"><Icon name="search" size={18}/><input name="q" aria-label="Tìm kiếm" placeholder="Tìm công cụ..." /></form><button class="theme-toggle" data-theme-toggle aria-label="Đổi giao diện">◐</button></div></header>
   <main><slot /></main>
   <footer class="site-footer site-footer--rich">
     <div class="container footer-main">
@@ -33,5 +33,30 @@ const year = new Date().getFullYear();
     </div>
     <div class="container footer-bottom"><span>© {year} Toolpick</span><span>Kho công cụ web cá nhân · Public tools không yêu cầu đăng nhập</span></div>
   </footer>
-  <nav class="mobile-bottom-nav"><a class:list={[path === '/' && 'active']} href="/"><Icon name="home"/><span>Trang chủ</span></a><a class:list={[path === '/explore' && 'active']} href="/explore"><Icon name="compass"/><span>Khám phá</span></a><a class:list={[path === '/search' && 'active']} href="/search"><Icon name="search"/><span>Tìm kiếm</span></a><a class:list={[path.startsWith('/categor') && 'active']} href="/categories"><Icon name="folder"/><span>Danh mục</span></a></nav>
+  <nav class="mobile-bottom-nav"><a class:list={[path === '/' && 'active']} href="/"><Icon name="home"/><span>Trang chủ</span></a><a class:list={[path === '/explore' && 'active']} href="/explore"><Icon name="compass"/><span>Công cụ</span></a><a class:list={[path.startsWith('/categor') && 'active']} href="/categories"><Icon name="folder"/><span>Danh mục</span></a><a class:list={[path === '/favorites' && 'active']} href="/favorites"><Icon name="heart"/><span>Yêu thích</span></a></nav>
+<script is:inline>
+  (() => {
+    const key = 'toolpick-favorites';
+    const read = () => { try { const value = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(value) ? value.filter(Boolean) : []; } catch { return []; } };
+    const write = (items) => localStorage.setItem(key, JSON.stringify([...new Set(items)]));
+    const sync = () => {
+      const favorites = new Set(read());
+      document.querySelectorAll('[data-favorite-toggle]').forEach((button) => {
+        const active = favorites.has(button.dataset.slug);
+        button.classList.toggle('is-favorite', active); button.setAttribute('aria-pressed', String(active)); button.setAttribute('title', active ? 'Bỏ khỏi yêu thích' : 'Yêu thích');
+      });
+      const cards = [...document.querySelectorAll('[data-favorite-card]')];
+      cards.forEach((card) => { card.hidden = !favorites.has(card.dataset.slug); });
+      const count = cards.filter((card) => !card.hidden).length;
+      const list = document.querySelector('[data-favorites-list]'); const empty = document.querySelector('[data-favorites-empty]');
+      if (list) list.hidden = count === 0; if (empty) empty.hidden = count > 0;
+    };
+    document.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-favorite-toggle]'); if (!button) return;
+      const slug = button.dataset.slug; if (!slug) return;
+      const favorites = read(); write(favorites.includes(slug) ? favorites.filter((item) => item !== slug) : [...favorites, slug]); sync();
+    });
+    addEventListener('storage', sync); sync();
+  })();
+</script>
 </BaseLayout>

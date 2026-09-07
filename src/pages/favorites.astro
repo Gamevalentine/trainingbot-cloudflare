@@ -1,0 +1,26 @@
+---
+import PublicLayout from '../layouts/PublicLayout.astro';
+import AppCard from '../components/AppCard.astro';
+import Icon from '../components/Icon.astro';
+import { listPublicApps } from '../lib/db';
+
+const apps = await listPublicApps({ limit: 200 });
+---
+<PublicLayout title="Yêu thích · Toolpick" description="Những công cụ bạn đã lưu để mở lại nhanh trên thiết bị này.">
+  <section class="container page-hero favorites-hero">
+    <p class="eyebrow">Cá nhân</p>
+    <h1>Công cụ yêu thích</h1>
+    <p>Những công cụ bạn đánh dấu sẽ được lưu ngay trên trình duyệt này, không cần đăng nhập.</p>
+  </section>
+  <section class="container favorites-section">
+    <div class="app-grid favorites-grid" data-favorites-list hidden>
+      {apps.map((app) => <div data-favorite-card data-slug={app.slug} hidden><AppCard app={app}/></div>)}
+    </div>
+    <div class="favorites-empty" data-favorites-empty>
+      <span><Icon name="heart" size={26}/></span>
+      <h2>Chưa có công cụ yêu thích</h2>
+      <p>Đánh dấu biểu tượng trái tim trên một công cụ để lưu nó vào đây.</p>
+      <a class="button primary" href="/explore">Xem công cụ</a>
+    </div>
+  </section>
+</PublicLayout>
