@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+const error = Astro.url.searchParams.get('error') === '1';
+const next = Astro.url.searchParams.get('next') || '/admin';
+---
+<BaseLayout title="Đăng nhập Admin · Toolpick" description="Owner Console" noIndex={true}>
+  <main class="admin-login-page">
+    <section class="admin-login-card">
+      <a class="admin-login-brand" href="/"><span class="brand-mark">T</span><span>Toolpick<small>Owner Console</small></span></a>
+      <div class="admin-login-copy"><p class="eyebrow">Khu vực riêng tư</p><h1>Đăng nhập Admin</h1><p>Nhập mật khẩu quản trị để tiếp tục.</p></div>
+      {error && <div class="admin-login-error">Mật khẩu không đúng.</div>}
+      <form method="post" action="/api/admin/login" class="admin-login-form">
+        <input type="hidden" name="next" value={next} />
+        <label>Mật khẩu<input type="password" name="password" autocomplete="current-password" required autofocus /></label>
+        <button class="button primary" type="submit">Đăng nhập</button>
+      </form>
+      <a class="admin-login-back" href="/">← Quay lại Toolpick</a>
+    </section>
+  </main>
+</BaseLayout>

@@ -31,7 +31,6 @@
   ],
   "vars": {
     "SITE_NAME": "Toolpick",
-    "SITE_URL": "https://toolpick.id.vn",
-    "REQUIRE_ACCESS": "true"
+    "SITE_URL": "https://toolpick.id.vn"
   }
 }
