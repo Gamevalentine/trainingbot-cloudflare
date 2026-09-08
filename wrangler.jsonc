@@ -25,9 +25,6 @@
   "vars": {
     "SITE_NAME": "Toolpick",
     "SITE_URL": "https://toolpick.ai-vn.workers.dev",
-    "OWNER_EMAIL": "",
-    "ACCESS_TEAM_DOMAIN": "",
-    "ACCESS_AUD": "",
     "REQUIRE_ACCESS": "true"
   }
 }

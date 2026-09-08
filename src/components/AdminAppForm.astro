@@ -7,9 +7,11 @@ interface Props {
   categories: Category[];
   tags: Tag[];
   selectedTagIds?: number[];
+  screenshots?: any[];
+  source?: { key:string; original_name?:string; updated_at?:string } | null;
 }
 
-const { app = null, categories, tags, selectedTagIds = [] } = Astro.props;
+const { app = null, categories, tags, selectedTagIds = [], screenshots = [], source = null } = Astro.props;
 const selected = new Set(selectedTagIds);
 const isNew = !app;
 ---
@@ -53,7 +55,11 @@ const isNew = !app;
       <label>Cover<input type="file" name="cover" accept="image/*" /></label>
       <label class="full">Screenshots<input type="file" name="screenshots" accept="image/*" multiple /></label>
     </div>
-    {(app?.icon_key || app?.cover_key) && <div class="media-current">{app?.icon_key && <img src={`/media/${app.icon_key}`} alt="Icon hiện tại" />}{app?.cover_key && <img src={`/media/${app.cover_key}`} alt="Cover hiện tại" />}</div>}
+    {(app?.icon_key || app?.cover_key || screenshots.length > 0) && <div class="admin-media-current">
+      {app?.icon_key && <article><img src={`/media/${app.icon_key}`} alt="Icon hiện tại"/><div><strong>Icon hiện tại</strong><button class="text-danger" type="submit" formmethod="post" formaction={`/api/admin/media/${encodeURIComponent(app.icon_key)}?_method=DELETE&app=${app.id}&kind=icon&back=/admin/apps/${app.id}`} formnovalidate>Xóa</button></div></article>}
+      {app?.cover_key && <article><img src={`/media/${app.cover_key}`} alt="Cover hiện tại"/><div><strong>Cover hiện tại</strong><button class="text-danger" type="submit" formmethod="post" formaction={`/api/admin/media/${encodeURIComponent(app.cover_key)}?_method=DELETE&app=${app.id}&kind=cover&back=/admin/apps/${app.id}`} formnovalidate>Xóa</button></div></article>}
+      {screenshots.map((shot:any)=><article><img src={`/media/${shot.r2_key}`} alt={shot.alt_text||'Screenshot'}/><div><strong>Screenshot</strong><button class="text-danger" type="submit" formmethod="post" formaction={`/api/admin/media/${encodeURIComponent(shot.r2_key)}?_method=DELETE&screen=${shot.id}&back=/admin/apps/${app!.id}`} formnovalidate>Xóa</button></div></article>)}
+    </div>}
   </section>
 
   <section class="form-section">
@@ -70,7 +76,8 @@ const isNew = !app;
       <label class="full">Admin URL<input type="url" name="admin_url" value={app?.admin_url ?? ''} /></label>
       <label class="full">GitHub repo<input name="github_repo" value={app?.github_repo ?? ''} /></label>
       <label class="full">Cloudflare project<input name="cloudflare_project" value={app?.cloudflare_project ?? ''} /></label>
-      <label class="full">Source archive<input type="file" name="source_archive" accept=".zip,.tar,.gz,.tgz" /></label>
+      <label class="full">Source archive <span class="field-note">Tối đa 100 MB</span><input type="file" name="source_archive" accept=".zip,.tar,.gz,.tgz" /></label>
+      {app && source && <div class="source-current full"><div><strong>{source.original_name || 'Source archive'}</strong><span>Đã lưu riêng trên R2</span></div><div><a class="button ghost small" href={`/api/admin/source/${app.id}`}>Tải source</a><button class="button danger small" type="submit" formmethod="post" formaction={`/api/admin/apps/${app.id}?_method=REMOVE_MEDIA&kind=source`} formnovalidate>Xóa source</button></div></div>}
     </div>
   </section>
 

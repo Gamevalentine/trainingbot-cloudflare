@@ -1,4 +1,13 @@
 ---
-import AdminLayout from '../../layouts/AdminLayout.astro'; import { listTags } from '../../lib/db'; const tags = await listTags();
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { db } from '../../lib/cloudflare';
+const tags=(await db().prepare(`SELECT t.*,COUNT(x.app_id) app_count FROM tags t LEFT JOIN app_tags x ON x.tag_id=t.id GROUP BY t.id ORDER BY t.name`).all()).results as any[];
 ---
-<AdminLayout title="Tags"><section class="split-admin"><form class="setting-panel" method="post" action="/api/admin/tags"><p class="eyebrow">Tag mới</p><h2>Thêm tag</h2><label>Tên<input name="name" required /></label><label>Slug<input name="slug" /></label><button class="button primary" type="submit">Thêm</button></form><div class="stack-list">{tags.map((tag) => <form class="inline-edit compact" method="post" action={`/api/admin/tags/${tag.id}`}><input name="name" value={tag.name} required/><input name="slug" value={tag.slug} required/><button class="button small" type="submit">Lưu</button><button class="button danger small" formmethod="post" formaction={`/api/admin/tags/${tag.id}?_method=DELETE`} onclick="return confirm('Xóa tag?')">Xóa</button></form>)}</div></section></AdminLayout>
+<AdminLayout title="Tags">
+  <section class="admin-manage-layout">
+    <form class="setting-panel admin-create-panel" method="post" action="/api/admin/tags"><p class="eyebrow">Tag mới</p><h2>Thêm tag</h2><p>Tag bổ sung ngữ cảnh cho tìm kiếm và gợi ý liên quan.</p><label>Tên<input name="name" required placeholder="Ví dụ: cấp cứu"/></label><label>Slug<input name="slug" placeholder="Tự tạo nếu để trống"/></label><button class="button primary" type="submit">+ Thêm tag</button></form>
+    <div class="admin-edit-list admin-edit-list--compact">
+      {tags.length?tags.map((tag)=><form class="admin-edit-card admin-edit-card--compact" method="post" action={`/api/admin/tags/${tag.id}`}><div class="admin-edit-card__head"><div><strong>{tag.name}</strong><span>{tag.app_count} website đang dùng</span></div></div><div class="field-grid"><label>Tên<input name="name" value={tag.name} required/></label><label>Slug<input name="slug" value={tag.slug} required/></label></div><div class="admin-edit-actions"><button class="button small" type="submit">Lưu</button><button class="button danger small" formmethod="post" formaction={`/api/admin/tags/${tag.id}?_method=DELETE`} onclick="return confirm('Xóa tag này?')">Xóa</button></div></form>):<div class="empty-state"><h3>Chưa có tag</h3><p>Thêm tag đầu tiên ở cột bên trái.</p></div>}
+    </div>
+  </section>
+</AdminLayout>

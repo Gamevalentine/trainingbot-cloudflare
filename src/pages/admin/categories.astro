@@ -1,4 +1,22 @@
 ---
-import AdminLayout from '../../layouts/AdminLayout.astro'; import { listCategories } from '../../lib/db'; const categories = await listCategories(false);
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { db } from '../../lib/cloudflare';
+const categories=(await db().prepare(`SELECT c.*,COUNT(a.id) app_count FROM categories c LEFT JOIN apps a ON a.category_id=c.id GROUP BY c.id ORDER BY c.sort_order,c.name`).all()).results as any[];
 ---
-<AdminLayout title="Danh mục"><section class="split-admin"><form class="setting-panel" method="post" action="/api/admin/categories"><p class="eyebrow">Danh mục mới</p><h2>Thêm danh mục</h2><label>Tên<input name="name" required /></label><label>Slug<input name="slug" /></label><label>Mô tả<textarea name="description" rows="3"></textarea></label><label>Icon<input name="icon" value="folder" /></label><label>Thứ tự<input type="number" name="sort_order" value="0" /></label><button class="button primary" type="submit">Thêm</button></form><div class="stack-list">{categories.map((c) => <form class="inline-edit" method="post" action={`/api/admin/categories/${c.id}`}><input name="name" value={c.name} required/><input name="slug" value={c.slug} required/><input name="icon" value={c.icon}/><input type="number" name="sort_order" value={c.sort_order}/><label class="checkbox-row"><input type="checkbox" name="is_active" value="1" checked={c.is_active===1}/> Hiện</label><button class="button small" type="submit">Lưu</button><button class="button danger small" formmethod="post" formaction={`/api/admin/categories/${c.id}?_method=DELETE`} onclick="return confirm('Xóa danh mục?')">Xóa</button></form>)}</div></section></AdminLayout>
+<AdminLayout title="Danh mục">
+  <section class="admin-manage-layout">
+    <form class="setting-panel admin-create-panel" method="post" action="/api/admin/categories">
+      <p class="eyebrow">Danh mục mới</p><h2>Thêm danh mục</h2><p>Nhóm các công cụ theo chủ đề để tìm và lọc nhanh.</p>
+      <label>Tên<input name="name" required placeholder="Ví dụ: Y khoa"/></label><label>Slug<input name="slug" placeholder="Tự tạo nếu để trống"/></label>
+      <label>Mô tả<textarea name="description" rows="3"></textarea></label><div class="field-grid"><label>Icon<input name="icon" value="folder"/></label><label>Thứ tự<input type="number" name="sort_order" value="0"/></label></div>
+      <button class="button primary" type="submit">+ Thêm danh mục</button>
+    </form>
+    <div class="admin-edit-list">
+      {categories.map((c)=><form class="admin-edit-card" method="post" action={`/api/admin/categories/${c.id}`}>
+        <div class="admin-edit-card__head"><div><strong>{c.name}</strong><span>{c.app_count} website</span></div><label class="switch-row"><input type="checkbox" name="is_active" value="1" checked={c.is_active===1}/> Hiển thị</label></div>
+        <div class="field-grid"><label>Tên<input name="name" value={c.name} required/></label><label>Slug<input name="slug" value={c.slug} required/></label><label class="full">Mô tả<textarea name="description" rows="2">{c.description}</textarea></label><label>Icon<input name="icon" value={c.icon}/></label><label>Thứ tự<input type="number" name="sort_order" value={c.sort_order}/></label></div>
+        <div class="admin-edit-actions"><button class="button small" type="submit">Lưu thay đổi</button><button class="button danger small" formmethod="post" formaction={`/api/admin/categories/${c.id}?_method=DELETE`} onclick="return confirm('Xóa danh mục? Website bên trong sẽ chuyển về chưa phân loại.')">Xóa</button></div>
+      </form>)}
+    </div>
+  </section>
+</AdminLayout>

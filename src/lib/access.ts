@@ -39,8 +39,9 @@ async function verifyAccessJwt(token: string) {
   const aud = Array.isArray(payload.aud) ? payload.aud.map(String) : [String(payload.aud || '')];
   if (!aud.includes(audience)) throw new Error('JWT audience không hợp lệ');
   const owner = String(env.OWNER_EMAIL || '').trim().toLowerCase();
+  if (!owner) throw new Error('OWNER_EMAIL chưa được cấu hình');
   const email = String(payload.email || '').trim().toLowerCase();
-  if (owner && email !== owner) throw new Error('Tài khoản không phải chủ sở hữu');
+  if (!email || email !== owner) throw new Error('Tài khoản không phải chủ sở hữu');
   return payload;
 }
 
