@@ -1,7 +1,14 @@
 ---
-import AdminLayout from '../../layouts/AdminLayout.astro'; import { env } from 'cloudflare:workers';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import Icon from '../../components/Icon.astro';
+import { env } from 'cloudflare:workers';
+const siteUrl=String(env.SITE_URL||'Chưa cấu hình');
 ---
 <AdminLayout title="Cài đặt">
-  <section class="settings-grid"><article class="setting-panel"><p class="eyebrow">Hệ thống</p><h2>Toolpick</h2><dl class="meta-list"><div><dt>Site URL</dt><dd>{String(env.SITE_URL||'Chưa cấu hình')}</dd></div><div><dt>Database</dt><dd>D1 · DB</dd></div><div><dt>Media</dt><dd>R2 · MEDIA</dd></div><div><dt>Admin protection</dt><dd>Mật khẩu + D1 session token</dd></div></dl></article>
-  <article class="setting-panel"><p class="eyebrow">Bảo mật</p><h2>Trạng thái đăng nhập</h2><div class="security-checks"><div class="ok"><span>✓</span><strong>Admin password</strong><small>SHA-256 hash đã cấu hình</small></div><div class="ok"><span>✓</span><strong>Session store</strong><small>Token ngẫu nhiên, chỉ lưu hash trong D1</small></div><div class="ok"><span>✓</span><strong>Session cookie</strong><small>HttpOnly · Secure · SameSite=Strict · 12 giờ</small></div></div><p>Admin URL, GitHub repo, Cloudflare project và source archive không xuất hiện trên public pages.</p></article></section>
+  <section class="admin-section-intro"><div><p class="eyebrow">Hệ thống</p><h2>Cấu hình Toolpick</h2><p>Thông tin hạ tầng và trạng thái bảo vệ Owner Console.</p></div><a class="button ghost" href="/" target="_blank">Mở trang công khai ↗</a></section>
+  <section class="settings-modern-grid">
+    <article class="settings-modern-card"><div class="settings-modern-head"><span><Icon name="settings" size={20}/></span><div><p class="eyebrow">Hạ tầng</p><h2>Thông tin hệ thống</h2></div></div><dl class="settings-modern-list"><div><dt>Site URL</dt><dd>{siteUrl}</dd></div><div><dt>Database</dt><dd>D1 · web-tools-hub-db</dd></div><div><dt>Media</dt><dd>R2 · web-tools-hub-media</dd></div><div><dt>Admin session</dt><dd>D1 token store</dd></div></dl></article>
+    <article class="settings-modern-card"><div class="settings-modern-head"><span><Icon name="check-square" size={20}/></span><div><p class="eyebrow">Bảo mật</p><h2>Trạng thái đăng nhập</h2></div></div><div class="settings-security-list"><div><span>✓</span><div><strong>Admin password</strong><small>Chỉ lưu SHA-256 hash trong source</small></div></div><div><span>✓</span><div><strong>Session token</strong><small>Token ngẫu nhiên, chỉ lưu hash trong D1</small></div></div><div><span>✓</span><div><strong>Cookie bảo mật</strong><small>HttpOnly · Secure · SameSite=Strict · 12 giờ</small></div></div></div></article>
+    <article class="settings-modern-card settings-modern-card--wide"><div class="settings-modern-head"><span><Icon name="folder" size={20}/></span><div><p class="eyebrow">Riêng tư</p><h2>Dữ liệu không công khai</h2></div></div><p class="settings-note">Admin URL, GitHub repository, Cloudflare project và source archive không được đưa vào public pages. Website đặt Private cũng không xuất hiện ở Explore, Search, Sitemap hoặc trang chi tiết công khai.</p></article>
+  </section>
 </AdminLayout>

@@ -1,7 +1,12 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
+import Icon from '../../components/Icon.astro';
 ---
 <AdminLayout title="Backup">
-  <div class="admin-notice"><strong>Backup hiện gồm toàn bộ metadata D1 + manifest file R2.</strong><span>File ảnh/source vẫn nằm nguyên trên R2; JSON không chứa bản sao nhị phân của các file đó.</span></div>
-  <section class="settings-grid"><article class="setting-panel"><p class="eyebrow">Export</p><h2>Xuất backup Toolpick</h2><p>Apps, categories, tags, quan hệ, screenshots, analytics, lịch sử trạng thái và danh sách object R2.</p><a class="button primary" href="/api/admin/backup?download=1">Tải backup JSON</a></article><article class="setting-panel"><p class="eyebrow">Restore</p><h2>Khôi phục metadata</h2><p>Thay thế toàn bộ metadata D1 hiện tại. Chỉ nên dùng file do Toolpick export.</p><form method="post" action="/api/admin/backup" enctype="multipart/form-data" onsubmit="return confirm('Thay thế toàn bộ metadata hiện tại bằng backup này?')"><input type="file" name="backup" accept="application/json,.json" required/><button class="button danger" type="submit">Khôi phục backup</button></form></article></section>
+  <section class="admin-section-intro"><div><p class="eyebrow">An toàn dữ liệu</p><h2>Sao lưu & khôi phục</h2><p>Backup chứa toàn bộ metadata D1 và manifest các file đang lưu trên R2.</p></div></section>
+  <div class="admin-backup-notice"><span><Icon name="backup" size={18}/></span><div><strong>Ảnh và source vẫn nằm nguyên trên R2.</strong><p>File JSON chỉ chứa metadata và danh sách object, không nhúng bản sao nhị phân của media.</p></div></div>
+  <section class="backup-grid">
+    <article class="backup-card"><span class="backup-card__icon"><Icon name="backup" size={22}/></span><div><p class="eyebrow">Export</p><h2>Xuất backup Toolpick</h2><p>Apps, categories, tags, quan hệ, screenshots, analytics, lịch sử trạng thái và manifest R2.</p></div><div class="backup-card__footer"><small>Nên lưu một bản trước thay đổi lớn.</small><a class="button primary" href="/api/admin/backup?download=1">Tải backup JSON</a></div></article>
+    <article class="backup-card backup-card--danger"><span class="backup-card__icon"><Icon name="backup" size={22}/></span><div><p class="eyebrow">Restore</p><h2>Khôi phục metadata</h2><p>Thao tác này thay thế toàn bộ metadata D1 hiện tại bằng nội dung từ file backup.</p></div><form class="backup-restore-form" method="post" action="/api/admin/backup" enctype="multipart/form-data" onsubmit="return confirm('Thay thế toàn bộ metadata hiện tại bằng backup này?')"><label>File backup JSON<input type="file" name="backup" accept="application/json,.json" required/></label><button class="button danger" type="submit">Khôi phục backup</button></form></article>
+  </section>
 </AdminLayout>
