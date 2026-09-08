@@ -8,6 +8,12 @@
     "binding": "ASSETS",
     "directory": "./dist"
   },
+  "routes": [
+    {
+      "pattern": "toolpick.id.vn",
+      "custom_domain": true
+    }
+  ],
   "d1_databases": [
     {
       "binding": "DB",
@@ -24,7 +30,7 @@
   ],
   "vars": {
     "SITE_NAME": "Toolpick",
-    "SITE_URL": "https://toolpick.ai-vn.workers.dev",
+    "SITE_URL": "https://toolpick.id.vn",
     "REQUIRE_ACCESS": "true"
   }
 }
