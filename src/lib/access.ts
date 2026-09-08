@@ -1,5 +1,6 @@
 import type { APIContext } from 'astro';
 import { env } from 'cloudflare:workers';
+import { ADMIN_PASSWORD_SHA256 } from './admin-password';
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -18,21 +19,17 @@ function fromB64url(input: string) {
   return Uint8Array.from(binary, (char) => char.charCodeAt(0));
 }
 
-function configuredPassword() {
-  return String(env.ADMIN_PASSWORD || '');
-}
-
 async function sessionKey() {
   const secret = String(env.ADMIN_SESSION_SECRET || '');
   if (secret.length < 32) throw new Error('ADMIN_SESSION_SECRET chưa được cấu hình');
   return crypto.subtle.importKey('raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign', 'verify']);
 }
-export function checkAdminPassword(candidate: string) {
-  const password = configuredPassword();
-  if (password.length < 16 || !candidate) return false;
-  let diff = password.length ^ candidate.length;
-  const max = Math.max(password.length, candidate.length);
-  for (let i = 0; i < max; i++) diff |= (password.charCodeAt(i) || 0) ^ (candidate.charCodeAt(i) || 0);
+export async function checkAdminPassword(candidate: string) {
+  if (!candidate) return false;
+  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(candidate)));
+  const actual = Array.from(digest, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  let diff = actual.length ^ ADMIN_PASSWORD_SHA256.length;
+  for (let i = 0; i < actual.length; i++) diff |= actual.charCodeAt(i) ^ ADMIN_PASSWORD_SHA256.charCodeAt(i);
   return diff === 0;
 }
 
