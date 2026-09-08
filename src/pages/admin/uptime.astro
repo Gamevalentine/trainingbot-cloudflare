@@ -1,0 +1,20 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import Icon from '../../components/Icon.astro';
+import { db } from '../../lib/cloudflare';
+const apps=(await db().prepare(`SELECT id,name,production_url,status,monitor_enabled,last_checked_at,last_http_status,last_response_ms,last_error FROM apps ORDER BY monitor_enabled DESC,COALESCE(NULLIF(last_checked_at,''),'1970-01-01') ASC,name`).all()).results as any[];
+const history=(await db().prepare(`SELECT u.* FROM uptime_checks u JOIN (SELECT app_id,MAX(id) id FROM uptime_checks GROUP BY app_id) x ON x.id=u.id`).all()).results as any[];
+const recentByApp=new Map(history.map((row:any)=>[row.app_id,row]));
+const fmt=(value:string)=>value?new Intl.DateTimeFormat('vi-VN',{dateStyle:'short',timeStyle:'short'}).format(new Date(value)):'Chưa kiểm tra';
+const online=apps.filter((a:any)=>a.last_checked_at && ((a.last_http_status>=200&&a.last_http_status<400)||[401,403,429].includes(a.last_http_status))).length;
+---
+<AdminLayout title="Uptime">
+  <section class="admin-section-intro"><div><p class="eyebrow">Theo dõi</p><h2>Trạng thái website</h2><p>{apps.length} website · {online} đang phản hồi · cron kiểm tra mỗi giờ</p></div><form method="post" action="/api/admin/uptime/check-all"><button class="button primary" type="submit">Kiểm tra tất cả</button></form></section>
+  <div class="uptime-list">
+    {apps.map((app:any)=>{const last=recentByApp.get(app.id);const up=last?.is_up===1;return <article class="uptime-row">
+      <div class="uptime-main"><span class:list={['uptime-dot',app.monitor_enabled?(up?'is-up':last?'is-down':'is-idle'):'is-disabled']}></span><div><strong>{app.name}</strong><a href={app.production_url} target="_blank" rel="noopener">{app.production_url}</a></div></div>
+      <div class="uptime-meta"><span>{app.monitor_enabled?'Đang theo dõi':'Đã tắt theo dõi'}</span><b>{last ? (up?'Online':'Offline') : 'Chưa kiểm tra'}</b><span>{last?.http_status ? `HTTP ${last.http_status}` : '—'}</span><span>{last?.response_ms != null ? `${last.response_ms} ms` : '—'}</span><small>{fmt(last?.checked_at||'')}</small><form method="post" action={`/api/admin/apps/${app.id}/uptime`}><button class="button ghost small" type="submit">Kiểm tra</button></form><a class="button ghost small" href={`/admin/apps/${app.id}`}>Sửa</a></div>
+      {last?.error && <p class="uptime-error"><Icon name="heart-pulse" size={15}/>{last.error}</p>}
+    </article>})}
+  </div>
+</AdminLayout>

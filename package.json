@@ -11,7 +11,8 @@
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "deploy": "npm run db:migrations:apply && wrangler deploy",
-    "db:migrations:apply": "wrangler d1 migrations apply DB --remote"
+    "db:migrations:apply": "wrangler d1 migrations apply DB --remote",
+    "deploy:monitor": "wrangler deploy -c wrangler.monitor.jsonc"
   },
   "dependencies": {
     "@astrojs/cloudflare": "14.3.0",

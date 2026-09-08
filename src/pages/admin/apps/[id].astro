@@ -12,6 +12,7 @@ const [categories,tags,tagRows,screenshotRows,source]=await Promise.all([
 const selectedTagIds=tagRows.results.map((row)=>row.tag_id); const screenshots=screenshotRows.results as any[];
 ---
 <AdminLayout title={`Sửa: ${app.name}`}>
+  {Astro.url.searchParams.get('imported') === '1' && <div class="admin-notice"><strong>Đã nhập website tự động.</strong><span>Website đang ở chế độ Private. Kiểm tra lại metadata, danh mục và ảnh trước khi chuyển Public.</span></div>}
   <AdminAppForm app={app} categories={categories} tags={tags} selectedTagIds={selectedTagIds} screenshots={screenshots} source={source}/>
   <section class="danger-zone"><div><h2>Xóa website</h2><p>Xóa metadata, screenshot, icon, cover và source archive của website này.</p></div><form method="post" action={`/api/admin/apps/${id}?_method=DELETE`} onsubmit="return confirm('Xóa vĩnh viễn website này?')"><button class="button danger" type="submit">Xóa website</button></form></section>
 </AdminLayout>

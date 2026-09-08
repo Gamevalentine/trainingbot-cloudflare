@@ -26,7 +26,7 @@ export async function formToApp(form: FormData) {
     github_repo: String(form.get('github_repo') || '').trim(), cloudflare_project: String(form.get('cloudflare_project') || '').trim(),
     short_description: String(form.get('short_description') || '').trim(), description: String(form.get('description') || '').trim(), primary_use: String(form.get('primary_use') || '').trim(), audience: String(form.get('audience') || '').trim(), features: String(form.get('features') || '').trim(),
     category_id: Number.isInteger(categoryRaw) && categoryRaw > 0 ? categoryRaw : null, status, visibility, featured: form.get('featured') === '1' ? 1 : 0,
-    pricing_type: pricing, platform: String(form.get('platform') || 'web').trim() || 'web', tech_stack: String(form.get('tech_stack') || '').trim(), version: String(form.get('version') || '').trim(), search_keywords: String(form.get('search_keywords') || '').trim(), updated_at: nowIso() };
+    pricing_type: pricing, platform: String(form.get('platform') || 'web').trim() || 'web', tech_stack: String(form.get('tech_stack') || '').trim(), version: String(form.get('version') || '').trim(), search_keywords: String(form.get('search_keywords') || '').trim(), monitor_enabled: form.get('monitor_enabled') === '1' ? 1 : 0, updated_at: nowIso() };
 }
 export async function storeFile(file: FormDataEntryValue | null, prefix: string) {
   if (!(file instanceof File) || !file.size) return '';

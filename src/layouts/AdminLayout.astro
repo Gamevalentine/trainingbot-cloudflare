@@ -5,7 +5,7 @@ interface Props { title: string; description?: string; }
 const { title, description = 'Toolpick Admin' } = Astro.props;
 const path = Astro.url.pathname;
 const nav = [
-  ['/admin','Tổng quan','home'], ['/admin/apps','Website','grid'], ['/admin/categories','Danh mục','folder'], ['/admin/tags','Tags','tags'], ['/admin/media','Media','media'], ['/admin/backup','Backup','backup'], ['/admin/settings','Cài đặt','settings']
+  ['/admin','Tổng quan','home'], ['/admin/apps','Website','grid'], ['/admin/uptime','Uptime','heart-pulse'], ['/admin/categories','Danh mục','folder'], ['/admin/tags','Tags','tags'], ['/admin/media','Media','media'], ['/admin/backup','Backup','backup'], ['/admin/settings','Cài đặt','settings']
 ];
 ---
 <BaseLayout title={`${title} · Admin`} description={description} noIndex={true}>

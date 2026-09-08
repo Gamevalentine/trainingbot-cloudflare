@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "toolpick-monitor",
+  "main": "src/monitor-worker.ts",
+  "compatibility_date": "2026-09-07",
+  "workers_dev": false,
+  "triggers": { "crons": ["0 * * * *"] },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "web-tools-hub-db",
+      "database_id": "7b7b3320-566b-44b9-bda5-f0249f487874",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

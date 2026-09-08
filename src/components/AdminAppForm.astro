@@ -41,6 +41,7 @@ const isNew = !app;
       <label>Nền tảng<input name="platform" value={app?.platform ?? 'web'} /></label>
       <label>Phiên bản<input name="version" value={app?.version ?? ''} /></label>
       <label class="checkbox-row"><input type="checkbox" name="featured" value="1" checked={app?.featured === 1} /> Được đề xuất / nổi bật</label>
+      <label class="checkbox-row"><input type="checkbox" name="monitor_enabled" value="1" checked={(app?.monitor_enabled ?? 1) === 1} /> Theo dõi uptime tự động</label>
     </div>
     <div class="tag-picker">
       <span>Tags</span>
