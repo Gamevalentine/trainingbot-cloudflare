@@ -3,7 +3,7 @@ import type { AppRecord, Category, Tag } from './types';
 import { normalizeSearch } from './utils';
 import { rankSearch } from './search';
 
-const PUBLIC_COLUMNS = `SELECT a.id,a.name,a.slug,a.production_url,a.icon_key,a.cover_key,a.short_description,a.description,a.primary_use,a.audience,a.features,a.category_id,a.status,a.visibility,a.featured,a.pricing_type,a.platform,a.tech_stack,a.version,a.search_keywords,a.created_at,a.updated_at,c.name category_name,c.slug category_slug,(SELECT GROUP_CONCAT(t.name,' ') FROM tags t JOIN app_tags x ON x.tag_id=t.id WHERE x.app_id=a.id) tag_names`;
+const PUBLIC_COLUMNS = `SELECT a.id,a.name,a.slug,a.production_url,a.icon_key,a.cover_key,a.short_description,a.description,a.primary_use,a.audience,a.features,a.category_id,a.status,a.visibility,a.featured,a.pricing_type,a.platform,a.tech_stack,a.version,a.search_keywords,a.monitor_enabled,a.last_checked_at,a.last_http_status,a.last_response_ms,a.created_at,a.updated_at,c.name category_name,c.slug category_slug,(SELECT GROUP_CONCAT(t.name,' ') FROM tags t JOIN app_tags x ON x.tag_id=t.id WHERE x.app_id=a.id) tag_names`;
 const PUBLIC_FROM = `FROM apps a LEFT JOIN categories c ON c.id=a.category_id`;
 
 export async function listCategories(activeOnly = true) {
