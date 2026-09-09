@@ -2,7 +2,7 @@
 import PublicLayout from '../layouts/PublicLayout.astro';
 import AppGrid from '../components/AppGrid.astro';
 import SearchFilters from '../components/SearchFilters.astro';
-import { listCategories, searchApps, trackSearch } from '../lib/db';
+import { listCategories, smartSearchApps, trackSearch } from '../lib/db';
 
 const params = Astro.url.searchParams;
 const q = params.get('q') || '';
@@ -15,10 +15,11 @@ const filters = {
   sort: params.get('sort') || undefined,
 };
 
-const [apps, categories] = await Promise.all([
-  searchApps(q, filters),
+const [search, categories] = await Promise.all([
+  smartSearchApps(q, filters),
   listCategories(),
 ]);
+const { apps, suggestions, intents } = search;
 if(q.trim()){const job=()=>trackSearch(q,apps.length).catch(()=>{});if(Astro.defer)Astro.defer(job);else await job();}
 ---
 
@@ -34,6 +35,7 @@ if(q.trim()){const job=()=>trackSearch(q,apps.length).catch(()=>{});if(Astro.def
         <input name="q" value={q} placeholder="Ví dụ: Tôi muốn học ECG" />
         <button>Tìm</button>
       </form>
+      {q && intents.length > 0 && <div class="smart-search-intent"><span>Đã hiểu nhu cầu</span>{intents.map((intent)=><b>{intent}</b>)}</div>}
     </div>
 
     <details class="mobile-filter">
@@ -51,10 +53,10 @@ if(q.trim()){const job=()=>trackSearch(q,apps.length).catch(()=>{});if(Astro.def
           <span>{apps.length} công cụ phù hợp</span>
           {q && <a href="/search">Xóa tìm kiếm</a>}
         </div>
-        <AppGrid
-          apps={apps}
-          emptyText="Thử mô tả nhu cầu theo cách khác hoặc bỏ bớt bộ lọc."
-        />
+        {apps.length > 0 ? <AppGrid apps={apps} /> : suggestions.length > 0 ? <>
+          <div class="smart-search-near"><strong>Chưa có kết quả khớp rõ</strong><span>Đây là những công cụ gần nhu cầu nhất.</span></div>
+          <AppGrid apps={suggestions} />
+        </> : <AppGrid apps={[]} emptyText="Thử mô tả nhu cầu theo cách khác hoặc bỏ bớt bộ lọc." />}
       </div>
     </div>
   </section>

@@ -1,8 +1,9 @@
 import { db } from './cloudflare';
 import type { AppRecord, Category, Tag } from './types';
-import { normalizeSearch, tokenizeSearch } from './utils';
+import { normalizeSearch } from './utils';
+import { rankSearch } from './search';
 
-const PUBLIC_COLUMNS = `SELECT a.id,a.name,a.slug,a.production_url,a.icon_key,a.cover_key,a.short_description,a.description,a.primary_use,a.audience,a.features,a.category_id,a.status,a.visibility,a.featured,a.pricing_type,a.platform,a.tech_stack,a.version,a.search_keywords,a.created_at,a.updated_at,c.name category_name,c.slug category_slug`;
+const PUBLIC_COLUMNS = `SELECT a.id,a.name,a.slug,a.production_url,a.icon_key,a.cover_key,a.short_description,a.description,a.primary_use,a.audience,a.features,a.category_id,a.status,a.visibility,a.featured,a.pricing_type,a.platform,a.tech_stack,a.version,a.search_keywords,a.created_at,a.updated_at,c.name category_name,c.slug category_slug,(SELECT GROUP_CONCAT(t.name,' ') FROM tags t JOIN app_tags x ON x.tag_id=t.id WHERE x.app_id=a.id) tag_names`;
 const PUBLIC_FROM = `FROM apps a LEFT JOIN categories c ON c.id=a.category_id`;
 
 export async function listCategories(activeOnly = true) {
@@ -40,25 +41,15 @@ export async function relatedApps(app: AppRecord, limit = 4) {
   return result.results;
 }
 
-export async function searchApps(query: string, filters: { category?: string; status?: string; platform?: string; pricing?: string; featured?: boolean; sort?: string } = {}) {
-  const normalized = normalizeSearch(query); const tokens = tokenizeSearch(query);
-  if (!normalized && !Object.values(filters).some(Boolean)) return listPublicApps(filters);
+export async function smartSearchApps(query: string, filters: { category?: string; status?: string; platform?: string; pricing?: string; featured?: boolean; sort?: string } = {}) {
+  const normalized = normalizeSearch(query);
   const candidates = await listPublicApps({ ...filters, limit: 200 });
-  if (!normalized) return candidates;
-  const scored = candidates.map((app) => {
-    const fields: [string,number][] = [[app.name,12],[app.search_keywords,10],[app.primary_use,9],[app.short_description,6],[app.category_name || '',7],[app.description,3],[app.audience,3],[app.features,4]];
-    let score = 0;
-    for (const [value,weight] of fields) {
-      const text = normalizeSearch(value || '');
-      if (!text) continue;
-      if (text === normalized) score += weight * 5;
-      if (text.includes(normalized)) score += weight * 3;
-      for (const token of tokens) if (text.includes(token)) score += weight;
-    }
-    return { app, score };
-  }).filter((item) => item.score > 0);
-  scored.sort((a,b) => b.score-a.score || b.app.featured-a.app.featured || String(b.app.updated_at).localeCompare(String(a.app.updated_at)));
-  return scored.map(({app}) => app);
+  if (!normalized) return { apps: candidates, suggestions: [] as AppRecord[], intents: [] as string[] };
+  return rankSearch(query, candidates);
+}
+
+export async function searchApps(query: string, filters: { category?: string; status?: string; platform?: string; pricing?: string; featured?: boolean; sort?: string } = {}) {
+  return (await smartSearchApps(query, filters)).apps;
 }
 
 export async function incrementMetric(appId: number, type: 'views'|'opens') {

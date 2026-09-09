@@ -86,3 +86,12 @@ html[data-theme=dark] .home-category-grid a>span{background:#20242a}
 html[data-theme=dark] .favorite-toggle,html[data-theme=dark] .favorites-empty{background:rgba(24,26,30,.82);border-color:rgba(255,255,255,.07)}
 html[data-theme=dark] .favorites-empty>span{background:#20242a}
 @media(max-width:780px){.favorite-toggle{width:32px;height:32px}.favorites-section{padding-bottom:44px}.favorites-empty{min-height:240px;padding:32px 22px}.detail-actions .favorite-detail{width:100%}}
+
+/* Smart search */
+.smart-search-intent{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:16px;color:var(--muted);font-size:13px}
+.smart-search-intent>span{font-weight:650}.smart-search-intent b{padding:6px 9px;border:1px solid rgba(59,92,255,.14);border-radius:999px;background:rgba(59,92,255,.07);color:#3b55dc;font-size:12px}
+.smart-search-near{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:13px 15px;border:1px solid rgba(15,18,26,.08);border-radius:14px;background:rgba(255,255,255,.72)}
+.smart-search-near strong{font-size:14px}.smart-search-near span{color:var(--muted);font-size:13px}
+html[data-theme=dark] .smart-search-intent b{border-color:rgba(112,130,255,.22);background:rgba(78,96,220,.14);color:#aab5ff}
+html[data-theme=dark] .smart-search-near{border-color:rgba(255,255,255,.07);background:rgba(24,26,30,.78)}
+@media(max-width:600px){.smart-search-near{align-items:flex-start;flex-direction:column;gap:4px}.smart-search-intent{margin-top:12px}}
