@@ -12,7 +12,7 @@ const [categories,tags,tagRows,screenshotRows,source]=await Promise.all([
 const selectedTagIds=tagRows.results.map((row)=>row.tag_id); const screenshots=screenshotRows.results as any[];
 ---
 <AdminLayout title={`Sửa: ${app.name}`}>
-  {Astro.url.searchParams.get('imported') === '1' && <div class="admin-notice"><strong>Đã nhập website tự động.</strong><span>Website đang ở chế độ Private. Kiểm tra lại metadata, danh mục và ảnh trước khi chuyển Public.</span></div>}
+  {Astro.url.searchParams.get('imported') === '1' && <div class="admin-notice"><strong>Đã phân tích website tự động.</strong><span>Toolpick đã gợi ý tên, mô tả, công dụng, đối tượng, danh mục, tags và tải media nếu website cung cấp. Bản nháp vẫn Private; chỉ cần rà lại rồi bấm Lưu thay đổi.</span></div>}
   {Astro.url.searchParams.get('github') === 'ok' && <div class="admin-notice"><strong>GitHub đã đồng bộ.</strong><span>Commit và branch mới nhất đã được cập nhật.</span></div>}
   {Astro.url.searchParams.get('github') === 'error' && <div class="admin-notice admin-notice--danger"><strong>GitHub đồng bộ lỗi.</strong><span>{app.github_sync_error || 'Kiểm tra lại repo.'}</span></div>}
   {app.github_repo && <section class="github-app-panel"><div><p class="eyebrow">GitHub</p><h2>{app.github_repo_full_name || app.github_repo}</h2><p>{app.github_last_commit_message || 'Chưa đồng bộ commit.'}</p></div><div class="github-app-panel__meta"><span>Branch <b>{app.github_default_branch || '—'}</b></span><span>Commit <b>{String(app.github_last_commit_sha||'—').slice(0,7)}</b></span><form method="post" action={`/api/admin/apps/${id}/github`}><button class="button ghost small" type="submit">Đồng bộ GitHub</button></form></div></section>}
