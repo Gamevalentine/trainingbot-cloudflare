@@ -3,8 +3,12 @@
   "name": "toolpick-monitor",
   "main": "src/monitor-worker.ts",
   "compatibility_date": "2026-09-07",
+  "compatibility_flags": ["global_fetch_strictly_public"],
   "workers_dev": false,
   "triggers": { "crons": ["0 * * * *"] },
+  "services": [
+    { "binding": "LUMA_SERVICE", "service": "luma-v33" }
+  ],
   "d1_databases": [
     {
       "binding": "DB",

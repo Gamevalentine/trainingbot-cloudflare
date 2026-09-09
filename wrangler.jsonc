@@ -3,7 +3,7 @@
   "name": "toolpick",
   "main": "@astrojs/cloudflare/entrypoints/server",
   "compatibility_date": "2026-09-07",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": ["nodejs_compat","global_fetch_strictly_public"],
   "workers_dev": true,
   "assets": {
     "binding": "ASSETS",
@@ -14,6 +14,9 @@
       "pattern": "toolpick.id.vn",
       "custom_domain": true
     }
+  ],
+  "services": [
+    { "binding": "LUMA_SERVICE", "service": "luma-v33" }
   ],
   "d1_databases": [
     {
