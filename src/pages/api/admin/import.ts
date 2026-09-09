@@ -14,6 +14,6 @@ export const POST: APIRoute = async ({request}) => {
       const app=await db().prepare('SELECT id,production_url,status,monitor_enabled FROM apps WHERE id=?').bind(imported.id).first<any>();
       if(app) await checkAppUptime(db(),app);
     }
-    return redirect(`/admin/apps/${imported.id}?imported=1`);
+    return redirect(`/admin/apps/${imported.id}?${imported.existing?'existing=1':'imported=1'}`);
   } catch(error) { return adminError(error); }
 };
