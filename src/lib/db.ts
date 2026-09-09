@@ -79,3 +79,43 @@ export async function dashboardStats() {
 
 export async function adminApps() { return (await db().prepare(`SELECT a.*,c.name category_name FROM apps a LEFT JOIN categories c ON c.id=a.category_id ORDER BY a.updated_at DESC`).all<AppRecord>()).results; }
 export async function adminApp(id: number) { return db().prepare('SELECT * FROM apps WHERE id=?').bind(id).first<AppRecord>(); }
+
+export async function trackSearch(query:string,resultCount:number){
+  const raw=String(query||'').trim().slice(0,180); const normalized=normalizeSearch(raw).slice(0,180); if(!normalized)return;
+  const date=new Date().toISOString().slice(0,10); const zero=resultCount===0?1:0;
+  await db().prepare(`INSERT INTO search_analytics(query,normalized_query,date,searches,zero_results,last_result_count) VALUES (?,?,?,1,?,?) ON CONFLICT(normalized_query,date) DO UPDATE SET query=excluded.query,searches=searches+1,zero_results=zero_results+excluded.zero_results,last_result_count=excluded.last_result_count`).bind(raw,normalized,date,zero,Math.max(0,resultCount)).run();
+}
+
+export async function trackCategoryView(categoryId:number){
+  if(!Number.isInteger(categoryId)||categoryId<=0)return; const date=new Date().toISOString().slice(0,10);
+  await db().prepare(`INSERT INTO category_analytics(category_id,date,views) VALUES (?,?,1) ON CONFLICT(category_id,date) DO UPDATE SET views=views+1`).bind(categoryId,date).run();
+}
+
+export async function trackAdminActivity(eventKey:string){
+  const key=String(eventKey||'').trim().slice(0,160); if(!key)return; const date=new Date().toISOString().slice(0,10);
+  await db().prepare(`INSERT INTO admin_activity(date,event_key,count) VALUES (?,?,1) ON CONFLICT(date,event_key) DO UPDATE SET count=count+1`).bind(date,key).run();
+}
+
+export async function analyticsReport(days=7){
+  const range=days===30?30:7; const start=new Date(Date.now()-(range-1)*86400000).toISOString().slice(0,10);
+  const [traffic,searches,categories,admin,dailyTraffic,dailySearch,dailyCategory,dailyAdmin]=await Promise.all([
+    db().prepare('SELECT COALESCE(SUM(views),0) views,COALESCE(SUM(opens),0) opens FROM analytics WHERE date>=?').bind(start).first<any>(),
+    db().prepare('SELECT COALESCE(SUM(searches),0) searches,COALESCE(SUM(zero_results),0) zero_results FROM search_analytics WHERE date>=?').bind(start).first<any>(),
+    db().prepare('SELECT COALESCE(SUM(views),0) category_views FROM category_analytics WHERE date>=?').bind(start).first<any>(),
+    db().prepare('SELECT COALESCE(SUM(count),0) admin_actions FROM admin_activity WHERE date>=?').bind(start).first<any>(),
+    db().prepare('SELECT date,SUM(views) views,SUM(opens) opens FROM analytics WHERE date>=? GROUP BY date').bind(start).all<any>(),
+    db().prepare('SELECT date,SUM(searches) searches FROM search_analytics WHERE date>=? GROUP BY date').bind(start).all<any>(),
+    db().prepare('SELECT date,SUM(views) category_views FROM category_analytics WHERE date>=? GROUP BY date').bind(start).all<any>(),
+    db().prepare('SELECT date,SUM(count) admin_actions FROM admin_activity WHERE date>=? GROUP BY date').bind(start).all<any>(),
+  ]);
+  const rows=new Map<string,any>(); for(let i=0;i<range;i++){const d=new Date(Date.now()-(range-1-i)*86400000).toISOString().slice(0,10);rows.set(d,{date:d,views:0,opens:0,searches:0,category_views:0,admin_actions:0});}
+  for(const group of [dailyTraffic.results,dailySearch.results,dailyCategory.results,dailyAdmin.results])for(const row of group)Object.assign(rows.get(row.date)||{},row);
+  const [topViews,topOpens,topSearches,topCategories,topAdmin]=await Promise.all([
+    db().prepare(`SELECT a.id,a.name,a.slug,SUM(an.views) value FROM analytics an JOIN apps a ON a.id=an.app_id WHERE an.date>=? GROUP BY a.id ORDER BY value DESC,a.name LIMIT 8`).bind(start).all<any>(),
+    db().prepare(`SELECT a.id,a.name,a.slug,SUM(an.opens) value FROM analytics an JOIN apps a ON a.id=an.app_id WHERE an.date>=? GROUP BY a.id ORDER BY value DESC,a.name LIMIT 8`).bind(start).all<any>(),
+    db().prepare(`SELECT normalized_query,MAX(query) query,SUM(searches) value,SUM(zero_results) zero_results FROM search_analytics WHERE date>=? GROUP BY normalized_query ORDER BY value DESC,query LIMIT 10`).bind(start).all<any>(),
+    db().prepare(`SELECT c.id,c.name,c.slug,SUM(ca.views) value FROM category_analytics ca JOIN categories c ON c.id=ca.category_id WHERE ca.date>=? GROUP BY c.id ORDER BY value DESC,c.name LIMIT 8`).bind(start).all<any>(),
+    db().prepare(`SELECT event_key,SUM(count) value FROM admin_activity WHERE date>=? GROUP BY event_key ORDER BY value DESC,event_key LIMIT 10`).bind(start).all<any>(),
+  ]);
+  return {days:range,start,summary:{views:Number(traffic?.views||0),opens:Number(traffic?.opens||0),searches:Number(searches?.searches||0),zero_results:Number(searches?.zero_results||0),category_views:Number(categories?.category_views||0),admin_actions:Number(admin?.admin_actions||0)},daily:[...rows.values()],topViews:topViews.results,topOpens:topOpens.results,topSearches:topSearches.results,topCategories:topCategories.results,topAdmin:topAdmin.results};
+}

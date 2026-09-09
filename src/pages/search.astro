@@ -2,7 +2,7 @@
 import PublicLayout from '../layouts/PublicLayout.astro';
 import AppGrid from '../components/AppGrid.astro';
 import SearchFilters from '../components/SearchFilters.astro';
-import { listCategories, searchApps } from '../lib/db';
+import { listCategories, searchApps, trackSearch } from '../lib/db';
 
 const params = Astro.url.searchParams;
 const q = params.get('q') || '';
@@ -19,6 +19,7 @@ const [apps, categories] = await Promise.all([
   searchApps(q, filters),
   listCategories(),
 ]);
+if(q.trim()){const job=()=>trackSearch(q,apps.length).catch(()=>{});if(Astro.defer)Astro.defer(job);else await job();}
 ---
 
 <PublicLayout

@@ -1,5 +1,6 @@
 import { defineMiddleware } from 'astro:middleware';
 import { requireAdmin } from './lib/access';
+import { trackAdminActivity } from './lib/db';
 
 export const onRequest = defineMiddleware(async (context, next) => {
   if (context.url.hostname.toLowerCase() === 'toolpick.ai-vn.workers.dev') {
@@ -34,6 +35,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
   const response = await next();
+  const method=context.request.method.toUpperCase();
+  if(isAdmin&&!isAuthRoute&&!['GET','HEAD','OPTIONS'].includes(method)&&response.status<400){const action=(context.url.searchParams.get('_method')||method).toUpperCase();const eventPath=path.replace(/\/\d+(?=\/|$)/g,'/:id');await trackAdminActivity(`${action} ${eventPath}`).catch(()=>{});}
   const headers = new Headers(response.headers);
   headers.set('X-Content-Type-Options', 'nosniff');
   headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
