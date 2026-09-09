@@ -67,11 +67,14 @@ export async function incrementMetric(appId: number, type: 'views'|'opens') {
 }
 
 export async function dashboardStats() {
-  const counts = await db().prepare(`SELECT COUNT(*) total, SUM(visibility='public') public_count, SUM(visibility='private') private_count, SUM(status='active') active_count, SUM(status='offline') offline_count, SUM(status='development') development_count FROM apps`).first<Record<string,number>>();
+  const counts = await db().prepare(`SELECT COUNT(*) total, SUM(visibility='public') public_count, SUM(visibility='private') private_count, SUM(status='active') active_count, SUM(status='offline') offline_count, SUM(status='development') development_count, SUM(TRIM(COALESCE(github_repo,''))<>'') github_count FROM apps`).first<Record<string,number>>();
   const traffic = await db().prepare('SELECT COALESCE(SUM(views),0) views,COALESCE(SUM(opens),0) opens FROM analytics').first<Record<string,number>>();
   const popular = await db().prepare(`SELECT a.id,a.name,a.slug,COALESCE(SUM(an.opens),0) opens FROM apps a LEFT JOIN analytics an ON an.app_id=a.id GROUP BY a.id ORDER BY opens DESC LIMIT 5`).all();
   const recent = await db().prepare('SELECT id,name,slug,status,visibility,updated_at FROM apps ORDER BY updated_at DESC LIMIT 6').all();
-  return { counts, traffic, popular: popular.results, recent: recent.results };
+  const appRows = (await db().prepare(`SELECT id,name,status,github_repo,github_last_commit_at,github_last_synced_at,github_sync_error,icon_key,cover_key,short_description,primary_use FROM apps ORDER BY name`).all()).results as any[];
+  const alerts:any[]=[]; const staleBefore=Date.now()-90*86400000;
+  for(const app of appRows){ if(app.status==='offline') alerts.push({severity:'danger',app_id:app.id,title:app.name,text:'Website đang Offline'}); if(!String(app.github_repo||'').trim()) alerts.push({severity:'info',app_id:app.id,title:app.name,text:'Chưa gắn GitHub repo'}); else if(app.github_sync_error) alerts.push({severity:'danger',app_id:app.id,title:app.name,text:`GitHub: ${app.github_sync_error}`}); else if(!app.github_last_synced_at) alerts.push({severity:'warning',app_id:app.id,title:app.name,text:'GitHub chưa từng đồng bộ'}); else if(app.github_last_commit_at && new Date(app.github_last_commit_at).getTime()<staleBefore) alerts.push({severity:'warning',app_id:app.id,title:app.name,text:'Repo hơn 90 ngày chưa có commit'}); if(!app.icon_key||!app.cover_key) alerts.push({severity:'warning',app_id:app.id,title:app.name,text:'Thiếu icon hoặc cover'}); if(!app.short_description||!app.primary_use) alerts.push({severity:'warning',app_id:app.id,title:app.name,text:'Metadata chưa hoàn chỉnh'}); }
+  return { counts, traffic, popular: popular.results, recent: recent.results, alerts:alerts.slice(0,12) };
 }
 
 export async function adminApps() { return (await db().prepare(`SELECT a.*,c.name category_name FROM apps a LEFT JOIN categories c ON c.id=a.category_id ORDER BY a.updated_at DESC`).all<AppRecord>()).results; }

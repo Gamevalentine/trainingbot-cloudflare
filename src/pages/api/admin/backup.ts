@@ -4,7 +4,7 @@ import { adminError, redirect } from '../../../lib/admin';
 
 const columns: Record<string,string[]> = {
   categories:['id','name','slug','description','icon','sort_order','is_active','created_at','updated_at'],
-  apps:['id','name','slug','production_url','admin_url','github_repo','cloudflare_project','icon_key','cover_key','short_description','description','primary_use','audience','features','category_id','status','visibility','featured','pricing_type','platform','tech_stack','version','search_keywords','monitor_enabled','last_checked_at','last_http_status','last_response_ms','last_error','created_at','updated_at'],
+  apps:['id','name','slug','production_url','admin_url','github_repo','cloudflare_project','icon_key','cover_key','short_description','description','primary_use','audience','features','category_id','status','visibility','featured','pricing_type','platform','tech_stack','version','search_keywords','github_repo_full_name','github_default_branch','github_last_commit_sha','github_last_commit_message','github_last_commit_at','github_last_synced_at','github_sync_error','monitor_enabled','last_checked_at','last_http_status','last_response_ms','last_error','created_at','updated_at'],
   tags:['id','name','slug','created_at'], app_tags:['app_id','tag_id'], screenshots:['id','app_id','r2_key','alt_text','sort_order','created_at'],
   analytics:['id','app_id','date','views','opens'], app_status_history:['id','app_id','old_status','new_status','changed_at'], uptime_checks:['id','app_id','checked_at','is_up','http_status','response_ms','error']
 };

@@ -1,0 +1,14 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import Icon from '../../components/Icon.astro';
+import { adminApps } from '../../lib/db';
+const apps=await adminApps();
+const linked=apps.filter((a:any)=>String(a.github_repo||'').trim());
+const fmt=(v:any)=>v?new Intl.DateTimeFormat('vi-VN',{dateStyle:'medium',timeStyle:'short'}).format(new Date(v)):'Chưa đồng bộ';
+const synced=Number(Astro.url.searchParams.get('synced')||0),failed=Number(Astro.url.searchParams.get('failed')||0);
+---
+<AdminLayout title="GitHub">
+  {Astro.url.searchParams.has('synced')&&<div class="admin-notice"><strong>Đã đồng bộ {synced} repo.</strong><span>{failed?`${failed} repo gặp lỗi.`:'Không có lỗi GitHub.'}</span></div>}
+  <section class="admin-section-intro"><div><p class="eyebrow">Đồng bộ mã nguồn</p><h2>GitHub Sync</h2><p>{linked.length}/{apps.length} website đã gắn repo.</p></div><form method="post" action="/api/admin/github/sync-all"><button class="button primary" type="submit">Đồng bộ tất cả</button></form></section>
+  <div class="github-list">{apps.map((app:any)=><article class="github-row"><div class="github-row__main"><span><Icon name="code" size={18}/></span><div><strong>{app.name}</strong><small>{app.github_repo||'Chưa gắn GitHub repo'}</small></div></div><div class="github-row__meta">{app.github_repo?<><span>{app.github_default_branch||'—'}</span><span>{app.github_last_commit_at?fmt(app.github_last_commit_at):'Chưa có commit'}</span><span class:list={['github-sync-state',app.github_sync_error?'is-error':'is-ok']}>{app.github_sync_error?'Lỗi':'Sẵn sàng'}</span><form method="post" action={`/api/admin/apps/${app.id}/github`}><button class="button ghost small">Đồng bộ</button></form></>:<a class="button ghost small" href={`/admin/apps/${app.id}`}>Gắn repo</a>}</div>{app.github_last_commit_message&&<p class="github-last-commit"><code>{String(app.github_last_commit_sha||'').slice(0,7)}</code> {app.github_last_commit_message}</p>}{app.github_sync_error&&<p class="github-sync-error">{app.github_sync_error}</p>}</article>)}</div>
+</AdminLayout>
