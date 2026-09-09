@@ -68,12 +68,12 @@ export function rankSearch(query:string,candidates:AppRecord[]){
     score+=coverage*18+Math.min(intentHits,4)*2+(app.featured?1:0);
     const minCoverage=directTokens.length>=3?.75:.5;
     const eligible=phrase||coverage>=minCoverage||(directTokens.length===1&&matched.size===1)||(intentHits>=2&&score>=30&&directTokens.length<=2);
-    return {app,score,coverage,eligible};
+    return {app,score,coverage,eligible,phrase,intentHits};
   }).filter((x)=>x.score>1);
   ranked.sort((a,b)=>b.score-a.score||b.app.featured-a.app.featured||String(b.app.updated_at).localeCompare(String(a.app.updated_at)));
   const minMain=Math.max(18,(ranked[0]?.score||0)*.28);
   const mainRows=ranked.filter((x)=>x.eligible&&x.score>=minMain); const mainIds=new Set(mainRows.map((x)=>x.app.id));
   const strong=mainRows.map((x)=>x.app);
-  const suggestions=strong.length?[]:ranked.filter((x)=>!mainIds.has(x.app.id)&&x.score>=8).slice(0,4).map((x)=>x.app);
+  const suggestions=strong.length?[]:ranked.filter((x)=>!mainIds.has(x.app.id)&&x.score>=12&&(x.phrase||x.intentHits>=2||x.coverage>=.67)).slice(0,4).map((x)=>x.app);
   return {apps:strong,suggestions,intents:[...new Set(labels)]};
 }
