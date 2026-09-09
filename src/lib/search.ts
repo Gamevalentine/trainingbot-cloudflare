@@ -26,7 +26,7 @@ function tokenMatch(text:string,token:string){
   if(token.length>=4&&text.includes(token))return .88;
   let best=0;
   for(const word of words){
-    if(word.length<4||token.length<4)continue;
+    if(word.length<5||token.length<5)continue;
     if(word.startsWith(token)||token.startsWith(word))best=Math.max(best,.82);
     if(word[0]!==token[0])continue;
     const d=distance(word,token);
@@ -66,7 +66,7 @@ export function rankSearch(query:string,candidates:AppRecord[]){
     }
     const coverage=directTokens.length?matched.size/directTokens.length:0;
     score+=coverage*18+Math.min(intentHits,4)*2+(app.featured?1:0);
-    const minCoverage=directTokens.length>=3?.75:.5;
+    const minCoverage=directTokens.length>=2?.75:.5;
     const eligible=phrase||coverage>=minCoverage||(directTokens.length===1&&matched.size===1)||(intentHits>=2&&score>=30&&directTokens.length<=2);
     return {app,score,coverage,eligible,phrase,intentHits};
   }).filter((x)=>x.score>1);
@@ -74,6 +74,6 @@ export function rankSearch(query:string,candidates:AppRecord[]){
   const minMain=Math.max(18,(ranked[0]?.score||0)*.28);
   const mainRows=ranked.filter((x)=>x.eligible&&x.score>=minMain); const mainIds=new Set(mainRows.map((x)=>x.app.id));
   const strong=mainRows.map((x)=>x.app);
-  const suggestions=strong.length?[]:ranked.filter((x)=>!mainIds.has(x.app.id)&&x.score>=12&&(x.phrase||x.intentHits>=2||x.coverage>=.67)).slice(0,4).map((x)=>x.app);
+  const suggestions=strong.length?[]:ranked.filter((x)=>!mainIds.has(x.app.id)&&x.score>=12&&(x.phrase||x.coverage>=.67||(x.intentHits>=2&&directTokens.length<=2))).slice(0,4).map((x)=>x.app);
   return {apps:strong,suggestions,intents:[...new Set(labels)]};
 }
