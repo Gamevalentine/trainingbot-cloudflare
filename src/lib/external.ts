@@ -44,14 +44,17 @@ export async function safeFetch(input: string | URL, init: RequestInit = {}, max
   throw new Error('Quá nhiều chuyển hướng.');
 }
 
-export async function readLimitedText(response: Response, limit = 1024 * 1024) {
+export async function readLimitedText(response: Response, limit = 1024 * 1024, truncate = false) {
   const reader = response.body?.getReader();
   if (!reader) return '';
   const chunks: Uint8Array[] = []; let total = 0;
   while (true) {
     const { done, value } = await reader.read(); if (done) break;
-    total += value.byteLength; if (total > limit) { await reader.cancel(); throw new Error('Nội dung website quá lớn để import.'); }
-    chunks.push(value);
+    if (total + value.byteLength > limit) {
+      if (!truncate) { await reader.cancel(); throw new Error('Nội dung website quá lớn để import.'); }
+      const remaining = limit - total; if (remaining > 0) chunks.push(value.slice(0, remaining)); total = limit; await reader.cancel(); break;
+    }
+    total += value.byteLength; chunks.push(value);
   }
   const merged = new Uint8Array(total); let offset = 0;
   for (const chunk of chunks) { merged.set(chunk, offset); offset += chunk.byteLength; }
