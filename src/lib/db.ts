@@ -111,8 +111,8 @@ export async function analyticsReport(days=7){
   const rows=new Map<string,any>(); for(let i=0;i<range;i++){const d=new Date(Date.now()-(range-1-i)*86400000).toISOString().slice(0,10);rows.set(d,{date:d,views:0,opens:0,searches:0,category_views:0,admin_actions:0});}
   for(const group of [dailyTraffic.results,dailySearch.results,dailyCategory.results,dailyAdmin.results])for(const row of group)Object.assign(rows.get(row.date)||{},row);
   const [topViews,topOpens,topSearches,topCategories,topAdmin]=await Promise.all([
-    db().prepare(`SELECT a.id,a.name,a.slug,SUM(an.views) value FROM analytics an JOIN apps a ON a.id=an.app_id WHERE an.date>=? GROUP BY a.id ORDER BY value DESC,a.name LIMIT 8`).bind(start).all<any>(),
-    db().prepare(`SELECT a.id,a.name,a.slug,SUM(an.opens) value FROM analytics an JOIN apps a ON a.id=an.app_id WHERE an.date>=? GROUP BY a.id ORDER BY value DESC,a.name LIMIT 8`).bind(start).all<any>(),
+    db().prepare(`SELECT a.id,a.name,a.slug,SUM(an.views) value FROM analytics an JOIN apps a ON a.id=an.app_id WHERE an.date>=? GROUP BY a.id HAVING SUM(an.views)>0 ORDER BY value DESC,a.name LIMIT 8`).bind(start).all<any>(),
+    db().prepare(`SELECT a.id,a.name,a.slug,SUM(an.opens) value FROM analytics an JOIN apps a ON a.id=an.app_id WHERE an.date>=? GROUP BY a.id HAVING SUM(an.opens)>0 ORDER BY value DESC,a.name LIMIT 8`).bind(start).all<any>(),
     db().prepare(`SELECT normalized_query,MAX(query) query,SUM(searches) value,SUM(zero_results) zero_results FROM search_analytics WHERE date>=? GROUP BY normalized_query ORDER BY value DESC,query LIMIT 10`).bind(start).all<any>(),
     db().prepare(`SELECT c.id,c.name,c.slug,SUM(ca.views) value FROM category_analytics ca JOIN categories c ON c.id=ca.category_id WHERE ca.date>=? GROUP BY c.id ORDER BY value DESC,c.name LIMIT 8`).bind(start).all<any>(),
     db().prepare(`SELECT event_key,SUM(count) value FROM admin_activity WHERE date>=? GROUP BY event_key ORDER BY value DESC,event_key LIMIT 10`).bind(start).all<any>(),
