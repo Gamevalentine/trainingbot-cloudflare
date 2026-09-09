@@ -20,7 +20,7 @@ const [search, categories] = await Promise.all([
   listCategories(),
 ]);
 const { apps, suggestions, intents } = search;
-if(q.trim()){const job=()=>trackSearch(q,apps.length).catch(()=>{});if(Astro.defer)Astro.defer(job);else await job();}
+if(q.trim()&&!params.has('probe')){const job=()=>trackSearch(q,apps.length).catch(()=>{});if(Astro.defer)Astro.defer(job);else await job();}
 ---
 
 <PublicLayout
