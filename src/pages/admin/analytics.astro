@@ -2,44 +2,67 @@
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import Icon from '../../components/Icon.astro';
 import { analyticsReport } from '../../lib/db';
+import { dateLabel, statusLabel } from '../../lib/utils';
 const days=Astro.url.searchParams.get('days')==='30'?30:7;
 const report=await analyticsReport(days); const s=report.summary;
 const fmt=(value:any)=>Number(value||0).toLocaleString('vi-VN');
 const dayFmt=new Intl.DateTimeFormat('vi-VN',{day:'2-digit',month:'2-digit'});
-const publicTotal=(row:any)=>Number(row.views||0)+Number(row.opens||0)+Number(row.searches||0)+Number(row.category_views||0);
-const maxPublic=Math.max(1,...report.daily.map(publicTotal));
-const maxAdmin=Math.max(1,...report.daily.map((row:any)=>Number(row.admin_actions||0)));
-const adminLabel=(key:string)=>key.replace('POST /api/admin/apps/:id/github','Đồng bộ GitHub').replace('POST /api/admin/uptime/check-all','Kiểm tra toàn bộ uptime').replace('POST /api/admin/github/sync-all','Đồng bộ toàn bộ GitHub').replace('POST /api/admin/apps','Tạo website').replace('POST /api/admin/categories','Tạo danh mục').replace('POST /api/admin/tags','Tạo tag').replace('POST /api/admin/','Cập nhật ').replace('DELETE /api/admin/','Xóa ');
+const maxTrend=Math.max(1,...report.daily.flatMap((row:any)=>[Number(row.views||0),Number(row.opens||0),Number(row.searches||0),Number(row.zero_results||0)]));
+const bar=(value:any)=>Number(value||0)?Math.max(4,Number(value)/maxTrend*100):0;
+const coldCount=report.underDiscovered.filter((row:any)=>Number(row.value||0)<=1).length;
+const adminLabels:Record<string,string>={
+  'POST /api/admin/import':'Import website',
+  'POST /api/admin/apps':'Tạo website thủ công',
+  'POST /api/admin/uptime/check-all':'Kiểm tra toàn bộ uptime',
+  'POST /api/admin/github/sync-all':'Đồng bộ toàn bộ GitHub',
+  'POST /api/admin/categories':'Tạo danh mục',
+  'POST /api/admin/tags':'Tạo tag'
+};
+const adminLabel=(key:string)=>adminLabels[key]||key.replace('POST /api/admin/apps/:id/github','Đồng bộ GitHub').replace('POST /api/admin/','Cập nhật ').replace('DELETE /api/admin/','Xóa ');
 ---
 <AdminLayout title="Analytics">
-  <section class="admin-section-intro analytics-intro"><div><p class="eyebrow">Sử dụng thực tế</p><h2>Analytics Toolpick</h2><p>Xu hướng truy cập công khai và hoạt động quản trị, không lưu IP hay dữ liệu cá nhân.</p></div><div class="analytics-range"><a class:list={['button','ghost',days===7&&'active']} href="/admin/analytics?days=7">7 ngày</a><a class:list={['button','ghost',days===30&&'active']} href="/admin/analytics?days=30">30 ngày</a></div></section>
-  <section class="analytics-stat-grid">
-    <article><span><Icon name="grid" size={18}/></span><div><small>Lượt xem app</small><strong>{fmt(s.views)}</strong></div></article>
-    <article><span><Icon name="play" size={18}/></span><div><small>Mở ứng dụng</small><strong>{fmt(s.opens)}</strong></div></article>
+  <section class="admin-section-intro analytics-intro-v2"><div><p class="eyebrow">Dữ liệu sử dụng thực tế</p><h2>Analytics Toolpick</h2><p>Nhìn nhanh người dùng đang tìm gì, mở gì và Toolpick còn thiếu gì. Không lưu IP hay dữ liệu cá nhân.</p></div><div class="analytics-range"><a class:list={['button','ghost',days===7&&'active']} href="/admin/analytics?days=7">7 ngày</a><a class:list={['button','ghost',days===30&&'active']} href="/admin/analytics?days=30">30 ngày</a></div></section>
+  <section class="analytics-kpis-v2">
+    <article><span><Icon name="grid" size={18}/></span><div><small>Lượt xem công cụ</small><strong>{fmt(s.views)}</strong></div></article>
+    <article><span><Icon name="play" size={18}/></span><div><small>Mở công cụ</small><strong>{fmt(s.opens)}</strong></div></article>
     <article><span><Icon name="search" size={18}/></span><div><small>Lượt tìm kiếm</small><strong>{fmt(s.searches)}</strong></div></article>
-    <article><span><Icon name="search" size={18}/></span><div><small>Không có kết quả</small><strong>{fmt(s.zero_results)}</strong></div></article>
-    <article><span><Icon name="folder" size={18}/></span><div><small>Xem danh mục</small><strong>{fmt(s.category_views)}</strong></div></article>
+    <article class="is-warning"><span><Icon name="search" size={18}/></span><div><small>Không có kết quả</small><strong>{fmt(s.zero_results)}</strong><em>{s.zero_rate}% lượt tìm</em></div></article>
+    <article><span><Icon name="grid" size={18}/></span><div><small>Website mới</small><strong>{fmt(s.new_tools)}</strong><em>import + thêm thủ công</em></div></article>
     <article><span><Icon name="settings" size={18}/></span><div><small>Admin activity</small><strong>{fmt(s.admin_actions)}</strong></div></article>
+  </section>  <section class="analytics-opportunities">
+    <article><p class="eyebrow">Khoảng trống nhu cầu</p><strong>{report.zeroSearches.length?`${report.zeroSearches.length} từ khóa đang có lượt tìm hụt`:'Chưa có khoảng trống nổi bật'}</strong><p>{report.zeroSearches[0]?`Ưu tiên xem “${report.zeroSearches[0].query}” — ${fmt(report.zeroSearches[0].zero_results)} lần không có kết quả.`:'Các truy vấn hiện tại đều đang được đáp ứng.'}</p></article>
+    <article><p class="eyebrow">Công cụ ít được thấy</p><strong>{coldCount?`${coldCount} công cụ gần như chưa được khám phá`:'Phân phối lượt xem đang ổn'}</strong><p>Được tính theo tổng lượt xem + lượt mở trong {days} ngày đã chọn.</p></article>
   </section>
-  <section class="analytics-chart-card">
-    <div class="admin-panel-head"><div><p class="eyebrow">Xu hướng</p><h2>{days} ngày gần nhất</h2></div><div class="analytics-legend"><span><i class="is-public"></i>Public traffic</span><span><i class="is-admin"></i>Admin activity</span></div></div>
-    <div class:list={['analytics-chart',days===30&&'is-30']}>
-      {report.daily.map((row:any)=><div class="analytics-day"><div class="analytics-bars"><span class="analytics-bar is-public" style={`height:${Math.max(3,publicTotal(row)/maxPublic*100)}%`} title={`Public: ${fmt(publicTotal(row))}`}></span><span class="analytics-bar is-admin" style={`height:${Number(row.admin_actions||0)?Math.max(3,Number(row.admin_actions)/maxAdmin*100):0}%`} title={`Admin: ${fmt(row.admin_actions)}`}></span></div><small>{dayFmt.format(new Date(`${row.date}T00:00:00Z`))}</small></div>)}
+  <section class="analytics-trend-card">
+    <div class="admin-panel-head"><div><p class="eyebrow">Xu hướng sử dụng</p><h2>{days} ngày gần nhất</h2></div><div class="analytics-legend-v2"><span><i class="views"></i>Xem</span><span><i class="opens"></i>Mở</span><span><i class="searches"></i>Tìm kiếm</span><span><i class="zero"></i>Không kết quả</span></div></div>
+    <div class:list={['analytics-trend',days===30&&'is-30']}>
+      {report.daily.map((row:any)=><div class="trend-day"><div class="trend-bars"><i class="views" style={`height:${bar(row.views)}%`} title={`${fmt(row.views)} lượt xem`}></i><i class="opens" style={`height:${bar(row.opens)}%`} title={`${fmt(row.opens)} lượt mở`}></i><i class="searches" style={`height:${bar(row.searches)}%`} title={`${fmt(row.searches)} lượt tìm`}></i><i class="zero" style={`height:${bar(row.zero_results)}%`} title={`${fmt(row.zero_results)} lượt không kết quả`}></i></div><small>{dayFmt.format(new Date(`${row.date}T00:00:00Z`))}</small></div>)}
     </div>
-    <div class="analytics-chart-note">Public traffic = lượt xem app + mở ứng dụng + tìm kiếm + xem danh mục.</div>
+    <p class="analytics-note">Các cột dùng chung một thang đo để dễ thấy ngày nào nhu cầu tăng nhưng Toolpick chưa đáp ứng đủ.</p>
   </section>
-
-  <section class="analytics-two-col">
-    <article class="admin-panel analytics-ranking"><div class="admin-panel-head"><div><p class="eyebrow">Website</p><h2>Xem nhiều nhất</h2></div></div>{report.topViews.length?<ol>{report.topViews.map((row:any,i:number)=><li><span><b>{i+1}</b><a href={`/admin/apps/${row.id}`}>{row.name}</a></span><strong>{fmt(row.value)}</strong></li>)}</ol>:<p class="admin-muted">Chưa có lượt xem trong khoảng này.</p>}</article>
-    <article class="admin-panel analytics-ranking"><div class="admin-panel-head"><div><p class="eyebrow">Website</p><h2>Được mở nhiều nhất</h2></div></div>{report.topOpens.length?<ol>{report.topOpens.map((row:any,i:number)=><li><span><b>{i+1}</b><a href={`/admin/apps/${row.id}`}>{row.name}</a></span><strong>{fmt(row.value)}</strong></li>)}</ol>:<p class="admin-muted">Chưa có lượt mở trong khoảng này.</p>}</article>
+  <section class="analytics-pair">
+    <article class="admin-panel analytics-ranking"><div class="admin-panel-head"><div><p class="eyebrow">Sử dụng</p><h2>Được mở nhiều nhất</h2></div></div>{report.topOpens.length?<ol>{report.topOpens.map((row:any,i:number)=><li><span><b>{i+1}</b><a href={`/admin/apps/${row.id}`}>{row.name}</a></span><strong>{fmt(row.value)}</strong></li>)}</ol>:<p class="admin-muted">Chưa có lượt mở trong khoảng này.</p>}</article>
+    <article class="admin-panel analytics-ranking"><div class="admin-panel-head"><div><p class="eyebrow">Cần phân phối lại</p><h2>Ít được khám phá</h2></div><small>Xem + mở thấp nhất</small></div>{report.underDiscovered.length?<ol>{report.underDiscovered.map((row:any,i:number)=><li><span><b>{i+1}</b><a href={`/admin/apps/${row.id}`}>{row.name}</a><small>{fmt(row.views)} xem · {fmt(row.opens)} mở</small></span><strong>{fmt(row.value)}</strong></li>)}</ol>:<p class="admin-muted">Chưa có công cụ public.</p>}</article>
+  </section>  <section class="analytics-pair">
+    <article class="admin-panel analytics-ranking"><div class="admin-panel-head"><div><p class="eyebrow">Nhu cầu</p><h2>Từ khóa được tìm nhiều</h2></div></div>{report.topSearches.length?<ol>{report.topSearches.map((row:any,i:number)=><li><span><b>{i+1}</b><span>{row.query}</span>{Number(row.zero_results)>0&&<small>{fmt(row.zero_results)} lần hụt</small>}</span><strong>{fmt(row.value)}</strong></li>)}</ol>:<p class="admin-muted">Chưa có dữ liệu tìm kiếm trong khoảng này.</p>}</article>
+    <article class="admin-panel analytics-ranking gap-ranking"><div class="admin-panel-head"><div><p class="eyebrow">Cơ hội bổ sung</p><h2>Không có kết quả</h2></div><small>Sắp theo số lần hụt</small></div>{report.zeroSearches.length?<ol>{report.zeroSearches.map((row:any,i:number)=><li><span><b>{i+1}</b><span>{row.query}</span><small>{fmt(row.zero_results)}/{fmt(row.searches)} lượt tìm không có kết quả</small></span><strong>{Math.round(Number(row.zero_results)/Math.max(1,Number(row.searches))*100)}%</strong></li>)}</ol>:<p class="admin-muted">Không có truy vấn hụt trong khoảng này.</p>}</article>
   </section>
-
-  <section class="analytics-two-col">
-    <article class="admin-panel analytics-ranking"><div class="admin-panel-head"><div><p class="eyebrow">Nhu cầu</p><h2>Từ khóa tìm nhiều</h2></div></div>{report.topSearches.length?<ol>{report.topSearches.map((row:any,i:number)=><li><span><b>{i+1}</b><span>{row.query}</span>{Number(row.zero_results)>0&&<small>{fmt(row.zero_results)} lần không có kết quả</small>}</span><strong>{fmt(row.value)}</strong></li>)}</ol>:<p class="admin-muted">Từ khóa sẽ bắt đầu được ghi từ bản Analytics này.</p>}</article>
-    <article class="admin-panel analytics-ranking"><div class="admin-panel-head"><div><p class="eyebrow">Danh mục</p><h2>Được xem nhiều</h2></div></div>{report.topCategories.length?<ol>{report.topCategories.map((row:any,i:number)=><li><span><b>{i+1}</b><span>{row.name}</span></span><strong>{fmt(row.value)}</strong></li>)}</ol>:<p class="admin-muted">Lượt xem danh mục sẽ bắt đầu được ghi từ bản Analytics này.</p>}</article>
+  <section class="analytics-pair">
+    <article class="admin-panel analytics-ranking"><div class="admin-panel-head"><div><p class="eyebrow">Danh mục</p><h2>Được xem nhiều</h2></div><span>{fmt(s.category_views)} lượt</span></div>{report.topCategories.length?<ol>{report.topCategories.map((row:any,i:number)=><li><span><b>{i+1}</b><span>{row.name}</span></span><strong>{fmt(row.value)}</strong></li>)}</ol>:<p class="admin-muted">Chưa có lượt xem danh mục trong khoảng này.</p>}</article>
+    <article class="admin-panel analytics-ranking"><div class="admin-panel-head"><div><p class="eyebrow">Kho Toolpick</p><h2>Website mới thêm</h2></div><span>{fmt(s.new_tools)} website</span></div>{report.newestTools.length?<ol>{report.newestTools.map((row:any,i:number)=><li><span><b>{i+1}</b><a href={`/admin/apps/${row.id}`}>{row.name}</a><small>{row.visibility==='public'?'Public':'Private'} · {dateLabel(row.created_at)}</small></span><strong>{statusLabel(row.status)}</strong></li>)}</ol>:<p class="admin-muted">Không có website mới trong khoảng này.</p>}</article>
   </section>
-  <section class="admin-panel analytics-ranking analytics-admin-activity">
-    <div class="admin-panel-head"><div><p class="eyebrow">Owner Console</p><h2>Admin activity</h2></div><span>{fmt(s.admin_actions)} thao tác</span></div>
-    {report.topAdmin.length?<ol>{report.topAdmin.map((row:any,i:number)=><li><span><b>{i+1}</b><span>{adminLabel(row.event_key)}</span></span><strong>{fmt(row.value)}</strong></li>)}</ol>:<p class="admin-muted">Các thao tác ghi dữ liệu trong Admin sẽ được thống kê từ bản này trở đi.</p>}
+  <section class="analytics-pair">
+    <article class="admin-panel analytics-ranking"><div class="admin-panel-head"><div><p class="eyebrow">Khám phá</p><h2>Trang được xem nhiều</h2></div></div>{report.topViews.length?<ol>{report.topViews.map((row:any,i:number)=><li><span><b>{i+1}</b><a href={`/admin/apps/${row.id}`}>{row.name}</a></span><strong>{fmt(row.value)}</strong></li>)}</ol>:<p class="admin-muted">Chưa có lượt xem trong khoảng này.</p>}</article>
+    <article class="admin-panel analytics-ranking"><div class="admin-panel-head"><div><p class="eyebrow">Owner Console</p><h2>Admin activity</h2></div><span>{fmt(s.admin_actions)} thao tác</span></div>{report.topAdmin.length?<ol>{report.topAdmin.map((row:any,i:number)=><li><span><b>{i+1}</b><span>{adminLabel(row.event_key)}</span></span><strong>{fmt(row.value)}</strong></li>)}</ol>:<p class="admin-muted">Chưa có thao tác admin được ghi trong khoảng này.</p>}</article>
   </section>
-</AdminLayout>
+</AdminLayout><style>
+  .analytics-intro-v2{align-items:center}.analytics-range{display:flex;gap:7px}.analytics-range .button{min-width:76px}.analytics-range .active{background:var(--text);color:var(--bg);border-color:var(--text)}
+  .analytics-kpis-v2{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:16px}.analytics-kpis-v2 article{display:flex;align-items:center;gap:11px;padding:15px;border:1px solid var(--border);border-radius:15px;background:var(--surface)}.analytics-kpis-v2 article>span{width:35px;height:35px;display:grid;place-items:center;flex:0 0 auto;border-radius:10px;background:var(--surface-2);color:var(--muted)}.analytics-kpis-v2 article>div{display:grid}.analytics-kpis-v2 small{color:var(--muted);font-size:10px}.analytics-kpis-v2 strong{font-size:21px;letter-spacing:-.035em}.analytics-kpis-v2 em{font-style:normal;color:var(--muted);font-size:9px}.analytics-kpis-v2 .is-warning>span{color:var(--warning)}
+  .analytics-opportunities{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}.analytics-opportunities article{padding:18px 20px;border:1px solid var(--border);border-radius:16px;background:var(--surface)}.analytics-opportunities strong{display:block;font-size:17px;margin-bottom:5px}.analytics-opportunities p:last-child{margin:0;color:var(--muted);font-size:12px}
+  .analytics-trend-card{margin-bottom:16px;padding:21px;border:1px solid var(--border);border-radius:18px;background:var(--surface);overflow-x:auto}.analytics-legend-v2{display:flex;gap:13px;flex-wrap:wrap;color:var(--muted);font-size:11px}.analytics-legend-v2 span{display:flex;align-items:center;gap:5px}.analytics-legend-v2 i{width:8px;height:8px;border-radius:3px}.views{background:#5069dd}.opens{background:#16a085}.searches{background:#8b5cf6}.zero{background:#d97706}
+  .analytics-trend{height:230px;display:grid;grid-template-columns:repeat(7,minmax(50px,1fr));gap:8px;align-items:end;margin-top:18px;padding-top:4px;border-bottom:1px solid var(--border)}.analytics-trend.is-30{min-width:1080px;grid-template-columns:repeat(30,minmax(28px,1fr))}.trend-day{height:100%;display:grid;grid-template-rows:1fr 22px;gap:5px;align-items:end;text-align:center}.trend-bars{height:100%;display:flex;align-items:flex-end;justify-content:center;gap:2px}.trend-bars i{display:block;width:min(11px,22%);min-height:0;border-radius:4px 4px 1px 1px}.trend-day small{font-size:9px;color:var(--muted)}.analytics-note{margin:10px 0 0;color:var(--muted);font-size:10px}
+  .analytics-pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}.analytics-ranking ol{list-style:none;margin:0;padding:0}.analytics-ranking li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid var(--border);font-size:12px}.analytics-ranking li>span{display:flex;align-items:center;gap:8px;min-width:0}.analytics-ranking li>span>span,.analytics-ranking li a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.analytics-ranking li b{width:20px;color:var(--muted);font-weight:700}.analytics-ranking li small{color:var(--muted);font-size:9px;white-space:nowrap}.gap-ranking li small{color:var(--warning)}.analytics-ranking li>strong{font-size:13px;white-space:nowrap}
+  @media(max-width:1180px){.analytics-kpis-v2{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:800px){.analytics-pair,.analytics-opportunities{grid-template-columns:1fr}.analytics-kpis-v2{grid-template-columns:repeat(2,1fr)}.analytics-trend{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.analytics-trend.is-30{min-width:1080px;grid-template-columns:repeat(30,minmax(28px,1fr))}.trend-bars{gap:1px}.analytics-intro-v2{align-items:stretch}.analytics-range{width:100%}.analytics-range .button{flex:1}}
+  @media(max-width:520px){.analytics-kpis-v2{grid-template-columns:1fr 1fr}.analytics-ranking li>span{max-width:78%;flex-wrap:wrap}.analytics-ranking li small{width:100%;padding-left:28px}.analytics-opportunities article{padding:16px}.analytics-kpis-v2 article{padding:13px}.analytics-kpis-v2 strong{font-size:19px}}
+</style>

@@ -88,25 +88,33 @@ export async function trackAdminActivity(eventKey:string){
 }
 
 export async function analyticsReport(days=7){
-  const range=days===30?30:7; const start=new Date(Date.now()-(range-1)*86400000).toISOString().slice(0,10);
-  const [traffic,searches,categories,admin,dailyTraffic,dailySearch,dailyCategory,dailyAdmin]=await Promise.all([
+  const range=days===30?30:7;
+  const start=new Date(Date.now()-(range-1)*86400000).toISOString().slice(0,10);
+  const [traffic,searches,categories,admin,newTools,dailyTraffic,dailySearch,dailyCategory,dailyAdmin,dailyNewTools]=await Promise.all([
     db().prepare('SELECT COALESCE(SUM(views),0) views,COALESCE(SUM(opens),0) opens FROM analytics WHERE date>=?').bind(start).first<any>(),
     db().prepare('SELECT COALESCE(SUM(searches),0) searches,COALESCE(SUM(zero_results),0) zero_results FROM search_analytics WHERE date>=?').bind(start).first<any>(),
     db().prepare('SELECT COALESCE(SUM(views),0) category_views FROM category_analytics WHERE date>=?').bind(start).first<any>(),
     db().prepare('SELECT COALESCE(SUM(count),0) admin_actions FROM admin_activity WHERE date>=?').bind(start).first<any>(),
+    db().prepare("SELECT COUNT(*) new_tools FROM apps WHERE substr(created_at,1,10)>=?").bind(start).first<any>(),
     db().prepare('SELECT date,SUM(views) views,SUM(opens) opens FROM analytics WHERE date>=? GROUP BY date').bind(start).all<any>(),
-    db().prepare('SELECT date,SUM(searches) searches FROM search_analytics WHERE date>=? GROUP BY date').bind(start).all<any>(),
+    db().prepare('SELECT date,SUM(searches) searches,SUM(zero_results) zero_results FROM search_analytics WHERE date>=? GROUP BY date').bind(start).all<any>(),
     db().prepare('SELECT date,SUM(views) category_views FROM category_analytics WHERE date>=? GROUP BY date').bind(start).all<any>(),
     db().prepare('SELECT date,SUM(count) admin_actions FROM admin_activity WHERE date>=? GROUP BY date').bind(start).all<any>(),
+    db().prepare("SELECT substr(created_at,1,10) date,COUNT(*) new_tools FROM apps WHERE substr(created_at,1,10)>=? GROUP BY substr(created_at,1,10)").bind(start).all<any>(),
   ]);
-  const rows=new Map<string,any>(); for(let i=0;i<range;i++){const d=new Date(Date.now()-(range-1-i)*86400000).toISOString().slice(0,10);rows.set(d,{date:d,views:0,opens:0,searches:0,category_views:0,admin_actions:0});}
-  for(const group of [dailyTraffic.results,dailySearch.results,dailyCategory.results,dailyAdmin.results])for(const row of group)Object.assign(rows.get(row.date)||{},row);
-  const [topViews,topOpens,topSearches,topCategories,topAdmin]=await Promise.all([
+  const rows=new Map<string,any>();
+  for(let i=0;i<range;i++){const d=new Date(Date.now()-(range-1-i)*86400000).toISOString().slice(0,10);rows.set(d,{date:d,views:0,opens:0,searches:0,zero_results:0,category_views:0,admin_actions:0,new_tools:0});}
+  for(const group of [dailyTraffic.results,dailySearch.results,dailyCategory.results,dailyAdmin.results,dailyNewTools.results])for(const row of group)Object.assign(rows.get(row.date)||{},row);
+  const [topViews,topOpens,topSearches,zeroSearches,underDiscovered,topCategories,topAdmin,newestTools]=await Promise.all([
     db().prepare(`SELECT a.id,a.name,a.slug,SUM(an.views) value FROM analytics an JOIN apps a ON a.id=an.app_id WHERE an.date>=? GROUP BY a.id HAVING SUM(an.views)>0 ORDER BY value DESC,a.name LIMIT 8`).bind(start).all<any>(),
     db().prepare(`SELECT a.id,a.name,a.slug,SUM(an.opens) value FROM analytics an JOIN apps a ON a.id=an.app_id WHERE an.date>=? GROUP BY a.id HAVING SUM(an.opens)>0 ORDER BY value DESC,a.name LIMIT 8`).bind(start).all<any>(),
     db().prepare(`SELECT normalized_query,MAX(query) query,SUM(searches) value,SUM(zero_results) zero_results FROM search_analytics WHERE date>=? GROUP BY normalized_query ORDER BY value DESC,query LIMIT 10`).bind(start).all<any>(),
+    db().prepare(`SELECT normalized_query,MAX(query) query,SUM(searches) searches,SUM(zero_results) zero_results,MAX(last_result_count) last_result_count FROM search_analytics WHERE date>=? GROUP BY normalized_query HAVING SUM(zero_results)>0 ORDER BY zero_results DESC,searches DESC,query LIMIT 10`).bind(start).all<any>(),
+    db().prepare(`SELECT a.id,a.name,a.slug,COALESCE(SUM(an.views),0) views,COALESCE(SUM(an.opens),0) opens,COALESCE(SUM(an.views),0)+COALESCE(SUM(an.opens),0) value FROM apps a LEFT JOIN analytics an ON an.app_id=a.id AND an.date>=? WHERE a.visibility='public' GROUP BY a.id ORDER BY value ASC,a.updated_at DESC LIMIT 8`).bind(start).all<any>(),
     db().prepare(`SELECT c.id,c.name,c.slug,SUM(ca.views) value FROM category_analytics ca JOIN categories c ON c.id=ca.category_id WHERE ca.date>=? GROUP BY c.id ORDER BY value DESC,c.name LIMIT 8`).bind(start).all<any>(),
     db().prepare(`SELECT event_key,SUM(count) value FROM admin_activity WHERE date>=? GROUP BY event_key ORDER BY value DESC,event_key LIMIT 10`).bind(start).all<any>(),
+    db().prepare(`SELECT id,name,slug,status,visibility,created_at FROM apps WHERE substr(created_at,1,10)>=? ORDER BY created_at DESC LIMIT 8`).bind(start).all<any>(),
   ]);
-  return {days:range,start,summary:{views:Number(traffic?.views||0),opens:Number(traffic?.opens||0),searches:Number(searches?.searches||0),zero_results:Number(searches?.zero_results||0),category_views:Number(categories?.category_views||0),admin_actions:Number(admin?.admin_actions||0)},daily:[...rows.values()],topViews:topViews.results,topOpens:topOpens.results,topSearches:topSearches.results,topCategories:topCategories.results,topAdmin:topAdmin.results};
+  const searchCount=Number(searches?.searches||0),zeroCount=Number(searches?.zero_results||0);
+  return {days:range,start,summary:{views:Number(traffic?.views||0),opens:Number(traffic?.opens||0),searches:searchCount,zero_results:zeroCount,zero_rate:searchCount?Math.round(zeroCount/searchCount*100):0,category_views:Number(categories?.category_views||0),admin_actions:Number(admin?.admin_actions||0),new_tools:Number(newTools?.new_tools||0)},daily:[...rows.values()],topViews:topViews.results,topOpens:topOpens.results,topSearches:topSearches.results,zeroSearches:zeroSearches.results,underDiscovered:underDiscovered.results,topCategories:topCategories.results,topAdmin:topAdmin.results,newestTools:newestTools.results};
 }
