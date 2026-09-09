@@ -5,13 +5,13 @@ import { listCategories } from '../../../lib/db';
 const categories=await listCategories(false);
 ---
 <AdminLayout title="Nhập website">
-  <section class="admin-section-intro"><div><p class="eyebrow">Tự động hóa</p><h2>Nhập từ URL</h2><p>Toolpick tự lấy tên, mô tả, favicon và cover Open Graph nếu website có.</p></div><a class="button ghost" href="/admin/apps">← Website</a></section>
+  <section class="admin-section-intro"><div><p class="eyebrow">Tự động hóa</p><h2>Nhập từ URL</h2><p>Dán một URL, Toolpick sẽ tự lấy metadata và chuẩn bị bản nháp để bạn duyệt.</p></div><a class="button ghost" href="/admin/apps">← Website</a></section>
   <form class="import-card" method="post" action="/api/admin/import">
     <span class="import-card__icon"><Icon name="compass" size={25}/></span>
-    <div><h2>Dán URL website</h2><p>Website mới luôn được tạo ở chế độ <strong>Private</strong>. Bạn có thể kiểm tra và sửa thông tin trước khi công khai.</p></div>
+    <div><h2>Dán URL website</h2><p>Toolpick tự điền tên, mô tả, favicon, cover, công dụng, đối tượng, danh mục và tags. Website luôn được tạo ở chế độ <strong>Private</strong> cho đến khi bạn kiểm tra.</p></div>
     <label>URL<input type="text" name="url" required placeholder="https://example.com" autocomplete="url" /></label>
-    <label>Danh mục <span class="field-note">Tùy chọn</span><select name="category_id"><option value="">Chưa phân loại</option>{categories.map((c)=><option value={c.id}>{c.name}</option>)}</select></label>
-    <div class="import-card__notes"><span>✓ Tự theo redirect an toàn</span><span>✓ Tải favicon/OG image về R2</span><span>✓ Bật theo dõi uptime mặc định</span></div>
-    <button class="button primary" type="submit">Nhập website</button>
+    <label>Danh mục <span class="field-note">Tùy chọn · để trống để tự gợi ý</span><select name="category_id"><option value="">Tự nhận diện</option>{categories.map((c)=><option value={c.id}>{c.name}</option>)}</select></label>
+    <div class="import-card__notes"><span>✓ Tự lấy tên, mô tả, favicon và ảnh</span><span>✓ Tự gợi ý danh mục, tags và công dụng</span><span>✓ Tải media về R2 và bật theo dõi uptime</span></div>
+    <button class="button primary" type="submit">Phân tích website</button>
   </form>
 </AdminLayout>
