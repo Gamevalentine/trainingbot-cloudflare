@@ -2,13 +2,13 @@
 import BaseLayout from './BaseLayout.astro';
 import Icon from '../components/Icon.astro';
 import { env } from 'cloudflare:workers';
-interface Props { title?: string; description?: string; image?: string; canonical?: string; structuredData?: Record<string, unknown> | null; }
-const { title = 'Toolpick', description, image, canonical, structuredData } = Astro.props;
+interface Props { title?: string; description?: string; image?: string; canonical?: string; noIndex?: boolean; structuredData?: Record<string, unknown> | null; }
+const { title = 'Toolpick', description, image, canonical, noIndex = false, structuredData } = Astro.props;
 const path = Astro.url.pathname;
 const ownerEmail = String(env.OWNER_EMAIL || '').trim();
 const year = new Date().getFullYear();
 ---
-<BaseLayout title={title} description={description} image={image} canonical={canonical} structuredData={structuredData}>
+<BaseLayout title={title} description={description} image={image} canonical={canonical} noIndex={noIndex} structuredData={structuredData}>
   <header class="site-header"><div class="container header-inner"><a class="brand" href="/"><span class="brand-mark">T</span><span>Toolpick</span></a><nav class="desktop-nav"><a class:list={[path === '/explore' && 'active']} href="/explore">Công cụ</a><a class:list={[path.startsWith('/categor') && 'active']} href="/categories">Danh mục</a><a class:list={[path === '/favorites' && 'active']} href="/favorites">Yêu thích</a></nav><form class="header-search" action="/search"><Icon name="search" size={18}/><input name="q" aria-label="Tìm kiếm" placeholder="Tìm công cụ..." /></form><button class="theme-toggle" data-theme-toggle aria-label="Đổi giao diện">◐</button></div></header>
   <main><slot /></main>
   <footer class="site-footer site-footer--rich">

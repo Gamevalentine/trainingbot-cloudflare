@@ -16,7 +16,7 @@ const host=(()=>{try{return new URL(app.production_url).hostname.replace(/^www\.
 const pricingLabel=({free:'Miễn phí',freemium:'Miễn phí + trả phí',paid:'Trả phí',subscription:'Thuê bao'} as Record<string,string>)[app.pricing_type]||app.pricing_type||'Chưa rõ';
 const statusTone=app.status==='active'?'good':app.status==='offline'?'bad':'warn';
 const checked=app.last_checked_at?dateLabel(app.last_checked_at):'Chưa kiểm tra';
-const structuredData={'@context':'https://schema.org','@type':'SoftwareApplication',name:app.name,description:app.short_description||app.description,url:app.production_url,applicationCategory:app.category_name||'WebApplication',operatingSystem:app.platform||'Web',isAccessibleForFree:app.pricing_type==='free'};
+const structuredData={'@context':'https://schema.org','@graph':[{'@type':'SoftwareApplication',name:app.name,description:app.short_description||app.description,url:app.production_url,applicationCategory:'WebApplication',operatingSystem:app.platform||'Web',isAccessibleForFree:app.pricing_type==='free',publisher:{'@type':'Organization',name:'Toolpick',url:'https://toolpick.id.vn/' }},{'@type':'BreadcrumbList',itemListElement:[{'@type':'ListItem',position:1,name:'Trang chủ',item:'https://toolpick.id.vn/'},{'@type':'ListItem',position:2,name:app.category_name||'Danh mục',item:`https://toolpick.id.vn/category/${app.category_slug||''}`},{'@type':'ListItem',position:3,name:app.name,item:`https://toolpick.id.vn/apps/${app.slug}`}]}]};
 ---
 <PublicLayout title={`${app.name} · Toolpick`} description={app.short_description||app.description} image={image} structuredData={structuredData}>
   <section class="container detail-hero-v2">

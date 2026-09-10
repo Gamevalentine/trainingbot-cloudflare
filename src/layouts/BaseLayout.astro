@@ -38,11 +38,15 @@ const ogImage = image ? new URL(image, siteUrl).toString() : new URL('/favicon.s
   <link rel="canonical" href={canonicalUrl} />
   {noIndex && <meta name="robots" content="noindex,nofollow" />}
   <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Toolpick" />
+  <meta property="og:locale" content="vi_VN" />
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
   <meta property="og:url" content={canonicalUrl} />
   <meta property="og:image" content={ogImage} />
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   {structuredData && <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />}
   <script is:inline>

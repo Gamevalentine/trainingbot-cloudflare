@@ -10,9 +10,18 @@ const [categories, featured, updated] = await Promise.all([
   listPublicApps({ sort: 'updated', limit: 4 }),
 ]);
 const browseCategories = categories.slice(0, 7);
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Toolpick',
+  url: 'https://toolpick.id.vn/',
+  description: 'Kho công cụ web giúp tìm đúng website và web app theo nhu cầu.',
+  inLanguage: 'vi-VN',
+  potentialAction: { '@type': 'SearchAction', target: 'https://toolpick.id.vn/search?q={search_term_string}', 'query-input': 'required name=search_term_string' }
+};
 ---
 
-<PublicLayout title="Toolpick · Tìm đúng công cụ bạn cần" description="Tìm kiếm và sử dụng các website, web app và công cụ nhỏ phù hợp với điều bạn muốn làm.">
+<PublicLayout title="Toolpick · Tìm đúng công cụ bạn cần" description="Tìm kiếm và sử dụng các website, web app và công cụ nhỏ phù hợp với điều bạn muốn làm." structuredData={structuredData}>
   <section class="hero home-hero">
     <div class="container hero-inner">
       <p class="eyebrow">Toolpick</p>

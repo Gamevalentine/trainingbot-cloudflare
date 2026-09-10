@@ -26,6 +26,7 @@ if(q.trim()&&!params.has('probe')){const job=()=>trackSearch(q,apps.length).catc
 <PublicLayout
   title={`${q ? `“${q}” · ` : ''}Tìm kiếm · Toolpick`}
   description="Tìm công cụ theo tên, nhu cầu, mô tả, danh mục, tag và chức năng."
+  noIndex={Boolean(q || params.toString())}
 >
   <section class="container search-page">
     <div class="search-heading">

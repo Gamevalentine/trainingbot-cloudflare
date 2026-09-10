@@ -8,10 +8,11 @@ const category=await getCategory(slug);
 if(!category)return new Response('Không tìm thấy',{status:404});
 const sort=Astro.url.searchParams.get('sort')||'updated';
 const apps=await listPublicApps({category:slug,sort});
+const structuredData={'@context':'https://schema.org','@graph':[{'@type':'CollectionPage',name:category.name,description:category.description||`Các công cụ thuộc ${category.name}`,url:new URL(`/category/${category.slug}`,Astro.url.origin).toString(),isPartOf:{'@type':'WebSite',name:'Toolpick',url:Astro.url.origin}},{'@type':'BreadcrumbList',itemListElement:[{'@type':'ListItem',position:1,name:'Trang chủ',item:'https://toolpick.id.vn/'},{'@type':'ListItem',position:2,name:'Danh mục',item:'https://toolpick.id.vn/categories'},{'@type':'ListItem',position:3,name:category.name,item:`https://toolpick.id.vn/category/${category.slug}`}]}]};
 const track=()=>trackCategoryView(category.id).catch(()=>{});
 if(Astro.defer)Astro.defer(track);else await track();
 ---
-<PublicLayout title={`${category.name} · Toolpick`} description={category.description||`Các công cụ thuộc ${category.name}`}>
+<PublicLayout title={`${category.name} · Toolpick`} description={category.description||`Các công cụ thuộc ${category.name}`} structuredData={structuredData}>
   <section class="container category-detail-hero">
     <a class="category-back" href="/categories">← Tất cả danh mục</a>
     <div class="category-detail-identity"><span class="category-detail-icon"><Icon name={category.icon} size={28}/></span><div><p class="eyebrow">Danh mục</p><h1>{category.name}</h1><p>{category.description||'Khám phá các công cụ phù hợp trong nhóm này.'}</p></div></div>
