@@ -1,4 +1,33 @@
 ---
-import PublicLayout from '../../layouts/PublicLayout.astro'; import AppGrid from '../../components/AppGrid.astro'; import { getCategory, listPublicApps, trackCategoryView } from '../../lib/db'; const slug=Astro.params.slug!; const category=await getCategory(slug); if(!category)return new Response('Không tìm thấy',{status:404}); const sort=Astro.url.searchParams.get('sort')||'updated'; const apps=await listPublicApps({category:slug,sort}); const track=()=>trackCategoryView(category.id).catch(()=>{}); if(Astro.defer)Astro.defer(track);else await track();
+import PublicLayout from '../../layouts/PublicLayout.astro';
+import AppGrid from '../../components/AppGrid.astro';
+import Icon from '../../components/Icon.astro';
+import { getCategory, listPublicApps, trackCategoryView } from '../../lib/db';
+const slug=Astro.params.slug!;
+const category=await getCategory(slug);
+if(!category)return new Response('Không tìm thấy',{status:404});
+const sort=Astro.url.searchParams.get('sort')||'updated';
+const apps=await listPublicApps({category:slug,sort});
+const track=()=>trackCategoryView(category.id).catch(()=>{});
+if(Astro.defer)Astro.defer(track);else await track();
 ---
-<PublicLayout title={`${category.name} · Web Tools Hub`} description={category.description||`Các công cụ thuộc ${category.name}`}><section class="container page-hero"><p class="eyebrow">Danh mục</p><h1>{category.name}</h1><p>{category.description||`${apps.length} công cụ đang công khai.`}</p></section><section class="container result-header"><span>{apps.length} công cụ</span><form><select name="sort" onchange="this.form.submit()"><option value="updated" selected={sort==='updated'}>Mới cập nhật</option><option value="popular" selected={sort==='popular'}>Phổ biến</option><option value="new" selected={sort==='new'}>Mới thêm</option><option value="name" selected={sort==='name'}>Tên A–Z</option></select></form></section><section class="container section-block no-top"><AppGrid apps={apps}/></section></PublicLayout>
+<PublicLayout title={`${category.name} · Toolpick`} description={category.description||`Các công cụ thuộc ${category.name}`}>
+  <section class="container category-detail-hero">
+    <a class="category-back" href="/categories">← Tất cả danh mục</a>
+    <div class="category-detail-identity"><span class="category-detail-icon"><Icon name={category.icon} size={28}/></span><div><p class="eyebrow">Danh mục</p><h1>{category.name}</h1><p>{category.description||'Khám phá các công cụ phù hợp trong nhóm này.'}</p></div></div>
+    <div class="category-detail-meta"><strong>{apps.length}</strong><span>công cụ công khai</span></div>
+  </section>
+  <section class="container result-header category-result-header">
+    <div><strong>{apps.length} công cụ</strong><span> · Sắp xếp theo nhu cầu của bạn</span></div>
+    <nav class="category-sort" aria-label="Sắp xếp"><a class:list={{active:sort==='updated'}} href={`/category/${category.slug}?sort=updated`}>Mới cập nhật</a><a class:list={{active:sort==='popular'}} href={`/category/${category.slug}?sort=popular`}>Phổ biến</a><a class:list={{active:sort==='new'}} href={`/category/${category.slug}?sort=new`}>Mới thêm</a><a class:list={{active:sort==='name'}} href={`/category/${category.slug}?sort=name`}>A–Z</a></nav>
+  </section>
+  <section class="container section-block no-top"><AppGrid apps={apps}/></section>
+  {apps.length===0&&<section class="container category-empty"><Icon name="search" size={24}/><h2>Danh mục này chưa có công cụ công khai</h2><p>Hãy thử tìm theo nhu cầu hoặc xem các danh mục khác.</p><div><a class="button primary" href="/search">Tìm công cụ</a><a class="button ghost" href="/categories">Xem danh mục</a></div></section>}
+</PublicLayout>
+<style>
+  .category-detail-hero{padding:52px 0 34px;border-bottom:1px solid var(--border);position:relative}.category-back{display:inline-flex;margin-bottom:28px;color:var(--muted);font-size:13px;font-weight:700}.category-back:hover{color:var(--brand)}
+  .category-detail-identity{display:flex;align-items:center;gap:18px;padding-right:130px}.category-detail-icon{width:64px;height:64px;display:grid;place-items:center;flex:0 0 64px;border:1px solid var(--border);border-radius:18px;background:var(--surface);box-shadow:var(--shadow)}.category-detail-identity h1{margin:0 0 8px;font-size:clamp(38px,5vw,58px)}.category-detail-identity p:not(.eyebrow){margin:0;max-width:760px;color:var(--muted);font-size:17px;line-height:1.6}.category-detail-meta{position:absolute;right:0;bottom:36px;display:flex;flex-direction:column;text-align:right}.category-detail-meta strong{font-size:30px;line-height:1}.category-detail-meta span{margin-top:5px;color:var(--muted);font-size:12px}
+  .category-result-header{align-items:center}.category-sort{display:flex;gap:5px;flex-wrap:wrap}.category-sort a{padding:8px 11px;border:1px solid transparent;border-radius:999px;color:var(--muted);font-size:12px;font-weight:700}.category-sort a:hover,.category-sort a.active{border-color:var(--border);background:var(--surface);color:var(--text)}
+  .category-empty{padding:64px 20px;text-align:center;border:1px dashed var(--border);border-radius:18px;margin-bottom:70px}.category-empty h2{margin:14px 0 8px}.category-empty p{color:var(--muted)}.category-empty div{display:flex;justify-content:center;gap:10px;margin-top:20px}
+  @media(max-width:700px){.category-detail-hero{padding-top:36px}.category-detail-identity{padding-right:0;align-items:flex-start}.category-detail-icon{width:54px;height:54px;flex-basis:54px}.category-detail-identity h1{font-size:36px}.category-detail-identity p:not(.eyebrow){font-size:15px}.category-detail-meta{position:static;margin-top:24px;text-align:left;flex-direction:row;align-items:baseline;gap:7px}.category-detail-meta strong{font-size:24px}.category-sort{width:100%;overflow:auto;flex-wrap:nowrap;padding-bottom:3px}.category-sort a{white-space:nowrap}.category-empty div{flex-direction:column}}
+</style>

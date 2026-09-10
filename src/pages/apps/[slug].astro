@@ -21,7 +21,7 @@ const structuredData={'@context':'https://schema.org','@type':'SoftwareApplicati
 <PublicLayout title={`${app.name} · Toolpick`} description={app.short_description||app.description} image={image} structuredData={structuredData}>
   <section class="container detail-hero-v2">
     <div class="detail-intro">
-      <a class="detail-breadcrumb" href={app.category_slug?`/categories/${app.category_slug}`:'/categories'}>{app.category_name||'Công cụ web'} <span>›</span></a>
+      <a class="detail-breadcrumb" href={app.category_slug?`/category/${app.category_slug}`:'/categories'}>{app.category_name||'Công cụ web'} <span>›</span></a>
       <div class="detail-identity">
         {app.icon_key?<img class="detail-icon-v2" src={mediaUrl(app.icon_key)} alt=""/>:<div class="detail-icon-v2 app-icon--fallback">{app.name[0]}</div>}
         <div><h1>{app.name}</h1><p>{app.short_description||app.primary_use||app.description}</p></div>
@@ -73,7 +73,7 @@ const structuredData={'@context':'https://schema.org','@type':'SoftwareApplicati
     </aside>
   </section>
 
-  {related.length>0&&<section class="container section-block detail-related"><div class="section-heading"><div><p class="eyebrow">Công cụ tương tự</p><h2>Có thể bạn cũng cần</h2></div><a href={app.category_slug?`/categories/${app.category_slug}`:'/explore'}>Xem thêm</a></div><AppGrid apps={related}/></section>}
+  {related.length>0&&<section class="container section-block detail-related"><div class="section-heading"><div><p class="eyebrow">Công cụ tương tự</p><h2>Có thể bạn cũng cần</h2></div><a href={app.category_slug?`/category/${app.category_slug}`:'/explore'}>Xem thêm</a></div><AppGrid apps={related}/></section>}
 </PublicLayout>
 
 <style>
