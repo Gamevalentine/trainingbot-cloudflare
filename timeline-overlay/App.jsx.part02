@@ -1,0 +1,478 @@
+e: "",
+  });
+  const [avatarPanelOpen, setAvatarPanelOpen] = useState(false);
+  const [smartMode, setSmartMode] = useState("auto-edit");
+  const [avatarJob, setAvatarJob] = useState({ running: false, progress: 0, phase: "" });
+  const lastSaved = useAutosaveTimestamp([
+    script,
+    imageSrc,
+    visualType,
+    imageDuration,
+    captionPlacement,
+    selectedVoiceId,
+    speed,
+    volume,
+    musicName,
+    musicDuration,
+    musicStart,
+    musicVolume,
+    sourceAudioName,
+    sourceAudioDuration,
+    sourceAudioStart,
+    sourceAudioVolume,
+    sourceAudioSpatialEffect,
+    sourceAudioSpatialAmount,
+    ratioId,
+    fitMode,
+    selectedFilterId,
+    selectedStickerId,
+    captionSegments,
+    visualSegments,
+    visualOverlaySegments,
+    visionRecords,
+    timelineZoom,
+    timelineMarkers,
+  ]);
+
+  const {
+    assetDropPulseTimerRef,
+    audioRef,
+    audioSegmentRefs,
+    audioUrlRef,
+    autoRatioSourceKeyRef,
+    avatarMotionCacheRef,
+    avatarMotionWorkerRef,
+    avatarRenderWorkerRef,
+    currentTimeRef,
+    draggedAssetIdRef,
+    exportAbortControllerRef,
+    exportStartRef,
+    fileInputRef,
+    imageUrlRefs,
+    musicRef,
+    musicUrlRef,
+    pointerAssetDragRef,
+    previewCanvasRef,
+    previewShellRef,
+    previewVideoRef,
+    projectFileInputRef,
+    sourceAudioRef,
+    sourceAudioUrlRef,
+    suppressAssetClickRef,
+    suppressTimelineClipClickRef,
+    timelineClipDragRef,
+    timelineDurationRef,
+    trackScrollRef,
+    visionAbortControllerRef,
+    visionJobGenerationRef,
+    visionObjectUrlsRef,
+    visualPlaybackFrameRef,
+    visualPlaybackLastUpdateRef,
+    visualPlaybackStartedAtRef,
+    visualPlaybackStartTimeRef,
+    voiceRecorderChunksRef,
+    voiceRecorderRef,
+    voiceRecorderStartedAtRef,
+    voiceRecorderStreamRef,
+    voiceRecorderTimerRef,
+  } = useEditorRefs();
+
+  useEffect(() => {
+    if (workspaceMode !== "workflow") return;
+    setIsPlaying(false);
+    previewVideoRef.current?.pause();
+    audioRef.current?.pause();
+    sourceAudioRef.current?.pause();
+    musicRef.current?.pause();
+    audioSegmentRefs.current?.forEach?.((media) => media?.pause?.());
+  }, [
+    audioRef,
+    audioSegmentRefs,
+    musicRef,
+    previewVideoRef,
+    setIsPlaying,
+    sourceAudioRef,
+    workspaceMode,
+  ]);
+
+  const activeLanguage = uiLanguage || "zh";
+  const aiMusic = useAiMusicGeneration({
+    activeLanguage,
+    imageUrlRefs,
+    setActiveTool,
+    setMediaTab,
+    setSelectedLibraryAssetId,
+    setUserAssets,
+  });
+  const { redo, undo } = useEditorHistory({
+    timelineMarkers,
+    setTimelineMarkers,
+    audioSegments,
+    captionPlacement,
+    captionPosition,
+    captionSegments,
+    captionSize,
+    captionStyle,
+    captionsEnabled,
+    currentTime,
+    fitMode,
+    imageClipCount,
+    imageDuration,
+    imageMeta,
+    imageName,
+    imageSrc,
+    imageUrlRefs,
+    musicBlob,
+    musicDuration,
+    musicName,
+    musicSegments,
+    musicStart,
+    musicPeaks,
+    musicUrl,
+    musicUrlRef,
+    musicVolume,
+    notify,
+    selectedAudioSegmentId,
+    selectedFilterId,
+    selectedSegmentId,
+    selectedStickerId,
+    selectedStickerSegmentId,
+    selectedTrack,
+    selectedTransitionId,
+    selectedVisualSegmentId,
+    script,
+    setAudioSegments,
+    setCaptionPlacement,
+    setCaptionPosition,
+    setCaptionSegments,
+    setCaptionSize,
+    setCaptionStyle,
+    setCaptionsEnabled,
+    setCurrentTime,
+    setFitMode,
+    setImageClipCount,
+    setImageDuration,
+    setImageMeta,
+    setImageName,
+    setImageSrc,
+    setIsPlaying,
+    setMusicBlob,
+    setMusicDuration,
+    setMusicName,
+    setMusicPeaks,
+    setMusicSegments,
+    setMusicStart,
+    setMusicUrl,
+    setMusicVolume,
+    setScript,
+    setSelectedAudioSegmentId,
+    setSelectedFilterId,
+    setSelectedSegmentId,
+    setSelectedStickerId,
+    setSelectedStickerSegmentId,
+    setSelectedTrack,
+    setSelectedTransitionId,
+    setSelectedVisualSegmentId,
+    setSourceAudioBlob,
+    setSourceAudioAssetId,
+    setSourceAudioDuration,
+    setSourceAudioLinked,
+    setSourceAudioName,
+    setSourceAudioPeaks,
+    setSourceAudioStart,
+    setSourceAudioUrl,
+    setSourceAudioVolume,
+    setStickerSegments,
+    setTimelineHorizon,
+    setTrackLocks,
+    setTrackVisibility,
+    setUserAssets,
+    setVisualSegments,
+    setVisualType,
+    sourceAudioAssetId,
+    sourceAudioBlob,
+    sourceAudioDuration,
+    sourceAudioLinked,
+    sourceAudioName,
+    sourceAudioPeaks,
+    sourceAudioStart,
+    sourceAudioUrl,
+    sourceAudioUrlRef,
+    sourceAudioVolume,
+    stickerSegments,
+    timelineHorizon,
+    trackLocks,
+    trackVisibility,
+    userAssets,
+    visualSegments,
+    visualType,
+    visualOverlaySegments,
+    selectedVisualOverlayId,
+    setVisualOverlaySegments,
+    setSelectedVisualOverlayId,
+  });
+  const t = useMemo(() => createTranslator(activeLanguage), [activeLanguage]);
+  const {
+    addVoiceProfile,
+    removeVoiceProfile,
+    selectedVoiceProfileId,
+    setSelectedVoiceProfileId,
+    toggleVoiceProfileFavorite,
+    voiceProfiles,
+  } = useVoiceProfiles({ favoriteVoiceIds, setFavoriteVoiceIds, notify, t });
+  const selectedVoiceProfile =
+    voiceProfiles.find((profile) => profile.id === selectedVoiceProfileId) ?? null;
+  const handleCancelExport = () => {
+    const controller = exportAbortControllerRef.current;
+    if (!controller || controller.signal.aborted) return;
+    setExportPhase(t("exportCanceling"));
+    controller.abort();
+  };
+  const trOption = (name, option) => {
+    if (option?.kind === "stickerCategory") {
+      return activeLanguage !== "zh" && option.nameEn ? option.nameEn : name;
+    }
+
+    return activeLanguage !== "zh" && option?.nameEn
+      ? option.nameEn
+      : translateOptionName(activeLanguage, name);
+  };
+  const shouldShowLanguageIntro = !uiLanguage;
+  const requestFirstVisualGuide = () => {
+    const isMobile = window.matchMedia?.(FIRST_VISUAL_GUIDE_MOBILE_QUERY).matches ?? false;
+    if (
+      !canShowFirstVisualGuide({
+        isMobile,
+        hasSeen: hasSeenFirstVisualGuide(),
+        shownThisSession: firstVisualGuideShownRef.current,
+      })
+    )
+      return;
+    firstVisualGuideShownRef.current = true;
+    setShowFirstVisualGuide(true);
+  };
+
+  const linkedSourceAudioSegments = useMemo(
+    () =>
+      sourceAudioLinked && sourceAudioBlob
+        ? getLinkedSourceAudioSegments(visualSegments, sourceAudioAssetId, sourceAudioDuration)
+        : [],
+    [sourceAudioAssetId, sourceAudioBlob, sourceAudioDuration, sourceAudioLinked, visualSegments],
+  );
+  const sourceAudioTimelineEnd =
+    sourceAudioLinked && linkedSourceAudioSegments.length
+      ? getLinkedSourceAudioEnd(linkedSourceAudioSegments)
+      : sourceAudioStart + sourceAudioDuration;
+  const musicTimelineEnd = musicSegments.length
+    ? musicSegments.reduce((end, segment) => Math.max(end, segment.start + segment.duration), 0)
+    : musicStart + musicDuration;
+
+  const rippleTimelineAfter = (boundary, delta) =>
+    applyTimelineRipple(
+      {
+        rippleEditing,
+        audioSegments,
+        captionSegments,
+        musicBlob,
+        musicSegments,
+        musicStart,
+        sourceAudioBlob,
+        sourceAudioLinked,
+        sourceAudioStart,
+        stickerSegments,
+        trackLocks,
+        visualOverlaySegments,
+        setAudioSegments,
+        setCaptionSegments,
+        setMusicSegments,
+        setMusicStart,
+        setSourceAudioStart,
+        setStickerSegments,
+        setVisualOverlaySegments,
+      },
+      boundary,
+      delta,
+    );
+
+  const {
+    activePreviewFilter,
+    audioBlob,
+    audioDuration,
+    audioUrl,
+    canPreview,
+    captionDuration,
+    captionTargetDuration,
+    captionTimeline,
+    currentCaption,
+    currentCaptions,
+    currentCaptionSegment,
+    currentSegmentIndex,
+    currentStickerSegment,
+    currentStickerSegmentIndex,
+    currentVisualRange,
+    currentVisualSegment,
+    currentVisualSegmentIndex,
+    estimatedDuration,
+    focusedSegmentIndex,
+    getStickerDragAsset,
+    peaks,
+    previewSticker,
+    previewStickers,
+    previewVisualOverlays,
+    previewTransition,
+    previewVisionBaseAnalysis,
+    previewVisionKey,
+    previewVisionRecord,
+    previewVisualLocalTime,
+    previewVisualRange,
+    previewVisualSegment,
+    previewVisualSegmentIndex,
+    previewVisualSourceTime,
+    previewVisualSrc,
+    previewVisualType,
+    ratio,
+    segments,
+    selectedAudioSegment,
+    selectedCaptionSegment,
+    selectedFilter,
+    selectedSegmentIndex,
+    selectedSticker,
+    selectedStickerSegmentIndex,
+    selectedVisualSegmentIndex,
+    selectedVoice,
+    stickerDuration,
+    timelineDuration,
+    visualTimeline,
+    voiceTrackDuration,
+  } = useTimelineModel({
+    timelineMarkers,
+    audioSegments,
+    captionSegments,
+    currentTime,
+    imageDuration,
+    imageSrc,
+    musicBlob,
+    musicDuration,
+    musicTimelineEnd,
+    musicUrl,
+    ratioId,
+    script,
+    selectedAudioSegmentId,
+    selectedFilterId,
+    selectedSegmentId,
+    selectedStickerId,
+    selectedStickerSegmentId,
+    selectedVisualSegmentId,
+    selectedVoiceId,
+    sourceAudioBlob,
+    sourceAudioDuration,
+    sourceAudioTimelineEnd,
+    sourceAudioStart,
+    sourceAudioUrl,
+    stickerSegments,
+    timelineDurationRef,
+    timelineHorizon,
+    timelineZoom,
+    trackVisibility,
+    visionRecords,
+    visualSegments,
+    visualType,
+    visualOverlaySegments,
+  });
+  const previousTimelineContentDurationRef = useRef(estimatedDuration);
+  useEffect(() => {
+    const previousDuration = previousTimelineContentDurationRef.current;
+    const becameNonEmpty = previousDuration <= 0 && estimatedDuration > 0;
+    const becameEmpty = previousDuration > 0 && estimatedDuration <= 0;
+
+    if (becameNonEmpty) {
+      if (timelineImportRestoreRef.current) timelineImportRestoreRef.current = false;
+      else setTimelineZoom(getTimelineInitialContentZoom(estimatedDuration));
+      if (trackScrollRef.current) trackScrollRef.current.scrollLeft = 0;
+    } else if (becameEmpty) {
+      timelineImportRestoreRef.current = false;
+      setTimelineHorizon(10);
+      setTimelineZoom(getTimelineInitialContentZoom(0));
+      setCurrentTime(0);
+      if (trackScrollRef.current) trackScrollRef.current.scrollLeft = 0;
+    }
+
+    previousTimelineContentDurationRef.current = estimatedDuration;
+  }, [estimatedDuration, setCurrentTime, setTimelineHorizon, setTimelineZoom, trackScrollRef]);
+  const previewFrameSize = usePreviewFrameSize(previewShellRef, ratio, compactRail);
+  const selectedVisualSegment =
+    visualSegments[selectedVisualSegmentIndex] ?? previewVisualSegment ?? null;
+  const selectedVisualOverlay =
+    visualOverlaySegments.find((item) => item.id === selectedVisualOverlayId) ?? null;
+  const selectedEffectSegment =
+    selectedTrack === "overlay" && selectedVisualOverlay
+      ? selectedVisualOverlay
+      : selectedVisualSegment;
+  const effectVisionKey = getVisionKey(selectedEffectSegment);
+  const effectVisionRecord = effectVisionKey ? (visionRecords[effectVisionKey] ?? null) : null;
+  const effectAnalysis = effectVisionRecord?.analysis ?? null;
+  const effectRunning = visionJob.running && visionJob.key === effectVisionKey;
+  const effectProgress =
+    visionJob.key === effectVisionKey ? visionJob.progress : effectAnalysis?.complete ? 100 : 0;
+  const effectPhase = visionJob.key === effectVisionKey ? visionJob.phase : "";
+  const selectedVisualRange = visualTimeline[selectedVisualSegmentIndex] ?? previewVisualRange;
+  const [visualAnimationPreview, setVisualAnimationPreview] = useState(null);
+  const [visualCanvasEditMode, setVisualCanvasEditMode] = useState("transform");
+  useEffect(() => {
+    if (!isCompactViewport || mobilePanel !== "inspector" || !mobileInspectorSection) return;
+    if (!["visual-clip", "overlay-clip"].includes(mobilePanelOrigin)) return;
+    const segment =
+      mobilePanelOrigin === "overlay-clip" ? selectedVisualOverlay : selectedVisualSegment;
+    if (!segment) return;
+    const isVector =
+      segment.kind === "vector" ||
+      Boolean(segment.vectorBody) ||
+      String(segment.assetId || "").startsWith("vector-");
+    const supportedSections = getVisualPropertyTabIds({
+      isVector,
+      isVideo: segment.type === "video",
+      isOverlay: mobilePanelOrigin === "overlay-clip",
+      hasVectorEditor: isVector,
+      isMobile: true,
+    });
+    if (mobileInspectorSection !== "effects" && !supportedSections.includes(mobileInspectorSection))
+      setMobileInspectorSection(supportedSections[0] || "transform");
+  }, [
+    isCompactViewport,
+    mobileInspectorSection,
+    mobilePanel,
+    mobilePanelOrigin,
+    selectedVisualOverlay,
+    selectedVisualSegment,
+  ]);
+  useEffect(() => {
+    const clearCanvasVisualTarget = (event) => {
+      if (event.target instanceof Element && event.target.closest(".preview-frame")) return;
+      setCanvasVisualTarget("");
+    };
+    document.addEventListener("pointerdown", clearCanvasVisualTarget);
+    return () => document.removeEventListener("pointerdown", clearCanvasVisualTarget);
+  }, []);
+  const visualLocalTime = Math.max(
+    0,
+    Math.min(selectedVisualSegment?.duration ?? 0, currentTime - (selectedVisualRange?.start ?? 0)),
+  );
+  const updateSelectedVisualEffects = (change) => {
+    if (!selectedVisualSegment?.id || trackLocks.image)
+      return notify("请先选择未锁定的 Visuals 片段");
+    setVisualSegments((items) => {
+      const nextItems = items.map((item) => {
+        if (item.id !== selectedVisualSegment.id) return item;
+        if (Number.isFinite(change.playbackRate) && item.type === "video")
+          return updateVisualSegmentPlaybackRate(item, change.playbackRate);
+        if (change.speedCurve && item.type === "video")
+          return updateVisualSegmentSpeedCurve(item, change.speedCurve);
+        if (change.baseTransform)
+          return {
+            ...item,
+            baseTransform: normalizeVisualTransform({
+              ...item.baseTransform,
+              ...change.baseTransform,
+            }),
+          };
+        if (chan
