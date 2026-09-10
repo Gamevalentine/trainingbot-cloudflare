@@ -1,0 +1,383 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { X } from "@phosphor-icons/react";
+
+import { LanguageIntro } from "./components/panels.jsx";
+import { PreviewStage } from "./components/PreviewStage.jsx";
+import { VoicePanel } from "./components/VoicePanel.jsx";
+import { Timeline } from "./components/Timeline.jsx";
+import { Topbar } from "./components/Topbar.jsx";
+import { WorkflowWorkspace } from "./components/WorkflowWorkspace.jsx";
+import { AssetDragPreview, ExportProgressOverlay } from "./components/EditorOverlays.jsx";
+import { EditorSidebar } from "./components/EditorSidebar.jsx";
+import { FirstVisualGuide } from "./components/FirstVisualGuide.jsx";
+import { MiganRepairDialog } from "./components/MiganRepairDialog.jsx";
+import { NanoVsrRestorationDialog } from "./components/NanoVsrRestorationDialog.jsx";
+import { SmartDenoiseDialog } from "./components/SmartDenoiseDialog.jsx";
+import {
+  canShowFirstVisualGuide,
+  FIRST_VISUAL_GUIDE_MOBILE_QUERY,
+  hasSeenFirstVisualGuide,
+  markFirstVisualGuideSeen,
+} from "./lib/firstVisualGuide.js";
+import { useExportElapsed } from "./hooks/useExportElapsed.js";
+import { usePreviewFrameSize } from "./hooks/usePreviewFrameSize.js";
+import { useEditorCatalog } from "./hooks/useEditorCatalog.js";
+import { useToast } from "./hooks/useToast.js";
+import { useProjectFiles } from "./hooks/useProjectFiles.js";
+import { useAutosaveTimestamp } from "./hooks/useAutosaveTimestamp.js";
+import { useVisionAnalysis } from "./hooks/useVisionAnalysis.js";
+import { useSmartFrame } from "./hooks/useSmartFrame.js";
+import { useFileUpload } from "./hooks/useFileUpload.js";
+import { useMediaSync } from "./hooks/useMediaSync.js";
+import { useVideoExport } from "./hooks/useVideoExport.js";
+import { useVoiceRecorder } from "./hooks/useVoiceRecorder.js";
+import { useVoiceGeneration } from "./hooks/useVoiceGeneration.js";
+import { useVoiceProfiles } from "./hooks/useVoiceProfiles.js";
+import { useAutoCaptions } from "./hooks/useAutoCaptions.js";
+import { useAutoEdit } from "./hooks/useAutoEdit.js";
+import { useSourceAudioExtraction } from "./hooks/useSourceAudioExtraction.js";
+import { useVocalSeparation } from "./hooks/useVocalSeparation.js";
+import { useAvatarGeneration } from "./hooks/useAvatarGeneration.js";
+import { useFaceSwapGeneration } from "./hooks/useFaceSwapGeneration.js";
+import { useDepthOfFieldAnalysis } from "./hooks/useDepthOfFieldAnalysis.js";
+import { useCaptionState } from "./hooks/useCaptionState.js";
+import { useAudioTrackState } from "./hooks/useAudioTrackState.js";
+import { useVisualTrackState } from "./hooks/useVisualTrackState.js";
+import { useEditorUiState } from "./hooks/useEditorUiState.js";
+import { useTimelineModel } from "./hooks/useTimelineModel.js";
+import { usePreviewModel } from "./hooks/usePreviewModel.js";
+import { useEditorRefs } from "./hooks/useEditorRefs.js";
+import { useEditorLifecycle } from "./hooks/useEditorLifecycle.js";
+import { useEditorHistory } from "./hooks/useEditorHistory.js";
+import { createVisionControls } from "./lib/visionControls.js";
+import { createAssetDragControls, resolveVisualDropIntent } from "./lib/assetDragControls.js";
+import { createAssetLibraryActions } from "./lib/assetLibraryActions.js";
+import { createPlaybackControls } from "./lib/playbackControls.js";
+import { createTimelineReorderControls } from "./lib/timelineReorderControls.js";
+import { createTimelineMoveControls } from "./lib/timelineMoveControls.js";
+import { createImageResizeControl } from "./lib/imageResizeControl.js";
+import { createTimelineClipboardActions } from "./lib/timelineClipboardActions.js";
+import { appendImportedCaptions } from "./lib/subtitles.js";
+import { createTimelineCutActions } from "./lib/timelineCutActions.js";
+import { createTimelineSegmentCountActions } from "./lib/timelineSegmentCountActions.js";
+import { createTimelineDurationActions } from "./lib/timelineDurationActions.js";
+import { createAudioClipActions, updateAudioSegmentPlaybackRate } from "./lib/audioClipActions.js";
+import { createCaptionEditingActions } from "./lib/captionEditingActions.js";
+import { createAudioTrackActions } from "./lib/audioTrackActions.js";
+import { createVisualTimelineActions } from "./lib/visualTimelineActions.js";
+import { createStickerTimelineActions } from "./lib/stickerTimelineActions.js";
+import { createAssetDropActions } from "./lib/assetDropActions.js";
+import { createEditorCommandActions } from "./lib/editorCommandActions.js";
+import { createTimelineViewModel } from "./lib/timelineViewModel.js";
+import { createTranslator, getStoredLanguage, translateOptionName } from "./i18n.js";
+import { decodeWaveform, downloadBlob } from "./lib/media.js";
+import { useAiMusicGeneration } from "./hooks/useAiMusicGeneration.js";
+import { useMiganRepair } from "./hooks/useMiganRepair.js";
+import { repairMiganClip } from "./lib/miganClipRepair.js";
+import { getWorkflowMediaCache, setWorkflowMediaCache } from "./lib/workflowCache.js";
+import { useNanoVsrRestoration } from "./hooks/useNanoVsrRestoration.js";
+import { useSmartDenoise } from "./hooks/useSmartDenoise.js";
+import { useGenerationPlugins } from "./hooks/useGenerationPlugins.js";
+import {
+  getImageThumbnailCount,
+  getVisualSegmentsTotal,
+  normalizeTimedSegmentIds,
+} from "./lib/timeline.js";
+import {
+  getVisualSourceTime,
+  normalizeVisualTransform,
+  removeVisualPropertyKeyframe,
+  updateVisualSegmentPlaybackRate,
+  upsertVisualKeyframe,
+  upsertVisualPropertyKeyframe,
+} from "./lib/visualEffects.js";
+import {
+  getVisualSpeedCurveTimelineProgress,
+  updateVisualSegmentSpeedCurve,
+} from "./lib/visualSpeedCurve.js";
+import {
+  getLinkedSourceAudioEnd,
+  getLinkedSourceAudioSegments,
+  shouldMuteEmbeddedVideoAudio,
+  sliceSourceAudioPeaks,
+} from "./lib/sourceAudioSync.js";
+import { getTimelineInitialContentZoom } from "./lib/timelineScale.js";
+import { getVisionKey } from "./lib/vision.js";
+import { DEFAULT_SUBJECT_EFFECT, normalizeSubjectEffect } from "./lib/subjectEffects.js";
+import { normalizeClickRippleEffect } from "./lib/clickRippleEffect.js";
+import { normalizeCinematicDepth, resolveDepthAnalysisAtTime } from "./lib/depthOfField.js";
+import { normalizePhotoParallax } from "./lib/photoParallax.js";
+import {
+  getExportContentDuration,
+  getExportDimensions,
+  getEffectiveExportBitrate,
+  loadExportSettings,
+  saveExportSettings,
+} from "./lib/exportSettings.js";
+import {
+  createVisualOverlaySegment,
+  getVisualOverlayPreset,
+  updateVisualOverlayTransform,
+} from "./lib/visualOverlayTimeline.js";
+import { getMobileClipPanelOrigin } from "./lib/mobileClipActions.js";
+import { getVisualPropertyTabIds } from "./lib/visualPropertyTabs.js";
+import { applyTimelineRipple } from "./lib/timelineRipple.js";
+import { COMPACT_WORKSPACE_QUERY } from "./config/editor.js";
+
+export function App() {
+  const [uiLanguage, setUiLanguage] = useState(() => getStoredLanguage());
+  const [workspaceMode, setWorkspaceMode] = useState("editor");
+  const [mobilePanel, setMobilePanel] = useState("");
+  const [mobilePanelClosing, setMobilePanelClosing] = useState(false);
+  const mobilePanelTimerRef = useRef(null);
+  const [mobilePanelOrigin, setMobilePanelOrigin] = useState("");
+  const [mobileInspectorSection, setMobileInspectorSection] = useState("");
+  const [effectsPanelMode, setEffectsPanelMode] = useState("outline");
+  const [isCompactViewport, setIsCompactViewport] = useState(
+    () => typeof window !== "undefined" && window.matchMedia?.(COMPACT_WORKSPACE_QUERY).matches,
+  );
+  useEffect(() => {
+    const query = window.matchMedia?.(COMPACT_WORKSPACE_QUERY);
+    if (!query) return undefined;
+    const update = () => setIsCompactViewport(query.matches);
+    update();
+    query.addEventListener?.("change", update);
+    return () => query.removeEventListener?.("change", update);
+  }, []);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [exportSettings, setExportSettings] = useState(() => loadExportSettings());
+  useEffect(() => {
+    saveExportSettings(exportSettings);
+  }, [exportSettings]);
+  const [captionVoiceFocusRequest, setCaptionVoiceFocusRequest] = useState(0);
+  const [selectedSourceAudioSegmentId, setSelectedSourceAudioSegmentId] = useState("");
+  const [selectedMusicSegmentId, setSelectedMusicSegmentId] = useState("");
+  const [stickerTimelineDrag, setStickerTimelineDrag] = useState(null);
+  const [canvasVisualTarget, setCanvasVisualTarget] = useState("");
+  const [showFirstVisualGuide, setShowFirstVisualGuide] = useState(false);
+  const firstVisualGuideShownRef = useRef(false);
+  const timelineImportRestoreRef = useRef(false);
+  const changeMobilePanel = (nextPanel) => {
+    if (mobilePanelTimerRef.current) window.clearTimeout(mobilePanelTimerRef.current);
+    if (!nextPanel && mobilePanel) {
+      setMobilePanelClosing(true);
+      mobilePanelTimerRef.current = window.setTimeout(() => {
+        setMobilePanel("");
+        setMobilePanelClosing(false);
+        setMobilePanelOrigin("");
+        setMobileInspectorSection("");
+        mobilePanelTimerRef.current = null;
+      }, 170);
+      return;
+    }
+    setMobilePanelClosing(false);
+    setMobilePanel(nextPanel);
+  };
+  const [introClosing, setIntroClosing] = useState(false);
+  const {
+    captionPlacement,
+    captionPosition,
+    captionSegments,
+    captionSize,
+    captionStyle,
+    captionStylePresetId,
+    captionStylePresets,
+    captionsEnabled,
+    script,
+    selectedSegmentId,
+    setCaptionPlacement,
+    setCaptionPosition,
+    setCaptionSegments,
+    setCaptionSize,
+    setCaptionStyle,
+    setCaptionStylePresetId,
+    setCaptionStylePresets,
+    setCaptionsEnabled,
+    setScript,
+    setSelectedSegmentId,
+  } = useCaptionState();
+  const {
+    audioSegments,
+    audioSegmentsRef,
+    favoriteVoiceIds,
+    generatedVoiceEndRef,
+    historyItems,
+    musicBlob,
+    musicDuration,
+    musicName,
+    musicSegments,
+    musicStart,
+    musicPeaks,
+    musicUrl,
+    musicVolume,
+    recordedVoices,
+    recordingElapsed,
+    recordingState,
+    selectedAudioSegmentId,
+    selectedVoiceId,
+    setAudioSegments,
+    setFavoriteVoiceIds,
+    setHistoryItems,
+    setMusicBlob,
+    setMusicDuration,
+    setMusicName,
+    setMusicPeaks,
+    setMusicStart,
+    setMusicSegments,
+    setMusicUrl,
+    setMusicVolume,
+    setRecordedVoices,
+    setRecordingElapsed,
+    setRecordingState,
+    setSelectedAudioSegmentId,
+    setSelectedVoiceId,
+    setSourceAudioBlob,
+    setSourceAudioAssetId,
+    setSourceAudioDuration,
+    setSourceAudioLinked,
+    setSourceAudioName,
+    setSourceAudioPeaks,
+    setSourceAudioStart,
+    setSourceAudioUrl,
+    setSourceAudioVolume,
+    setSourceAudioSpatialEffect,
+    setSourceAudioSpatialAmount,
+    setSpeed,
+    setTimelineHorizon,
+    setVolume,
+    sourceAudioAssetId,
+    sourceAudioBlob,
+    sourceAudioDuration,
+    sourceAudioLinked,
+    sourceAudioName,
+    sourceAudioPeaks,
+    sourceAudioStart,
+    sourceAudioUrl,
+    sourceAudioVolume,
+    sourceAudioSpatialEffect,
+    sourceAudioSpatialAmount,
+    speed,
+    timelineHorizon,
+    volume,
+  } = useAudioTrackState();
+  const {
+    fitMode,
+    imageClipCount,
+    imageDuration,
+    imageMeta,
+    imageName,
+    imageSrc,
+    selectedFilterId,
+    selectedStickerId,
+    selectedStickerSegmentId,
+    selectedTransitionId,
+    selectedVisualSegmentId,
+    setFitMode,
+    setImageClipCount,
+    setImageDuration,
+    setImageMeta,
+    setImageName,
+    setImageSrc,
+    setSelectedFilterId,
+    setSelectedStickerId,
+    setSelectedStickerSegmentId,
+    setSelectedTransitionId,
+    setSelectedVisualSegmentId,
+    setStickerSegments,
+    setVisualSegments,
+    setVisualType,
+    stickerSegments,
+    visualSegments,
+    visualType,
+    visualOverlaySegments,
+    selectedVisualOverlayId,
+    setVisualOverlaySegments,
+    setSelectedVisualOverlayId,
+  } = useVisualTrackState();
+  const {
+    activeTool,
+    assetDragPreview,
+    assetDropPosition,
+    assetDropPulseTrack,
+    assetDropTargetTrack,
+    compactRail,
+    currentTime,
+    draggedAssetId,
+    exporting,
+    exportPhase,
+    exportProgress,
+    isDragging,
+    isPlaying,
+    mediaTab,
+    progress,
+    ratioId,
+    selectedLibraryAssetId,
+    selectedTrack,
+    setActiveTool,
+    setAssetDragPreview,
+    setAssetDropPosition,
+    setAssetDropPulseTrack,
+    setAssetDropTargetTrack,
+    setCompactRail,
+    setCurrentTime,
+    setDraggedAssetId,
+    setExporting,
+    setExportPhase,
+    setExportProgress,
+    setIsDragging,
+    setIsPlaying,
+    setMediaTab,
+    setProgress,
+    setRatioId,
+    setSelectedLibraryAssetId,
+    setSelectedTrack,
+    setShowFileMenu,
+    setShowRatioMenu,
+    setShowSettings,
+    setShowVoiceFilter,
+    setSnapGuide,
+    setStatus,
+    setStatusText,
+    rippleEditing,
+    setRippleEditing,
+    setTimelineClipDrag,
+    setTimelineZoom,
+    setTrackLocks,
+    setTrackVisibility,
+    setVoiceFilter,
+    setVoiceTab,
+    showFileMenu,
+    showRatioMenu,
+    showSettings,
+    showVoiceFilter,
+    snapGuide,
+    status,
+    statusText,
+    timelineClipDrag,
+    timelineZoom,
+    trackLocks,
+    trackVisibility,
+    voiceFilter,
+    voiceTab,
+  } = useEditorUiState();
+  const [userAssets, setUserAssets] = useState([]);
+  const [timelineMarkers, setTimelineMarkers] = useState([]);
+  const timelineMarkerEnd = useMemo(
+    () =>
+      timelineMarkers.reduce(
+        (end, marker) => Math.max(end, marker.type === "range" ? marker.endTime : marker.time),
+        0,
+      ),
+    [timelineMarkers],
+  );
+  const { notify, toast } = useToast(2600, uiLanguage || "zh");
+  const [previewVideoMediaTime, setPreviewVideoMediaTime] = useState(0);
+  const [sourceAudioDragTargetLane, setSourceAudioDragTargetLane] = useState(null);
+  const sourceVoiceColorOriginalRef = useRef(null);
+  const [visionRecords, setVisionRecords] = useState({});
+  const [depthRecords, setDepthRecords] = useState({});
+  const [visionJob, setVisionJob] = useState({
+    running: false,
+    key: "",
+    progress: 0,
+    phas
