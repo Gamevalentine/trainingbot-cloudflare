@@ -1,8 +1,8 @@
 {
-  "name": "trainingbot-cloudflare-pages",
+  "name": "timeline-studio-cloudflare-pages",
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "build": "bash build.sh && bash postbuild.sh"
+    "build": "bash build.sh"
   }
 }
