@@ -76,6 +76,22 @@ if(!source.includes('admin_home_videos_v165.js')){
 }
 NODE
 
+# Inject the beta version manager into Admin V2.
+test -f public/admin_beta_versions_v175.js
+node --check public/admin_beta_versions_v175.js >/dev/null
+node <<'NODE'
+const fs=require('fs');
+const file='public/admin.html';
+let source=fs.readFileSync(file,'utf8');
+if(!source.includes('admin_beta_versions_v175.js')){
+  const marker='document.open();document.write(h);document.close()';
+  if(!source.includes(marker))throw new Error('Admin V2 loader marker not found for beta manager');
+  const patch=`h=h.replace('</body>','<script defer src="/admin_beta_versions_v175.js?v=175"><\\/script></body>');${marker}`;
+  source=source.replace(marker,patch);
+  fs.writeFileSync(file,source);
+}
+NODE
+
 # Build a lightweight client-side search index from public HTML only.
 # Admin pages and duplicate legacy update routes are intentionally excluded.
 node <<'NODE'
@@ -167,6 +183,15 @@ for page in public/updates.html public/ban-cap-nhat.html public/wiki.html; do
   fi
 done
 
+# Render PUBG beta versions from Cloudflare D1 so Admin changes appear without code edits.
+test -f public/beta_versions_public_v175.js
+node --check public/beta_versions_public_v175.js >/dev/null
+for page in public/updates.html public/ban-cap-nhat.html; do
+  if ! grep -q 'beta_versions_public_v175\.js' "$page"; then
+    sed -i 's#</body>#  <script defer src="/beta_versions_public_v175.js?v=175"></script>\n</body>#' "$page"
+  fi
+done
+
 if ! grep -q 'wiki_real_color_v139\.js' public/wiki.html; then
   sed -i 's#</body>#  <script defer src="/wiki_real_color_v139.js?v=139"></script>\n</body>#' public/wiki.html
 fi
@@ -225,6 +250,11 @@ test -f public/admin.html
 test ! -e public/admin
 grep -q 'TrainingBot Admin Center V2' public/admin.html
 grep -q 'admin_home_videos_v165\.js' public/admin.html
+grep -q 'admin_beta_versions_v175\.js' public/admin.html
+grep -q 'beta_versions_public_v175\.js' public/updates.html
+grep -q 'beta_versions_public_v175\.js' public/ban-cap-nhat.html
+test -f functions/api/beta-versions.js
+test -f functions/api/v71/admin/beta-versions.js
 if grep -q 'footer_v135\.js' public/admin.html; then
   echo 'ERROR: public footer leaked into Admin Center V2' >&2
   exit 1
