@@ -255,6 +255,7 @@ grep -q 'beta_versions_public_v175\.js' public/updates.html
 grep -q 'beta_versions_public_v175\.js' public/ban-cap-nhat.html
 test -f functions/api/beta-versions.js
 test -f functions/api/v71/admin/beta-versions.js
+test -f 'functions/download/beta/[version].js'
 if grep -q 'footer_v135\.js' public/admin.html; then
   echo 'ERROR: public footer leaked into Admin Center V2' >&2
   exit 1
