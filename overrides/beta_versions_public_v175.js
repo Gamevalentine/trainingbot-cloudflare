@@ -72,8 +72,36 @@
         buttons.forEach(button=>button.classList.toggle("is-active",button.dataset.betaMajor===major));
       };
       buttons.forEach(button=>button.addEventListener("click",()=>show(button.dataset.betaMajor)));
-      const highest=[...grouped.keys()].sort(cmp).at(-1);
-      if(highest)show(highest.replace(/^V/i,""));
+
+      const ordered=[...data.versions].sort((a,b)=>cmp(a.version,b.version));
+      const latestReleased=[...ordered].reverse().find(row=>row.status==="released"&&row.download_url);
+      const latest=latestReleased||ordered.at(-1);
+      const highestMajor=latest?.major||[...grouped.keys()].sort(cmp).at(-1);
+      if(highestMajor)show(highestMajor.replace(/^V/i,""));
+
+      if(latest){
+        const hero=document.querySelector(".release-hero");
+        const title=hero?.querySelector(".version-row h1");
+        const arch=hero?.querySelector(".version-row .arch");
+        const primary=hero?.querySelector(".hero-actions .btn.primary");
+        const image=hero?.querySelector(".game-avatar");
+        if(title)title.textContent=latest.version;
+        if(arch)arch.textContent=latest.arch||"x64";
+        if(image)image.alt=`PUBG Mobile ${latest.version}`;
+        if(primary){
+          if(latest.status==="released"&&latest.download_url){
+            primary.textContent="Tải ngay đây";
+            primary.href=`/download/beta/${encodeURIComponent(latest.version)}`;
+            primary.setAttribute("download",`PUBG_MOBILE_BETA_${latest.version}_${latest.arch||"x64"}.apk`);
+            primary.removeAttribute("aria-disabled");
+          }else{
+            primary.textContent="Sắp ra mắt";
+            primary.removeAttribute("href");
+            primary.removeAttribute("download");
+            primary.setAttribute("aria-disabled","true");
+          }
+        }
+      }
     }catch(error){
       console.warn("beta versions",error);
     }
