@@ -12,8 +12,9 @@
   };
   const card=row=>{
     const released=row.status==="released"&&row.download_url;
+    const proxyUrl=`/download/beta/${encodeURIComponent(row.version)}`;
     const action=released
-      ? `<a class="beta-build-btn primary" href="${esc(row.download_url)}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">Tải ngay đây</a>`
+      ? `<a class="beta-build-btn primary" href="${proxyUrl}" download="PUBG_MOBILE_BETA_${esc(row.version)}_${esc(row.arch||"x64")}.apk">Tải ngay đây</a>`
       : '<span class="beta-build-btn primary coming-soon" aria-disabled="true" title="Phiên bản này chưa phát hành">Sắp ra mắt</span>';
     const article=document.createElement("article");
     article.className="beta-build-card";
