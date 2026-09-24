@@ -27,9 +27,12 @@ async function setup(db){
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
   )`).run();
-  for(const seed of SEEDS){
-    await db.prepare("INSERT OR IGNORE INTO tb_beta_versions_v1(id,version,major,arch,status,download_url,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)")
-      .bind(seed[0],seed[1],seed[2],seed[3],seed[4],seed[5],seed[6],seed[6]).run();
+  const count=await db.prepare("SELECT COUNT(*) AS n FROM tb_beta_versions_v1").first();
+  if(Number(count?.n||0)===0){
+    for(const seed of SEEDS){
+      await db.prepare("INSERT INTO tb_beta_versions_v1(id,version,major,arch,status,download_url,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)")
+        .bind(seed[0],seed[1],seed[2],seed[3],seed[4],seed[5],seed[6],seed[6]).run();
+    }
   }
 }
 function parseVersion(value){
