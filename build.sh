@@ -47,7 +47,13 @@ while IFS= read -r -d '' page; do
   if ! grep -q 'header_search_v152\.js' "$page"; then
     sed -i 's#</body>#  <script defer src="/header_search_v152.js?v=152"></script>\n</body>#' "$page"
   fi
+  if ! grep -q 'visitor_tracking_v177\.js' "$page"; then
+    sed -i 's#</body>#  <script defer src="/visitor_tracking_v177.js?v=177"></script>\n</body>#' "$page"
+  fi
 done < <(find public -type f -name '*.html' -print0)
+
+test -f public/visitor_tracking_v177.js
+node --check public/visitor_tracking_v177.js >/dev/null
 
 # Homepage video shelf: newest TikTok stays large, older videos form a horizontal row.
 test -f public/home_videos_v165.css
@@ -87,6 +93,22 @@ if(!source.includes('admin_beta_versions_v175.js')){
   const marker='document.open();document.write(h);document.close()';
   if(!source.includes(marker))throw new Error('Admin V2 loader marker not found for beta manager');
   const patch=`h=h.replace('</body>','<script defer src="/admin_beta_versions_v175.js?v=175"><\\/script></body>');${marker}`;
+  source=source.replace(marker,patch);
+  fs.writeFileSync(file,source);
+}
+NODE
+
+# Inject visitor tracking into Admin V2 without changing the Admin runtime core.
+test -f public/admin_visitor_tracking_v177.js
+node --check public/admin_visitor_tracking_v177.js >/dev/null
+node <<'NODE'
+const fs=require('fs');
+const file='public/admin.html';
+let source=fs.readFileSync(file,'utf8');
+if(!source.includes('admin_visitor_tracking_v177.js')){
+  const marker='document.open();document.write(h);document.close()';
+  if(!source.includes(marker))throw new Error('Admin V2 loader marker not found for visitor tracking');
+  const patch=`h=h.replace('</body>','<script defer src="/admin_visitor_tracking_v177.js?v=177"><\\/script></body>');${marker}`;
   source=source.replace(marker,patch);
   fs.writeFileSync(file,source);
 }
@@ -251,10 +273,14 @@ test ! -e public/admin
 grep -q 'TrainingBot Admin Center V2' public/admin.html
 grep -q 'admin_home_videos_v165\.js' public/admin.html
 grep -q 'admin_beta_versions_v175\.js' public/admin.html
+grep -q 'admin_visitor_tracking_v177\.js' public/admin.html
+grep -q 'visitor_tracking_v177\.js' public/index.html
 grep -q 'beta_versions_public_v175\.js' public/updates.html
 grep -q 'beta_versions_public_v175\.js' public/ban-cap-nhat.html
 test -f functions/api/beta-versions.js
 test -f functions/api/v71/admin/beta-versions.js
+test -f functions/api/visitor-events.js
+test -f functions/api/v71/admin/visitor-events.js
 test -f 'functions/download/beta/[version].js'
 if grep -q 'footer_v135\.js' public/admin.html; then
   echo 'ERROR: public footer leaked into Admin Center V2' >&2
