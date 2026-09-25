@@ -1,0 +1,40 @@
+name: Mirror PUBGM FLASH XAPK to GitHub Release
+
+on:
+  push:
+    paths:
+      - ".github/workflows/mirror-pubgm-flash-xapk.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Install downloader
+        run: python -m pip install --disable-pip-version-check gdown
+
+      - name: Download XAPK from Google Drive
+        run: |
+          gdown "https://drive.google.com/uc?id=1qOmq6d7O_JFbhpoVKiem5iNGdgpJoNcy" -O "PUBGM-FLASH.xapk"
+          test -f "PUBGM-FLASH.xapk"
+          SIZE=$(stat -c%s "PUBGM-FLASH.xapk")
+          echo "Downloaded bytes: $SIZE"
+          test "$SIZE" -gt 900000000
+
+      - name: Create or update public GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="pubgm-flash-v1"
+          if gh release view "$TAG" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            gh release upload "$TAG" "PUBGM-FLASH.xapk" --clobber --repo "${{ github.repository }}"
+          else
+            gh release create "$TAG" "PUBGM-FLASH.xapk" \
+              --title "PUBGM FLASH XAPK" \
+              --notes "PUBGM FLASH XAPK mirror for TrainingBot." \
+              --repo "${{ github.repository }}"
+          fi
