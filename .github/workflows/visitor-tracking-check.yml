@@ -1,0 +1,23 @@
+name: Visitor tracking verification
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate shell
+        run: bash -n build.sh
+      - name: Validate tracking scripts
+        run: |
+          node --check overrides/visitor_tracking_v177.js
+          node --check overrides/admin_visitor_tracking_v177.js
+      - name: Build TrainingBot
+        run: npm run build
