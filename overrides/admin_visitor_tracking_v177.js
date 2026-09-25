@@ -197,6 +197,7 @@
   function show(event){
     event?.preventDefault?.();
     event?.stopPropagation?.();
+    event?.stopImmediatePropagation?.();
     const panel=buildPanel();
     if(!panel)return;
     document.querySelectorAll(".nav-item").forEach(item=>item.classList.remove("active"));
@@ -204,6 +205,14 @@
     document.querySelectorAll(".view").forEach(view=>view.classList.remove("active"));
     panel.classList.add("active");
     setTopTitle();
+    try{history.replaceState(history.state,"",location.pathname+location.search+"#visitor-tracking");}catch{}
+    requestAnimationFrame(()=>{
+      document.querySelectorAll(".nav-item").forEach(item=>item.classList.remove("active"));
+      $("tbVisitorNav")?.classList.add("active");
+      document.querySelectorAll(".view").forEach(view=>view.classList.remove("active"));
+      panel.classList.add("active");
+      setTopTitle();
+    });
     load();
   }
 
@@ -217,7 +226,7 @@
     button.type="button";
     button.className="nav-item tb-vis-nav";
     button.innerHTML="<span>◎</span><b>Theo dõi truy cập</b>";
-    button.addEventListener("click",show);
+    button.addEventListener("click",show,true);
 
     const stats=navItems.find(item=>/Thống kê/i.test(item.textContent||""));
     const security=navItems.find(item=>/Bảo mật/i.test(item.textContent||""));
