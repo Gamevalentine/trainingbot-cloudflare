@@ -247,7 +247,7 @@ const path = require('path');
 
 const root = path.resolve('public');
 const origin = 'https://trainingbot.io.vn';
-const defaultShareImage = origin + '/seo-share.svg';
+const defaultShareImage = origin + '/news-pubg-mobile-4-6-cover.webp';
 const logoUrl = origin + '/favicon.svg';
 
 const coreSeo = {
@@ -304,8 +304,16 @@ function escapeAttr(value) {
 function escapeRegex(value) {
   return String(value).replace(/[.*+?^$()|[\]\\{}]/g, '\\$&');
 }
+function decodeEntities(value) {
+  return String(value || '')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+}
 function stripTags(value) {
-  return String(value || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  return decodeEntities(String(value || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim());
 }
 function getTitle(html) {
   const m = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
@@ -405,9 +413,9 @@ for (const file of walk(root)) {
 
   const canonical = origin + canonicalRoute;
   const title = getTitle(html) || 'TrainingBot';
-  const description = getMeta(html, 'description') || 'TrainingBot — Gaming Knowledge Hub dành cho cộng đồng game thủ.';
-  const image = localImageFor(rel, html);
-  const isArticle = /class=["'][^"']*tb-article(?:\s|["'])/i.test(html) || /<article\b/i.test(html);
+  const description = decodeEntities(getMeta(html, 'description')) || 'TrainingBot — Gaming Knowledge Hub dành cho cộng đồng game thủ.';
+  const isArticle = /class=["'][^"']*tb-article(?:\s|["'])/i.test(html);
+  const image = isArticle ? localImageFor(rel, html) : defaultShareImage;
   const robots = noindex ? 'noindex,follow' : 'index,follow,max-image-preview:large';
 
   html = upsertHead(html, /<link\b[^>]*rel=["']canonical["'][^>]*>/i,
