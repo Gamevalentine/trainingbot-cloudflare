@@ -52,10 +52,16 @@ while IFS= read -r -d '' page; do
   if ! grep -q 'visitor_tracking_v177\.js' "$page"; then
     sed -i 's#</body>#  <script defer src="/visitor_tracking_v177.js?v=177"></script>\n</body>#' "$page"
   fi
+  # Ad placeholder test is query-gated. Normal visitors do not download the test script.
+  if ! grep -q 'ad_placeholder_test_v179\.js' "$page"; then
+    sed -i 's#</body>#  <script>(function(){if(new URLSearchParams(location.search).get("adtest")==="1"){var s=document.createElement("script");s.src="/ad_placeholder_test_v179.js?v=179";document.head.appendChild(s)}})();</script>\n</body>#' "$page"
+  fi
 done < <(find public -type f -name '*.html' -print0)
 
 test -f public/visitor_tracking_v177.js
 node --check public/visitor_tracking_v177.js >/dev/null
+test -f public/ad_placeholder_test_v179.js
+node --check public/ad_placeholder_test_v179.js >/dev/null
 
 # Homepage video shelf: newest TikTok stays large, older videos form a horizontal row.
 test -f public/home_videos_v165.css
