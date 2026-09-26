@@ -239,6 +239,111 @@ fi
 sed -i "s#'updates','/updates'#'updates','/ban-cap-nhat'#" public/navigation_v124.js
 sed -i 's#route:"/updates"#route:"/ban-cap-nhat"#g' public/mobile_menu_v5.js
 
+# Canonical production domain + SEO normalization.
+# Keep all public references on the branded domain even when a deployment is opened via pages.dev.
+node <<'NODE'
+const fs = require('fs');
+const path = require('path');
+
+const root = path.resolve('public');
+const origin = 'https://trainingbot.io.vn';
+
+function walk(dir) {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const full = path.join(dir, entry.name);
+    return entry.isDirectory() ? walk(full) : [full];
+  });
+}
+function routeFor(rel) {
+  const unix = rel.split(path.sep).join('/');
+  if (unix === 'index.html') return '/';
+  if (unix === 'updates.html' || unix === 'ban-cap-nhat.html') return '/ban-cap-nhat';
+  if (unix.endsWith('/index.html')) return '/' + unix.slice(0, -'/index.html'.length) + '/';
+  return '/' + unix.replace(/\.html$/i, '');
+}
+function escapeAttr(value) {
+  return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+}
+function upsertHead(html, regex, tag) {
+  if (regex.test(html)) return html.replace(regex, tag);
+  return html.replace(/<\/head>/i, '  ' + tag + '\n</head>');
+}
+
+// Replace any hard-coded preview-domain references in text assets.
+for (const file of walk(root)) {
+  if (!/\.(?:html|css|js|json|xml|txt)$/i.test(file)) continue;
+  let source = fs.readFileSync(file, 'utf8');
+  const next = source
+    .replace(/https?:\/\/trainingbot-cloudflare\.pages\.dev/gi, origin)
+    .replace(/https?:\\\/\\\/trainingbot-cloudflare\.pages\.dev/gi, origin.replace(/\//g, '\\/'));
+  if (next !== source) fs.writeFileSync(file, next);
+}
+
+const urls = [];
+const seen = new Set();
+
+for (const file of walk(root)) {
+  if (!/\.html$/i.test(file)) continue;
+  const rel = path.relative(root, file).split(path.sep).join('/');
+
+  // Public SEO only; do not index admin/private utility pages or the 404 document.
+  if (/^(admin(?:-|\/|\.html)|contact-inbox\.html$|404\.html$)/i.test(rel)) continue;
+
+  let html = fs.readFileSync(file, 'utf8');
+  const canonicalRoute = routeFor(rel);
+  const canonical = origin + canonicalRoute;
+
+  html = upsertHead(
+    html,
+    /<link\b[^>]*rel=["']canonical["'][^>]*>/i,
+    '<link rel="canonical" href="' + escapeAttr(canonical) + '">'
+  );
+  html = upsertHead(
+    html,
+    /<meta\b[^>]*property=["']og:url["'][^>]*>/i,
+    '<meta property="og:url" content="' + escapeAttr(canonical) + '">'
+  );
+  if (!/<meta\b[^>]*property=["']og:site_name["'][^>]*>/i.test(html)) {
+    html = html.replace(/<\/head>/i, '  <meta property="og:site_name" content="TrainingBot">\n</head>');
+  }
+  if (!/<meta\b[^>]*name=["']robots["'][^>]*>/i.test(html)) {
+    html = html.replace(/<\/head>/i, '  <meta name="robots" content="index,follow,max-image-preview:large">\n</head>');
+  }
+
+  fs.writeFileSync(file, html);
+
+  if (!seen.has(canonical)) {
+    seen.add(canonical);
+    urls.push(canonical);
+  }
+}
+
+urls.sort((a, b) => a.localeCompare(b, 'vi'));
+const xml = [
+  '<?xml version="1.0" encoding="UTF-8"?>',
+  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+  ...urls.map((url) => '  <url><loc>' + url.replace(/&/g, '&amp;') + '</loc></url>'),
+  '</urlset>',
+  ''
+].join('\n');
+fs.writeFileSync(path.join(root, 'sitemap.xml'), xml);
+fs.writeFileSync(
+  path.join(root, 'robots.txt'),
+  'User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /contact-inbox\nSitemap: ' + origin + '/sitemap.xml\n'
+);
+NODE
+
+# Guard against accidentally shipping the old Pages preview domain in public text assets.
+if grep -RIl --include='*.html' --include='*.css' --include='*.js' --include='*.json' --include='*.xml' --include='*.txt' 'trainingbot-cloudflare\.pages\.dev' public | grep -q .; then
+  echo 'ERROR: old pages.dev hostname found in public/' >&2
+  exit 1
+fi
+grep -q 'https://trainingbot.io.vn' public/index.html
+grep -q 'rel="canonical"' public/index.html
+grep -q 'property="og:url"' public/index.html
+grep -q 'Sitemap: https://trainingbot.io.vn/sitemap.xml' public/robots.txt
+test -f public/sitemap.xml
+
 test -f public/index.html
 test -f public/styles.css
 test -f public/navigation_v124.js
