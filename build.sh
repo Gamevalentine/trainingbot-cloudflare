@@ -37,8 +37,10 @@ while IFS= read -r -d '' page; do
       continue
       ;;
   esac
+  # Cache-bust the shared footer so a normal browser refresh receives the latest footer.
+  sed -i 's#footer_v135\.js?v=135#footer_v135.js?v=178#g' "$page"
   if ! grep -q 'footer_v135\.js' "$page"; then
-    sed -i 's#</body>#  <script defer src="/footer_v135.js?v=135"></script>\n</body>#' "$page"
+    sed -i 's#</body>#  <script defer src="/footer_v135.js?v=178"></script>\n</body>#' "$page"
   fi
   sed -i 's#href="/updates"#href="/ban-cap-nhat"#g; s#href="updates\.html"#href="/ban-cap-nhat"#g' "$page"
   if ! grep -q 'header_search_v152\.css' "$page"; then
