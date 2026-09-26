@@ -64,7 +64,10 @@ async function setup(db){
       device TEXT NOT NULL DEFAULT 'Khác',
       os TEXT NOT NULL DEFAULT 'Khác',
       browser TEXT NOT NULL DEFAULT 'Khác',
-      gender TEXT NOT NULL DEFAULT 'unknown'
+      gender TEXT NOT NULL DEFAULT 'unknown',
+      city TEXT NOT NULL DEFAULT '',
+      region TEXT NOT NULL DEFAULT '',
+      country TEXT NOT NULL DEFAULT ''
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS tb_visitor_events_v1 (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -81,6 +84,12 @@ async function setup(db){
     db.prepare("CREATE INDEX IF NOT EXISTS idx_tb_visitor_events_session ON tb_visitor_events_v1(session_id,created_at)"),
     db.prepare("CREATE INDEX IF NOT EXISTS idx_tb_visitor_events_created ON tb_visitor_events_v1(created_at DESC)")
   ]);
+
+  const columns=await db.prepare("PRAGMA table_info(tb_visitor_sessions_v1)").all();
+  const names=new Set((columns.results||[]).map(column=>column.name));
+  if(!names.has("city"))await db.prepare("ALTER TABLE tb_visitor_sessions_v1 ADD COLUMN city TEXT NOT NULL DEFAULT ''").run();
+  if(!names.has("region"))await db.prepare("ALTER TABLE tb_visitor_sessions_v1 ADD COLUMN region TEXT NOT NULL DEFAULT ''").run();
+  if(!names.has("country"))await db.prepare("ALTER TABLE tb_visitor_sessions_v1 ADD COLUMN country TEXT NOT NULL DEFAULT ''").run();
 }
 
 export async function onRequestPost({request,env}){
@@ -106,20 +115,29 @@ export async function onRequestPost({request,env}){
   const referrer=cleanReferrer(body.referrer,request.url);
   const now=new Date().toISOString();
   const client=parseClient(request);
+  const cf=request.cf||{};
+  const geo={
+    city:cleanText(cf.city,100),
+    region:cleanText(cf.region||cf.regionCode,100),
+    country:cleanText(cf.country,8).toUpperCase()
+  };
 
   try{
     await setup(env.DB);
     const statements=[
       env.DB.prepare(`INSERT INTO tb_visitor_sessions_v1
-        (session_id,visitor_id,first_seen_at,last_seen_at,entry_path,current_path,referrer,device,os,browser,gender)
-        VALUES(?,?,?,?,?,?,?,?,?,?,'unknown')
+        (session_id,visitor_id,first_seen_at,last_seen_at,entry_path,current_path,referrer,device,os,browser,gender,city,region,country)
+        VALUES(?,?,?,?,?,?,?,?,?,?,'unknown',?,?,?)
         ON CONFLICT(session_id) DO UPDATE SET
           last_seen_at=excluded.last_seen_at,
           current_path=excluded.current_path,
           device=excluded.device,
           os=excluded.os,
-          browser=excluded.browser`)
-        .bind(sessionId,visitorId,now,now,path,path,referrer,client.device,client.os,client.browser)
+          browser=excluded.browser,
+          city=CASE WHEN excluded.city<>'' THEN excluded.city ELSE city END,
+          region=CASE WHEN excluded.region<>'' THEN excluded.region ELSE region END,
+          country=CASE WHEN excluded.country<>'' THEN excluded.country ELSE country END`)
+        .bind(sessionId,visitorId,now,now,path,path,referrer,client.device,client.os,client.browser,geo.city,geo.region,geo.country)
     ];
     if(eventType!=="heartbeat"){
       statements.push(
