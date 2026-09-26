@@ -239,7 +239,7 @@ fi
 sed -i "s#'updates','/updates'#'updates','/ban-cap-nhat'#" public/navigation_v124.js
 sed -i 's#route:"/updates"#route:"/ban-cap-nhat"#g' public/mobile_menu_v5.js
 
-# Canonical production domain + SEO normalization.
+# Canonical production domain + advanced SEO normalization.
 # Keep all public references on the branded domain even when a deployment is opened via pages.dev.
 node <<'NODE'
 const fs = require('fs');
@@ -247,6 +247,43 @@ const path = require('path');
 
 const root = path.resolve('public');
 const origin = 'https://trainingbot.io.vn';
+const defaultShareImage = origin + '/seo-share.svg';
+const logoUrl = origin + '/favicon.svg';
+
+const coreSeo = {
+  'index.html': {
+    title: 'TrainingBot – Tin tức, Wiki & Cập nhật PUBG Mobile',
+    description: 'TrainingBot cập nhật tin tức PUBG Mobile, phiên bản mới, Wiki vũ khí, hướng dẫn và nội dung cộng đồng game thủ.'
+  },
+  'news.html': {
+    title: 'Tin tức PUBG Mobile mới nhất – TrainingBot',
+    description: 'Tin tức PUBG Mobile mới nhất: bản cập nhật, sự kiện, Esports, skin, phân tích và những nội dung đáng chú ý từ cộng đồng.'
+  },
+  'wiki.html': {
+    title: 'Wiki PUBG Mobile: Vũ khí, phụ kiện & hướng dẫn – TrainingBot',
+    description: 'Tra cứu Wiki PUBG Mobile về vũ khí, phụ kiện, phương tiện, bản đồ và hướng dẫn chơi được tổng hợp trên TrainingBot.'
+  },
+  'ban-cap-nhat.html': {
+    title: 'Bản cập nhật PUBG Mobile & bản Beta – TrainingBot',
+    description: 'Theo dõi các phiên bản PUBG Mobile, bản Beta, lịch cập nhật, tính năng mới và link trải nghiệm trên TrainingBot.'
+  },
+  'updates.html': {
+    title: 'Bản cập nhật PUBG Mobile & bản Beta – TrainingBot',
+    description: 'Theo dõi các phiên bản PUBG Mobile, bản Beta, lịch cập nhật, tính năng mới và link trải nghiệm trên TrainingBot.'
+  },
+  'community.html': {
+    title: 'Cộng đồng TrainingBot – Kết nối game thủ PUBG Mobile',
+    description: 'Kết nối cộng đồng game thủ PUBG Mobile, chia sẻ kinh nghiệm, tìm đồng đội và theo dõi hoạt động mới trên TrainingBot.'
+  },
+  'tim-dong-doi.html': {
+    title: 'Tìm đồng đội PUBG Mobile – TrainingBot',
+    description: 'Tìm đồng đội PUBG Mobile theo nhu cầu chơi, kết nối nhanh với cộng đồng và cùng tham gia các hoạt động trên TrainingBot.'
+  },
+  'contact.html': {
+    title: 'Liên hệ TrainingBot',
+    description: 'Liên hệ TrainingBot để gửi phản hồi, góp ý nội dung, báo lỗi hoặc trao đổi về cộng đồng và website.'
+  }
+};
 
 function walk(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -264,9 +301,62 @@ function routeFor(rel) {
 function escapeAttr(value) {
   return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 }
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^$()|[\]\\{}]/g, '\\$&');
+}
+function stripTags(value) {
+  return String(value || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function getTitle(html) {
+  const m = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+  return stripTags(m && m[1]);
+}
+function setTitle(html, value) {
+  const tag = '<title>' + String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</title>';
+  return /<title[^>]*>[\s\S]*?<\/title>/i.test(html)
+    ? html.replace(/<title[^>]*>[\s\S]*?<\/title>/i, tag)
+    : html.replace(/<\/head>/i, '  ' + tag + '\n</head>');
+}
+function getMeta(html, key, attr = 'name') {
+  const re = new RegExp('<meta\\b[^>]*' + attr + '=["\\']' + escapeRegex(key) + '["\\'][^>]*>', 'i');
+  const tag = (html.match(re) || [''])[0];
+  const m = tag.match(/\bcontent=["']([^"']*)["']/i);
+  return m ? m[1] : '';
+}
 function upsertHead(html, regex, tag) {
   if (regex.test(html)) return html.replace(regex, tag);
   return html.replace(/<\/head>/i, '  ' + tag + '\n</head>');
+}
+function upsertMeta(html, key, value, attr = 'name') {
+  const re = new RegExp('<meta\\b[^>]*' + attr + '=["\\']' + escapeRegex(key) + '["\\'][^>]*>', 'i');
+  return upsertHead(html, re, '<meta ' + attr + '="' + escapeAttr(key) + '" content="' + escapeAttr(value) + '">');
+}
+function localImageFor(rel, html) {
+  const stem = rel.replace(/\.html$/i, '');
+  for (const ext of ['webp','jpg','jpeg','png']) {
+    const candidate = stem + '-cover.' + ext;
+    if (fs.existsSync(path.join(root, candidate))) return origin + '/' + candidate;
+  }
+  const imgs = [...html.matchAll(/<img\b[^>]*src=["']([^"']+)["'][^>]*>/gi)]
+    .map((m) => m[1].split('?')[0])
+    .filter((src) => /\.(?:webp|png|jpe?g)$/i.test(src));
+  const first = imgs.find((src) => src.startsWith('/'));
+  return first ? origin + first : defaultShareImage;
+}
+function parseArticleDate(html) {
+  const meta = html.match(/<div\b[^>]*class=["'][^"']*tb-article-meta[^"']*["'][^>]*>([\s\S]*?)<\/div>/i);
+  const text = stripTags(meta && meta[1]);
+  const m = text.match(/\b(\d{2})\/(\d{2})\/(\d{4})\b/);
+  return m ? m[3] + '-' + m[2] + '-' + m[1] : '';
+}
+function articleHeadline(html, fallback) {
+  const m = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+  return stripTags(m && m[1]) || fallback;
+}
+function addJsonLd(html, data) {
+  const json = JSON.stringify(data).replace(/</g, '\\u003c');
+  const tag = '<script id="tb-seo-jsonld" type="application/ld+json">' + json + '</script>';
+  return upsertHead(html, /<script\b[^>]*id=["']tb-seo-jsonld["'][^>]*>[\s\S]*?<\/script>/i, tag);
 }
 
 // Replace any hard-coded preview-domain references in text assets.
@@ -286,14 +376,21 @@ for (const file of walk(root)) {
   if (!/\.html$/i.test(file)) continue;
   const rel = path.relative(root, file).split(path.sep).join('/');
 
-  // Do not expose admin/private utility pages or the 404 document to search engines.
   if (/^(admin(?:-|\/|\.html)|contact-inbox\.html$|404\.html$)/i.test(rel)) continue;
 
   let html = fs.readFileSync(file, 'utf8');
+
+  const core = coreSeo[rel];
+  if (core) {
+    html = setTitle(html, core.title);
+    html = upsertMeta(html, 'description', core.description);
+  }
+
   const isLegacyMobile = /^(?:mobile|mobile_recovered_v79)\//i.test(rel);
   const isRecoveredWiki = /^wiki_recovered\//i.test(rel);
   const isPrivateAccount = /^account\.html$/i.test(rel);
-  const noindex = isLegacyMobile || isRecoveredWiki || isPrivateAccount;
+  const isDuplicateUpdates = rel === 'updates.html';
+  const noindex = isLegacyMobile || isRecoveredWiki || isPrivateAccount || isDuplicateUpdates;
 
   let canonicalRoute = routeFor(rel);
   if (isLegacyMobile) {
@@ -307,30 +404,88 @@ for (const file of walk(root)) {
   }
 
   const canonical = origin + canonicalRoute;
+  const title = getTitle(html) || 'TrainingBot';
+  const description = getMeta(html, 'description') || 'TrainingBot — Gaming Knowledge Hub dành cho cộng đồng game thủ.';
+  const image = localImageFor(rel, html);
+  const isArticle = /class=["'][^"']*tb-article(?:\s|["'])/i.test(html) || /<article\b/i.test(html);
+  const robots = noindex ? 'noindex,follow' : 'index,follow,max-image-preview:large';
 
-  html = upsertHead(
-    html,
-    /<link\b[^>]*rel=["']canonical["'][^>]*>/i,
-    '<link rel="canonical" href="' + escapeAttr(canonical) + '">'
-  );
-  html = upsertHead(
-    html,
-    /<meta\b[^>]*property=["']og:url["'][^>]*>/i,
-    '<meta property="og:url" content="' + escapeAttr(canonical) + '">'
-  );
-  if (!/<meta\b[^>]*property=["']og:site_name["'][^>]*>/i.test(html)) {
-    html = html.replace(/<\/head>/i, '  <meta property="og:site_name" content="TrainingBot">\n</head>');
+  html = upsertHead(html, /<link\b[^>]*rel=["']canonical["'][^>]*>/i,
+    '<link rel="canonical" href="' + escapeAttr(canonical) + '">');
+  html = upsertHead(html, /<link\b[^>]*rel=["']icon["'][^>]*>/i,
+    '<link rel="icon" href="/favicon.svg" type="image/svg+xml">');
+  html = upsertHead(html, /<link\b[^>]*rel=["']alternate["'][^>]*hreflang=["']vi-VN["'][^>]*>/i,
+    '<link rel="alternate" hreflang="vi-VN" href="' + escapeAttr(canonical) + '">');
+
+  html = upsertMeta(html, 'robots', robots);
+  html = upsertMeta(html, 'theme-color', '#070a12');
+
+  html = upsertMeta(html, 'og:site_name', 'TrainingBot', 'property');
+  html = upsertMeta(html, 'og:locale', 'vi_VN', 'property');
+  html = upsertMeta(html, 'og:type', isArticle ? 'article' : 'website', 'property');
+  html = upsertMeta(html, 'og:title', title, 'property');
+  html = upsertMeta(html, 'og:description', description, 'property');
+  html = upsertMeta(html, 'og:url', canonical, 'property');
+  html = upsertMeta(html, 'og:image', image, 'property');
+  html = upsertMeta(html, 'og:image:alt', title, 'property');
+
+  html = upsertMeta(html, 'twitter:card', 'summary_large_image');
+  html = upsertMeta(html, 'twitter:title', title);
+  html = upsertMeta(html, 'twitter:description', description);
+  html = upsertMeta(html, 'twitter:image', image);
+
+  const graph = [
+    {
+      '@type': 'Organization',
+      '@id': origin + '/#organization',
+      name: 'TrainingBot',
+      url: origin + '/',
+      logo: { '@type': 'ImageObject', url: logoUrl, width: 512, height: 512 }
+    },
+    {
+      '@type': 'WebSite',
+      '@id': origin + '/#website',
+      url: origin + '/',
+      name: 'TrainingBot',
+      description: 'Gaming Knowledge Hub dành cho cộng đồng game thủ.',
+      publisher: { '@id': origin + '/#organization' },
+      inLanguage: 'vi-VN'
+    },
+    {
+      '@type': 'WebPage',
+      '@id': canonical + '#webpage',
+      url: canonical,
+      name: title,
+      description,
+      isPartOf: { '@id': origin + '/#website' },
+      about: { '@id': origin + '/#organization' },
+      primaryImageOfPage: { '@type': 'ImageObject', url: image },
+      inLanguage: 'vi-VN'
+    }
+  ];
+
+  if (isArticle) {
+    const published = parseArticleDate(html);
+    const article = {
+      '@type': 'NewsArticle',
+      '@id': canonical + '#article',
+      mainEntityOfPage: { '@id': canonical + '#webpage' },
+      headline: articleHeadline(html, title),
+      description,
+      image: [image],
+      author: { '@id': origin + '/#organization' },
+      publisher: { '@id': origin + '/#organization' },
+      inLanguage: 'vi-VN'
+    };
+    if (published) {
+      article.datePublished = published;
+      article.dateModified = published;
+      html = upsertMeta(html, 'article:published_time', published, 'property');
+    }
+    graph.push(article);
   }
 
-  const robotsTag = noindex
-    ? '<meta name="robots" content="noindex,follow">'
-    : '<meta name="robots" content="index,follow,max-image-preview:large">';
-  html = upsertHead(
-    html,
-    /<meta\b[^>]*name=["']robots["'][^>]*>/i,
-    robotsTag
-  );
-
+  html = addJsonLd(html, { '@context': 'https://schema.org', '@graph': graph });
   fs.writeFileSync(file, html);
 
   if (!noindex && !seen.has(canonical)) {
