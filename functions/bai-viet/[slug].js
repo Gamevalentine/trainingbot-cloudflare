@@ -114,7 +114,7 @@ ${modified?`<meta property="article:modified_time" content="${esc(modified)}">`:
 <main class="tb-user-article"><article class="container tb-user-wrap"><span class="tb-user-tag">${esc(post.category)}</span><h1>${esc(post.title)}</h1><p class="tb-user-lead">${esc(post.summary)}</p><div class="tb-user-meta">${dateVi(post.published_at)} · TrainingBot</div>${cover}<div class="tb-user-story">${renderContent(post.content)}</div><a class="tb-back" href="/news">← Quay lại Tin tức</a></article></main>
 <footer><div class="container footer-inner"><span>© 2026 TrainingBot.</span><div class="footer-links"><a href="/contact">Điều khoản</a><a href="/contact">Quyền riêng tư</a></div></div></footer>
 <script defer src="/navigation_v124.js?v=124"></script>
-<script defer src="/header_search_v152.js?v=181"></script>
+<script defer src="/header_search_v152.js?v=182"></script>
 <script defer src="/visitor_tracking_v177.js?v=181"></script>
 <script defer src="/footer_v135.js?v=178"></script>
 </body></html>`;
