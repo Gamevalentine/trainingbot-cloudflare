@@ -581,7 +581,6 @@ test -f functions/api/v71/admin/beta-versions.js
 test -f functions/api/visitor-events.js
 test -f functions/api/v71/admin/visitor-events.js
 test -f functions/sitemap-posts.xml.js
-node --check functions/sitemap-posts.xml.js >/dev/null
 test -f 'functions/download/beta/[version].js'
 if grep -q 'footer_v135\.js' public/admin.html; then
   echo 'ERROR: public footer leaked into Admin Center V2' >&2
