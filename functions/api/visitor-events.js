@@ -95,6 +95,18 @@ async function setup(db){
 export async function onRequestPost({request,env}){
   if(!env.DB)return new Response(null,{status:204,headers:NO_STORE});
 
+  const requestUrl=new URL(request.url);
+  const origin=String(request.headers.get("Origin")||"");
+  if(origin&&origin!==requestUrl.origin)return new Response(null,{status:204,headers:NO_STORE});
+  const fetchSite=String(request.headers.get("Sec-Fetch-Site")||"").toLowerCase();
+  if(fetchSite&&!["same-origin","same-site","none"].includes(fetchSite)){
+    return new Response(null,{status:204,headers:NO_STORE});
+  }
+  const ua=String(request.headers.get("User-Agent")||"");
+  if(/bot|crawler|spider|slurp|preview|facebookexternalhit|discordbot|slackbot|telegrambot|whatsapp/i.test(ua)){
+    return new Response(null,{status:204,headers:NO_STORE});
+  }
+
   const contentLength=Number(request.headers.get("Content-Length")||0);
   if(contentLength>8192)return new Response(null,{status:204,headers:NO_STORE});
 
@@ -143,8 +155,20 @@ export async function onRequestPost({request,env}){
       statements.push(
         env.DB.prepare(`INSERT INTO tb_visitor_events_v1
           (session_id,visitor_id,event_type,path,label,target,created_at)
-          VALUES(?,?,?,?,?,?,?)`)
-          .bind(sessionId,visitorId,eventType,path,label,target,now)
+          SELECT ?,?,?,?,?,?,?
+          WHERE NOT EXISTS (
+            SELECT 1 FROM tb_visitor_events_v1
+            WHERE session_id=? AND event_type=? AND path=? AND target=?
+              AND julianday(created_at)>=julianday(?,'-2 seconds')
+            LIMIT 1
+          )
+          AND (
+            SELECT COUNT(*) FROM tb_visitor_events_v1 WHERE session_id=?
+          ) < 300`)
+          .bind(
+            sessionId,visitorId,eventType,path,label,target,now,
+            sessionId,eventType,path,target,now,sessionId
+          )
       );
     }
     await env.DB.batch(statements);
