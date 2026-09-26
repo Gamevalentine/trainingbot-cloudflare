@@ -1,0 +1,89 @@
+name: AION HQ Safe Executor
+
+on:
+  workflow_dispatch:
+    inputs:
+      task_id:
+        description: 'AION task ID (example: CEO-1842)'
+        required: true
+        default: 'CEO-1842'
+        type: string
+      operation:
+        description: 'Safe operation'
+        required: true
+        default: 'validate-sandbox'
+        type: choice
+        options:
+          - validate-sandbox
+          - compare-with-main
+      confirm:
+        description: 'Type AION-SANDBOX to confirm this run cannot deploy production'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aion-safe-executor
+  cancel-in-progress: false
+
+jobs:
+  safety-gate:
+    name: Safety gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify confirmation
+        shell: bash
+        run: |
+          if [ "${{ inputs.confirm }}" != "AION-SANDBOX" ]; then
+            echo "Confirmation phrase is invalid."
+            exit 1
+          fi
+          echo "Task: ${{ inputs.task_id }}"
+          echo "Operation: ${{ inputs.operation }}"
+          echo "Production writes: BLOCKED"
+
+  validate:
+    name: Validate AION sandbox
+    needs: safety-gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sandbox branch
+        uses: actions/checkout@v4
+        with:
+          ref: aion-sandbox
+          fetch-depth: 0
+
+      - name: Validate shell scripts
+        shell: bash
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+
+      - name: Build sandbox
+        if: ${{ inputs.operation == 'validate-sandbox' }}
+        shell: bash
+        run: npm run build
+
+      - name: Compare sandbox with main
+        if: ${{ inputs.operation == 'compare-with-main' }}
+        shell: bash
+        run: |
+          git fetch origin main
+          echo "Changed files:"
+          git diff --name-status origin/main...HEAD || true
+          echo "Diff summary:"
+          git diff --stat origin/main...HEAD || true
+
+      - name: Execution summary
+        shell: bash
+        run: |
+          {
+            echo "## AION HQ Safe Executor"
+            echo "- Task: ${{ inputs.task_id }}"
+            echo "- Branch: aion-sandbox"
+            echo "- Operation: ${{ inputs.operation }}"
+            echo "- Production deploy: blocked"
+            echo "- Production secrets: not used"
+          } >> "$GITHUB_STEP_SUMMARY"
