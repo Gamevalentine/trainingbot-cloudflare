@@ -10,10 +10,15 @@ async function setup(db){
     category TEXT NOT NULL DEFAULT 'Tin mới',
     cover_url TEXT NOT NULL DEFAULT '',
     status TEXT NOT NULL DEFAULT 'published',
+    featured_at TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     published_at TEXT NOT NULL
   )`).run();
+  const columns=await db.prepare("PRAGMA table_info(tb_manual_posts_v1)").all();
+  if(!(columns.results||[]).some(column=>column.name==="featured_at")){
+    await db.prepare("ALTER TABLE tb_manual_posts_v1 ADD COLUMN featured_at TEXT NOT NULL DEFAULT ''").run();
+  }
 }
 
 function inline(value){
@@ -45,15 +50,56 @@ function dateVi(value){
   return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;
 }
 
+const ORIGIN="https://trainingbot.io.vn";
+function absoluteUrl(value,fallback=""){
+  try{
+    const url=new URL(String(value||fallback),ORIGIN);
+    return /^https?:$/.test(url.protocol)?url.href:fallback;
+  }catch{return fallback;}
+}
+function isoDate(value){
+  const d=new Date(value);
+  return Number.isNaN(d.getTime())?"":d.toISOString();
+}
+
 function page(post){
+  const canonical=`${ORIGIN}/bai-viet/${encodeURIComponent(post.slug)}`;
+  const shareImage=absoluteUrl(post.cover_url,`${ORIGIN}/news-pubg-mobile-4-6-cover.webp`);
+  const published=isoDate(post.published_at);
+  const modified=isoDate(post.updated_at)||published;
   const cover=post.cover_url?`<img class="tb-cover" src="${esc(post.cover_url)}" alt="${esc(post.title)}">`:"";
+  const graph={
+    "@context":"https://schema.org",
+    "@graph":[
+      {"@type":"Organization","@id":ORIGIN+"/#organization","name":"TrainingBot","url":ORIGIN+"/","logo":{"@type":"ImageObject","url":ORIGIN+"/favicon.svg"}},
+      {"@type":"WebSite","@id":ORIGIN+"/#website","url":ORIGIN+"/","name":"TrainingBot","publisher":{"@id":ORIGIN+"/#organization"},"inLanguage":"vi-VN"},
+      {"@type":"NewsArticle","@id":canonical+"#article","mainEntityOfPage":canonical,"headline":post.title,"description":post.summary||"","image":[shareImage],"datePublished":published||undefined,"dateModified":modified||undefined,"author":{"@id":ORIGIN+"/#organization"},"publisher":{"@id":ORIGIN+"/#organization"},"inLanguage":"vi-VN"}
+    ]
+  };
+  const jsonLd=JSON.stringify(graph).replace(/</g,"\\u003c");
   return `<!doctype html>
 <html lang="vi">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="${esc(post.summary)}">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="${esc(canonical)}">
+<meta property="og:site_name" content="TrainingBot">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:type" content="article">
+<meta property="og:title" content="${esc(post.title)}">
+<meta property="og:description" content="${esc(post.summary)}">
+<meta property="og:url" content="${esc(canonical)}">
+<meta property="og:image" content="${esc(shareImage)}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(post.title)}">
+<meta name="twitter:description" content="${esc(post.summary)}">
+<meta name="twitter:image" content="${esc(shareImage)}">
+${published?`<meta property="article:published_time" content="${esc(published)}">`:""}
+${modified?`<meta property="article:modified_time" content="${esc(modified)}">`:""}
 <title>${esc(post.title)} — TrainingBot</title>
+<script type="application/ld+json">${jsonLd}</script>
 <link rel="stylesheet" href="/styles.css">
 <link rel="stylesheet" href="/mobile_polish_v62.css?v=62">
 <link rel="stylesheet" href="/brand_logo_v116.css?v=116">
@@ -64,10 +110,13 @@ function page(post){
 </style>
 </head>
 <body>
-<header class="site-header"><div class="container header-inner"><a class="brand" href="/"><span class="brand-logo"></span><span>TRAININGBOT<small>Gaming Knowledge Hub</small></span></a><nav class="desktop-nav" aria-label="Điều hướng chính"><a class="nav-link" href="/">Trang chủ</a><a class="nav-link" href="/updates">Bản cập nhật</a><a class="nav-link active" href="/news">Tin tức</a><a class="nav-link" href="/wiki">Wiki</a><a class="nav-link" href="/community">Cộng đồng</a><a class="nav-link" href="/contact">Liên hệ</a></nav><div class="header-actions"><button class="icon-button" aria-label="Tìm kiếm"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3-3"></path></svg></button><button class="menu-button" aria-label="Mở menu" aria-expanded="false"><span></span><span></span><span></span></button></div></div><nav class="mobile-nav" aria-label="Điều hướng di động"></nav></header>
+<header class="site-header"><div class="container header-inner"><a class="brand" href="/"><span class="brand-logo"></span><span>TRAININGBOT<small>Gaming Knowledge Hub</small></span></a><nav class="desktop-nav" aria-label="Điều hướng chính"><a class="nav-link" href="/">Trang chủ</a><a class="nav-link" href="/ban-cap-nhat">Bản cập nhật</a><a class="nav-link active" href="/news">Tin tức</a><a class="nav-link" href="/wiki">Wiki</a><a class="nav-link" href="/community">Cộng đồng</a><a class="nav-link" href="/contact">Liên hệ</a></nav><div class="header-actions"><button class="icon-button" aria-label="Tìm kiếm"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3-3"></path></svg></button><button class="menu-button" aria-label="Mở menu" aria-expanded="false"><span></span><span></span><span></span></button></div></div><nav class="mobile-nav" aria-label="Điều hướng di động"></nav></header>
 <main class="tb-user-article"><article class="container tb-user-wrap"><span class="tb-user-tag">${esc(post.category)}</span><h1>${esc(post.title)}</h1><p class="tb-user-lead">${esc(post.summary)}</p><div class="tb-user-meta">${dateVi(post.published_at)} · TrainingBot</div>${cover}<div class="tb-user-story">${renderContent(post.content)}</div><a class="tb-back" href="/news">← Quay lại Tin tức</a></article></main>
 <footer><div class="container footer-inner"><span>© 2026 TrainingBot.</span><div class="footer-links"><a href="/contact">Điều khoản</a><a href="/contact">Quyền riêng tư</a></div></div></footer>
-<script defer src="/navigation_v124.js?v=124"></script><script defer src="/header_search_v152.js?v=152"></script>
+<script defer src="/navigation_v124.js?v=124"></script>
+<script defer src="/header_search_v152.js?v=181"></script>
+<script defer src="/visitor_tracking_v177.js?v=181"></script>
+<script defer src="/footer_v135.js?v=178"></script>
 </body></html>`;
 }
 
@@ -76,7 +125,7 @@ export async function onRequestGet({env,params}){
   await setup(env.DB);
   const slug=String(params.slug||"").toLowerCase();
   if(!/^[a-z0-9-]{1,110}$/.test(slug))return new Response("Không tìm thấy bài viết.",{status:404});
-  const post=await env.DB.prepare("SELECT slug,title,summary,content,category,cover_url,published_at FROM tb_manual_posts_v1 WHERE slug=? AND status='published' LIMIT 1").bind(slug).first();
+  const post=await env.DB.prepare("SELECT slug,title,summary,content,category,cover_url,published_at,updated_at FROM tb_manual_posts_v1 WHERE slug=? AND status='published' LIMIT 1").bind(slug).first();
   if(!post)return new Response("Không tìm thấy bài viết.",{status:404});
   return new Response(page(post),{status:200,headers:{"content-type":"text/html; charset=UTF-8","cache-control":"public, max-age=30, stale-while-revalidate=120","x-content-type-options":"nosniff"}});
 }
