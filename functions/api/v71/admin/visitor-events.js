@@ -67,12 +67,18 @@ export async function onRequestGet({request,env}){
     const rows=sessions.results||[];
     let events=[];
     if(rows.length){
-      const placeholders=rows.map(()=>"?").join(",");
-      const result=await env.DB.prepare(`SELECT session_id,event_type,path,label,target,created_at
-        FROM tb_visitor_events_v1
-        WHERE session_id IN (${placeholders})
-        ORDER BY created_at ASC,id ASC`).bind(...rows.map(row=>row.session_id)).all();
-      events=result.results||[];
+      // Cloudflare D1 limits the number of bound parameters per query.
+      // Load event history in small batches so Admin can safely request up to 200 sessions.
+      const batchSize=90;
+      for(let start=0;start<rows.length;start+=batchSize){
+        const ids=rows.slice(start,start+batchSize).map(row=>row.session_id);
+        const placeholders=ids.map(()=>"?").join(",");
+        const result=await env.DB.prepare(`SELECT session_id,event_type,path,label,target,created_at
+          FROM tb_visitor_events_v1
+          WHERE session_id IN (${placeholders})
+          ORDER BY created_at ASC,id ASC`).bind(...ids).all();
+        events.push(...(result.results||[]));
+      }
     }
 
     const bySession=new Map();
