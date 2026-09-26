@@ -25,7 +25,7 @@
       .tb-vis-panel{padding:17px;border:1px solid #202c43;border-radius:16px;background:#0d1423}.tb-vis-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.tb-vis-panel-head h3{margin:2px 0 0;font-size:17px}.tb-vis-panel-head span{color:#718098;font-size:9px}
       .tb-vis-chips{display:flex;flex-wrap:wrap;gap:8px}.tb-vis-chip{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #202c43;border-radius:10px;background:#09111f;color:#b7c1d3;font-size:10px}.tb-vis-chip b{color:#fff}.tb-vis-chip em{color:#718098;font-style:normal}
       .tb-vis-table-panel{padding:17px;border:1px solid #202c43;border-radius:16px;background:#0d1423}.tb-vis-status{min-height:17px;margin:0 0 9px;color:#718098;font-size:10px}.tb-vis-status.error{color:#fda4af}.tb-vis-status.ok{color:#86efac}
-      .tb-vis-table-wrap{overflow:auto;border:1px solid #202c43;border-radius:12px;background:#071022}.tb-vis-table{width:100%;min-width:1120px;border-collapse:collapse}.tb-vis-table th,.tb-vis-table td{padding:11px 12px;border-bottom:1px solid #1b263a;text-align:left;vertical-align:top;font-size:10px}.tb-vis-table th{position:sticky;top:0;z-index:1;background:#0e1728;color:#7f8da5;font-size:9px;letter-spacing:.04em;text-transform:uppercase}.tb-vis-table tbody tr:hover{background:rgba(118,92,255,.045)}.tb-vis-table tbody tr:last-child td{border-bottom:0}
+      .tb-vis-table-wrap{overflow:auto;border:1px solid #202c43;border-radius:12px;background:#071022}.tb-vis-table{width:100%;min-width:1250px;border-collapse:collapse}.tb-vis-table th,.tb-vis-table td{padding:11px 12px;border-bottom:1px solid #1b263a;text-align:left;vertical-align:top;font-size:10px}.tb-vis-table th{position:sticky;top:0;z-index:1;background:#0e1728;color:#7f8da5;font-size:9px;letter-spacing:.04em;text-transform:uppercase}.tb-vis-table tbody tr:hover{background:rgba(118,92,255,.045)}.tb-vis-table tbody tr:last-child td{border-bottom:0}
       .tb-vis-time strong,.tb-vis-time small{display:block;white-space:nowrap}.tb-vis-time small{margin-top:4px;color:#65748d;font-size:8px}.tb-vis-id{display:flex;align-items:center;gap:7px}.tb-vis-id code{padding:5px 7px;border-radius:8px;background:#111b2e;color:#cdd6ea;font-size:9px}.tb-vis-dot{width:7px;height:7px;border-radius:50%;background:#4b5563}.tb-vis-dot.online{background:#34d399;box-shadow:0 0 0 4px rgba(52,211,153,.08)}
       .tb-vis-journey{min-width:290px;max-width:480px;line-height:1.55;color:#c5cee0}.tb-vis-muted{color:#6f7e96}.tb-vis-empty{padding:34px;border:1px dashed #26344d;border-radius:12px;color:#7e8da7;text-align:center;font-size:11px}
       @media(max-width:1100px){.tb-vis-kpis{grid-template-columns:1fr 1fr}.tb-vis-grid{grid-template-columns:1fr}}
@@ -81,6 +81,31 @@
     return Number.isFinite(t)&&Date.now()-t<=5*60*1000;
   }
 
+  function countryLabel(value){
+    const code=String(value||"").trim().toUpperCase();
+    if(!code)return "";
+    try{
+      if(/^[A-Z]{2}$/.test(code)&&typeof Intl.DisplayNames==="function"){
+        return new Intl.DisplayNames(["vi"],{type:"region"}).of(code)||code;
+      }
+    }catch{}
+    return code;
+  }
+
+  function locationLabel(session){
+    const parts=[];
+    const add=value=>{
+      const text=String(value||"").replace(/\s+/g," ").trim();
+      if(!text)return;
+      if(parts.some(item=>item.toLocaleLowerCase("vi")===text.toLocaleLowerCase("vi")))return;
+      parts.push(text);
+    };
+    add(session.city);
+    add(session.region);
+    add(countryLabel(session.country));
+    return parts.join(", ")||"Chưa xác định";
+  }
+
   function genderLabel(value){
     if(value==="male")return "Nam";
     if(value==="female")return "Nữ";
@@ -115,7 +140,7 @@
     if(!body)return;
     const sessions=data.sessions||[];
     if(!sessions.length){
-      body.innerHTML='<tr><td colspan="7"><div class="tb-vis-empty">Chưa có lượt truy cập mới. Dữ liệu sẽ xuất hiện khi khách mở website.</div></td></tr>';
+      body.innerHTML='<tr><td colspan="8"><div class="tb-vis-empty">Chưa có lượt truy cập mới. Dữ liệu sẽ xuất hiện khi khách mở website.</div></td></tr>';
       return;
     }
     body.innerHTML=sessions.map(session=>{
@@ -127,6 +152,7 @@
         <td>${esc(session.device||"Khác")}</td>
         <td>${esc(session.os||"Khác")}</td>
         <td>${esc(session.browser||"Khác")}</td>
+        <td>${esc(locationLabel(session))}</td>
         <td>${esc(genderLabel(session.gender))}</td>
         <td class="tb-vis-journey" title="${esc(route)}">${esc(route)}</td>
       </tr>`;
@@ -183,7 +209,7 @@
       <section class="tb-vis-table-panel">
         <div class="tb-vis-panel-head"><div><span class="eyebrow">PHIÊN GẦN NHẤT</span><h3>Lịch sử truy cập</h3></div><span>Tự làm mới mỗi 30 giây khi đang mở</span></div>
         <div id="tbVisitorStatus" class="tb-vis-status"></div>
-        <div class="tb-vis-table-wrap"><table class="tb-vis-table"><thead><tr><th>Thời gian</th><th>Khách</th><th>Thiết bị</th><th>Hệ điều hành</th><th>Trình duyệt</th><th>Giới tính</th><th>Hành trình</th></tr></thead><tbody id="tbVisitorRows"><tr><td colspan="7"><div class="tb-vis-empty">Mở mục này để tải dữ liệu truy cập.</div></td></tr></tbody></table></div>
+        <div class="tb-vis-table-wrap"><table class="tb-vis-table"><thead><tr><th>Thời gian</th><th>Khách</th><th>Thiết bị</th><th>Hệ điều hành</th><th>Trình duyệt</th><th>Vị trí</th><th>Giới tính</th><th>Hành trình</th></tr></thead><tbody id="tbVisitorRows"><tr><td colspan="8"><div class="tb-vis-empty">Mở mục này để tải dữ liệu truy cập.</div></td></tr></tbody></table></div>
       </section>`;
     host.appendChild(panel);
     $("tbVisitorRefresh")?.addEventListener("click",load);
