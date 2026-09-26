@@ -56,18 +56,39 @@
   send("page_view");
 
   document.addEventListener("click",event=>{
-    const element=event.target instanceof Element?event.target.closest("a[href]"):null;
-    if(!element)return;
-    let target;
-    try{target=new URL(element.getAttribute("href")||"",location.href);}catch{return;}
-    if(target.origin!==location.origin)return;
+    const source=event.target instanceof Element?event.target:null;
+    if(!source)return;
+
+    const link=source.closest("a[href]");
+    if(link){
+      let target;
+      try{target=new URL(link.getAttribute("href")||"",location.href);}catch{return;}
+      if(target.origin!==location.origin)return;
+      const label=String(
+        link.getAttribute("aria-label")||
+        link.getAttribute("title")||
+        link.textContent||
+        ""
+      ).replace(/\s+/g," ").trim().slice(0,100);
+      send("navigation",{label,target:target.pathname||"/"});
+      return;
+    }
+
+    const control=source.closest("button,[role='tab'],[role='button'],[aria-expanded]");
+    if(!control)return;
+    const trackable=
+      control.matches(".menu-button,.icon-button,[role='tab'],[aria-expanded],[data-beta-major],.light-signup-btn")||
+      !!control.closest("nav");
+    if(!trackable)return;
+
     const label=String(
-      element.getAttribute("aria-label")||
-      element.getAttribute("title")||
-      element.textContent||
+      control.getAttribute("aria-label")||
+      control.getAttribute("title")||
+      control.textContent||
       ""
     ).replace(/\s+/g," ").trim().slice(0,100);
-    send("navigation",{label,target:target.pathname||"/"});
+    if(!label)return;
+    send("navigation",{label,target:currentPath()});
   },{capture:true});
 
   const heartbeat=()=>{
