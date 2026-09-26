@@ -23,7 +23,7 @@ async function setup(db){
 export async function onRequestGet({request,env}){
   if(!env.DB)return reply({ok:false,message:"Dữ liệu bài viết chưa sẵn sàng."},503);
   await setup(env.DB);
-  const limit=Math.min(20,Math.max(1,Number(new URL(request.url).searchParams.get("limit"))||10));
+  const limit=Math.min(100,Math.max(1,Number(new URL(request.url).searchParams.get("limit"))||10));
   const result=await env.DB.prepare("SELECT id,slug,title,summary,category,cover_url,featured_at,published_at FROM tb_manual_posts_v1 WHERE status='published' ORDER BY published_at DESC LIMIT ?").bind(limit).all();
   const posts=(result.results||[]).map(row=>({...row,url:`/bai-viet/${row.slug}`}));
   return reply({ok:true,posts});
