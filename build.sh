@@ -164,7 +164,7 @@ const seen = new Set();
 for (const file of walk(root)) {
   if (!/\.html$/i.test(file)) continue;
   const rel = path.relative(root, file).split(path.sep).join('/');
-  if (/^(admin(?:-|\/|\.html)|contact-inbox\.html$)/i.test(rel)) continue;
+  if (/^(admin(?:-|\/|\.html)|contact-inbox\.html$|account\.html$|mobile\/|mobile_recovered_v79\/|wiki_recovered\/)/i.test(rel)) continue;
   if (rel === 'updates.html' && fs.existsSync(path.join(root, 'ban-cap-nhat.html'))) continue;
 
   let html = fs.readFileSync(file, 'utf8');
@@ -286,11 +286,26 @@ for (const file of walk(root)) {
   if (!/\.html$/i.test(file)) continue;
   const rel = path.relative(root, file).split(path.sep).join('/');
 
-  // Public SEO only; do not index admin/private utility pages or the 404 document.
+  // Do not expose admin/private utility pages or the 404 document to search engines.
   if (/^(admin(?:-|\/|\.html)|contact-inbox\.html$|404\.html$)/i.test(rel)) continue;
 
   let html = fs.readFileSync(file, 'utf8');
-  const canonicalRoute = routeFor(rel);
+  const isLegacyMobile = /^(?:mobile|mobile_recovered_v79)\//i.test(rel);
+  const isRecoveredWiki = /^wiki_recovered\//i.test(rel);
+  const isPrivateAccount = /^account\.html$/i.test(rel);
+  const noindex = isLegacyMobile || isRecoveredWiki || isPrivateAccount;
+
+  let canonicalRoute = routeFor(rel);
+  if (isLegacyMobile) {
+    const leaf = rel.split('/').pop().replace(/\.html$/i, '');
+    if (leaf === 'index') canonicalRoute = '/';
+    else if (leaf === 'updates') canonicalRoute = '/ban-cap-nhat';
+    else if (['community','contact','news','wiki'].includes(leaf)) canonicalRoute = '/' + leaf;
+    else canonicalRoute = '/';
+  } else if (isRecoveredWiki) {
+    canonicalRoute = '/wiki';
+  }
+
   const canonical = origin + canonicalRoute;
 
   html = upsertHead(
@@ -306,13 +321,19 @@ for (const file of walk(root)) {
   if (!/<meta\b[^>]*property=["']og:site_name["'][^>]*>/i.test(html)) {
     html = html.replace(/<\/head>/i, '  <meta property="og:site_name" content="TrainingBot">\n</head>');
   }
-  if (!/<meta\b[^>]*name=["']robots["'][^>]*>/i.test(html)) {
-    html = html.replace(/<\/head>/i, '  <meta name="robots" content="index,follow,max-image-preview:large">\n</head>');
-  }
+
+  const robotsTag = noindex
+    ? '<meta name="robots" content="noindex,follow">'
+    : '<meta name="robots" content="index,follow,max-image-preview:large">';
+  html = upsertHead(
+    html,
+    /<meta\b[^>]*name=["']robots["'][^>]*>/i,
+    robotsTag
+  );
 
   fs.writeFileSync(file, html);
 
-  if (!seen.has(canonical)) {
+  if (!noindex && !seen.has(canonical)) {
     seen.add(canonical);
     urls.push(canonical);
   }
