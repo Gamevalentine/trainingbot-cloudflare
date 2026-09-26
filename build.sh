@@ -37,8 +37,8 @@ while IFS= read -r -d '' page; do
       continue
       ;;
   esac
-  # Cache-bust the shared footer so a normal browser refresh receives the latest footer.
-  sed -i 's#footer_v135\.js?v=135#footer_v135.js?v=178#g' "$page"
+  # Cache-bust shared client scripts so a normal browser refresh receives the latest behavior.
+  sed -i 's#footer_v135\.js?v=[0-9]*#footer_v135.js?v=178#g; s#header_search_v152\.js?v=[0-9]*#header_search_v152.js?v=181#g; s#visitor_tracking_v177\.js?v=[0-9]*#visitor_tracking_v177.js?v=181#g' "$page"
   if ! grep -q 'footer_v135\.js' "$page"; then
     sed -i 's#</body>#  <script defer src="/footer_v135.js?v=178"></script>\n</body>#' "$page"
   fi
@@ -47,10 +47,10 @@ while IFS= read -r -d '' page; do
     sed -i 's#</head>#  <link rel="stylesheet" href="/header_search_v152.css?v=152">\n</head>#' "$page"
   fi
   if ! grep -q 'header_search_v152\.js' "$page"; then
-    sed -i 's#</body>#  <script defer src="/header_search_v152.js?v=152"></script>\n</body>#' "$page"
+    sed -i 's#</body>#  <script defer src="/header_search_v152.js?v=181"></script>\n</body>#' "$page"
   fi
   if ! grep -q 'visitor_tracking_v177\.js' "$page"; then
-    sed -i 's#</body>#  <script defer src="/visitor_tracking_v177.js?v=177"></script>\n</body>#' "$page"
+    sed -i 's#</body>#  <script defer src="/visitor_tracking_v177.js?v=181"></script>\n</body>#' "$page"
   fi
   # Ad placeholder test is query-gated. Normal visitors do not download the test script.
   if ! grep -q 'ad_placeholder_test_v179\.js' "$page"; then
@@ -217,8 +217,9 @@ done
 test -f public/beta_versions_public_v175.js
 node --check public/beta_versions_public_v175.js >/dev/null
 for page in public/updates.html public/ban-cap-nhat.html; do
+  sed -i 's#beta_versions_public_v175\.js?v=[0-9]*#beta_versions_public_v175.js?v=181#g' "$page"
   if ! grep -q 'beta_versions_public_v175\.js' "$page"; then
-    sed -i 's#</body>#  <script defer src="/beta_versions_public_v175.js?v=176"></script>\n</body>#' "$page"
+    sed -i 's#</body>#  <script defer src="/beta_versions_public_v175.js?v=181"></script>\n</body>#' "$page"
   fi
 done
 
@@ -521,7 +522,7 @@ const xml = [
 fs.writeFileSync(path.join(root, 'sitemap.xml'), xml);
 fs.writeFileSync(
   path.join(root, 'robots.txt'),
-  'User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /contact-inbox\nSitemap: ' + origin + '/sitemap.xml\n'
+  'User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /contact-inbox\nSitemap: ' + origin + '/sitemap.xml\nSitemap: ' + origin + '/sitemap-posts.xml\n'
 );
 NODE
 
@@ -534,6 +535,7 @@ grep -q 'https://trainingbot.io.vn' public/index.html
 grep -q 'rel="canonical"' public/index.html
 grep -q 'property="og:url"' public/index.html
 grep -q 'Sitemap: https://trainingbot.io.vn/sitemap.xml' public/robots.txt
+grep -q 'Sitemap: https://trainingbot.io.vn/sitemap-posts.xml' public/robots.txt
 test -f public/sitemap.xml
 
 test -f public/index.html
@@ -578,6 +580,8 @@ test -f functions/api/beta-versions.js
 test -f functions/api/v71/admin/beta-versions.js
 test -f functions/api/visitor-events.js
 test -f functions/api/v71/admin/visitor-events.js
+test -f functions/sitemap-posts.xml.js
+node --check functions/sitemap-posts.xml.js >/dev/null
 test -f 'functions/download/beta/[version].js'
 if grep -q 'footer_v135\.js' public/admin.html; then
   echo 'ERROR: public footer leaked into Admin Center V2' >&2
