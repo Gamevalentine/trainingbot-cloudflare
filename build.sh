@@ -38,7 +38,7 @@ while IFS= read -r -d '' page; do
       ;;
   esac
   # Cache-bust shared client scripts so a normal browser refresh receives the latest behavior.
-  sed -i 's#footer_v135\.js?v=[0-9]*#footer_v135.js?v=178#g; s#header_search_v152\.js?v=[0-9]*#header_search_v152.js?v=181#g; s#visitor_tracking_v177\.js?v=[0-9]*#visitor_tracking_v177.js?v=181#g' "$page"
+  sed -i 's#footer_v135\.js?v=[0-9]*#footer_v135.js?v=178#g; s#header_search_v152\.js?v=[0-9]*#header_search_v152.js?v=182#g; s#visitor_tracking_v177\.js?v=[0-9]*#visitor_tracking_v177.js?v=181#g' "$page"
   if ! grep -q 'footer_v135\.js' "$page"; then
     sed -i 's#</body>#  <script defer src="/footer_v135.js?v=178"></script>\n</body>#' "$page"
   fi
@@ -47,11 +47,17 @@ while IFS= read -r -d '' page; do
     sed -i 's#</head>#  <link rel="stylesheet" href="/header_search_v152.css?v=152">\n</head>#' "$page"
   fi
   if ! grep -q 'header_search_v152\.js' "$page"; then
-    sed -i 's#</body>#  <script defer src="/header_search_v152.js?v=181"></script>\n</body>#' "$page"
+    sed -i 's#</body>#  <script defer src="/header_search_v152.js?v=182"></script>\n</body>#' "$page"
   fi
-  if ! grep -q 'visitor_tracking_v177\.js' "$page"; then
-    sed -i 's#</body>#  <script defer src="/visitor_tracking_v177.js?v=181"></script>\n</body>#' "$page"
-  fi
+  case "$page" in
+    public/404.html|public/account.html|public/mobile/*|public/mobile_recovered_v79/*|public/wiki_recovered/*)
+      ;;
+    *)
+      if ! grep -q 'visitor_tracking_v177\.js' "$page"; then
+        sed -i 's#</body>#  <script defer src="/visitor_tracking_v177.js?v=181"></script>\n</body>#' "$page"
+      fi
+      ;;
+  esac
   # Ad placeholder test is query-gated. Normal visitors do not download the test script.
   if ! grep -q 'ad_placeholder_test_v179\.js' "$page"; then
     sed -i 's#</body>#  <script>(function(){if(new URLSearchParams(location.search).get("adtest")==="1"){var s=document.createElement("script");s.src="/ad_placeholder_test_v179.js?v=179";document.head.appendChild(s)}})();</script>\n</body>#' "$page"
@@ -350,13 +356,13 @@ function upsertMeta(html, key, value, attr = 'name') {
 }
 function localImageFor(rel, html) {
   const stem = rel.replace(/\.html$/i, '');
-  for (const ext of ['webp','jpg','jpeg','png']) {
+  for (const ext of ['webp','jpg','jpeg','png','svg']) {
     const candidate = stem + '-cover.' + ext;
     if (fs.existsSync(path.join(root, candidate))) return origin + '/' + candidate;
   }
   const imgs = [...html.matchAll(/<img\b[^>]*src=["']([^"']+)["'][^>]*>/gi)]
     .map((m) => m[1].split('?')[0])
-    .filter((src) => /\.(?:webp|png|jpe?g)$/i.test(src));
+    .filter((src) => /\.(?:webp|png|jpe?g|svg)$/i.test(src));
   const first = imgs.find((src) => src.startsWith('/'));
   return first ? origin + first : defaultShareImage;
 }
