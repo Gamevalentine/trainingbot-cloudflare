@@ -12,7 +12,7 @@
     const style = document.createElement("style");
     style.id = STYLE_ID;
     style.textContent = \`
-      .\${AD_CLASS}{
+      .${AD_CLASS}{
         box-sizing:border-box;
         width:min(1180px,calc(100% - 32px));
         min-height:112px;
@@ -31,7 +31,7 @@
         text-align:center;
         padding:28px 18px 20px;
       }
-      .\${AD_CLASS}::before{
+      .${AD_CLASS}::before{
         content:"QUẢNG CÁO · BẢN TEST";
         position:absolute;
         top:10px;
@@ -44,19 +44,19 @@
         font:800 10px/1.1 Inter,system-ui,sans-serif;
         letter-spacing:.08em;
       }
-      .\${AD_CLASS} .tb-ad-test-copy{max-width:620px}
-      .\${AD_CLASS} .tb-ad-test-title{
+      .${AD_CLASS} .tb-ad-test-copy{max-width:620px}
+      .${AD_CLASS} .tb-ad-test-title{
         display:block;
         margin:0 0 6px;
         color:#f4f7ff;
         font:800 16px/1.25 Inter,system-ui,sans-serif;
       }
-      .\${AD_CLASS} .tb-ad-test-note{
+      .${AD_CLASS} .tb-ad-test-note{
         display:block;
         color:#8795af;
         font:600 12px/1.45 Inter,system-ui,sans-serif;
       }
-      .\${AD_CLASS}.\${GRID_CLASS}{
+      .${AD_CLASS}.${GRID_CLASS}{
         grid-column:1/-1!important;
         width:100%;
         max-width:none;
@@ -77,16 +77,16 @@
         cursor:pointer;
       }
       @media(max-width:640px){
-        .\${AD_CLASS}{
+        .${AD_CLASS}{
           width:calc(100% - 22px);
           min-height:100px;
           margin:20px auto;
           border-radius:13px;
           padding:26px 12px 16px;
         }
-        .\${AD_CLASS}.\${GRID_CLASS}{width:100%;margin:8px 0 14px}
-        .\${AD_CLASS} .tb-ad-test-title{font-size:14px}
-        .\${AD_CLASS} .tb-ad-test-note{font-size:11px}
+        .${AD_CLASS}.${GRID_CLASS}{width:100%;margin:8px 0 14px}
+        .${AD_CLASS} .tb-ad-test-title{font-size:14px}
+        .${AD_CLASS} .tb-ad-test-note{font-size:11px}
         #tb-ad-test-exit{right:10px;bottom:10px;padding:9px 12px;font-size:11px}
       }
     \`;
