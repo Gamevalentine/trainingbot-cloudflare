@@ -59,13 +59,33 @@
 
   function loadIndex() {
     if (!searchIndexPromise) {
-      searchIndexPromise = fetch("/search-index-v152.json", { cache: "no-store" })
+      const staticIndex = fetch("/search-index-v152.json", { cache: "no-store" })
         .then((response) => {
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
           return response.json();
         })
         .then((data) => Array.isArray(data) ? data : [])
         .catch(() => []);
+
+      const adminPosts = fetch("/api/posts?limit=100", { cache: "no-store" })
+        .then((response) => response.ok ? response.json() : { posts: [] })
+        .then((data) => Array.isArray(data.posts) ? data.posts.map((post) => ({
+          title: post.title || "Bài viết TrainingBot",
+          description: post.summary || "",
+          text: [post.title, post.summary, post.category].filter(Boolean).join(" "),
+          url: post.url || (post.slug ? `/bai-viet/${post.slug}` : "/news"),
+          type: post.category || "Tin tức"
+        })) : [])
+        .catch(() => []);
+
+      searchIndexPromise = Promise.all([staticIndex, adminPosts]).then(([base, dynamic]) => {
+        const merged = new Map();
+        [...base, ...dynamic].forEach((item) => {
+          if (!item || !item.url) return;
+          merged.set(item.url, item);
+        });
+        return [...merged.values()];
+      });
     }
     return searchIndexPromise;
   }
