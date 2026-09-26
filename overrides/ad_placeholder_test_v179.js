@@ -11,7 +11,7 @@
     if (document.getElementById(STYLE_ID)) return;
     const style = document.createElement("style");
     style.id = STYLE_ID;
-    style.textContent = \`
+    style.textContent = `
       .${AD_CLASS}{
         box-sizing:border-box;
         width:min(1180px,calc(100% - 32px));
@@ -89,7 +89,7 @@
         .${AD_CLASS} .tb-ad-test-note{font-size:11px}
         #tb-ad-test-exit{right:10px;bottom:10px;padding:9px 12px;font-size:11px}
       }
-    \`;
+    `;
     document.head.appendChild(style);
   }
 
