@@ -19,7 +19,10 @@ async function setup(db){
       device TEXT NOT NULL DEFAULT 'Khác',
       os TEXT NOT NULL DEFAULT 'Khác',
       browser TEXT NOT NULL DEFAULT 'Khác',
-      gender TEXT NOT NULL DEFAULT 'unknown'
+      gender TEXT NOT NULL DEFAULT 'unknown',
+      city TEXT NOT NULL DEFAULT '',
+      region TEXT NOT NULL DEFAULT '',
+      country TEXT NOT NULL DEFAULT ''
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS tb_visitor_events_v1 (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,6 +39,12 @@ async function setup(db){
     db.prepare("CREATE INDEX IF NOT EXISTS idx_tb_visitor_events_session ON tb_visitor_events_v1(session_id,created_at)"),
     db.prepare("CREATE INDEX IF NOT EXISTS idx_tb_visitor_events_created ON tb_visitor_events_v1(created_at DESC)")
   ]);
+
+  const columns=await db.prepare("PRAGMA table_info(tb_visitor_sessions_v1)").all();
+  const names=new Set((columns.results||[]).map(column=>column.name));
+  if(!names.has("city"))await db.prepare("ALTER TABLE tb_visitor_sessions_v1 ADD COLUMN city TEXT NOT NULL DEFAULT ''").run();
+  if(!names.has("region"))await db.prepare("ALTER TABLE tb_visitor_sessions_v1 ADD COLUMN region TEXT NOT NULL DEFAULT ''").run();
+  if(!names.has("country"))await db.prepare("ALTER TABLE tb_visitor_sessions_v1 ADD COLUMN country TEXT NOT NULL DEFAULT ''").run();
 }
 
 export async function onRequestGet({request,env}){
@@ -48,7 +57,7 @@ export async function onRequestGet({request,env}){
     const limit=Math.min(Math.max(Number(url.searchParams.get("limit")||120),25),200);
 
     const [sessions,today,online,devices,oses,browsers]=await Promise.all([
-      env.DB.prepare(`SELECT session_id,visitor_id,first_seen_at,last_seen_at,entry_path,current_path,referrer,device,os,browser,gender
+      env.DB.prepare(`SELECT session_id,visitor_id,first_seen_at,last_seen_at,entry_path,current_path,referrer,device,os,browser,gender,city,region,country
         FROM tb_visitor_sessions_v1 ORDER BY last_seen_at DESC LIMIT ?`).bind(limit).all(),
       env.DB.prepare(`SELECT COUNT(*) AS sessions,COUNT(DISTINCT visitor_id) AS visitors
         FROM tb_visitor_sessions_v1
