@@ -1,4 +1,5 @@
 name: AION HQ Safe Executor
+run-name: AION ${{ inputs.task_id }} · ${{ inputs.operation }}
 
 on:
   workflow_dispatch:
@@ -87,3 +88,30 @@ jobs:
             echo "- Production deploy: blocked"
             echo "- Production secrets: not used"
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create machine-readable evidence
+        if: always()
+        shell: bash
+        run: |
+          cat > aion-executor-result.json <<EOF
+          {
+            "task_id": "${{ inputs.task_id }}",
+            "operation": "${{ inputs.operation }}",
+            "branch": "aion-sandbox",
+            "run_id": "${{ github.run_id }}",
+            "run_attempt": "${{ github.run_attempt }}",
+            "commit_sha": "${{ github.sha }}",
+            "job_status": "${{ job.status }}",
+            "production_deploy": false,
+            "production_secrets_used": false
+          }
+          EOF
+
+      - name: Upload executor evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aion-executor-result-${{ github.run_id }}
+          path: aion-executor-result.json
+          if-no-files-found: error
+          retention-days: 7
