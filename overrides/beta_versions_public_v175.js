@@ -74,8 +74,7 @@
       buttons.forEach(button=>button.addEventListener("click",()=>show(button.dataset.betaMajor)));
 
       const ordered=[...data.versions].sort((a,b)=>cmp(a.version,b.version));
-      const latestReleased=[...ordered].reverse().find(row=>row.status==="released"&&row.download_url);
-      const latest=latestReleased||ordered.at(-1);
+      const latest=ordered.at(-1);
       const highestMajor=latest?.major||[...grouped.keys()].sort(cmp).at(-1);
       if(highestMajor)show(highestMajor.replace(/^V/i,""));
 
