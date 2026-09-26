@@ -318,7 +318,7 @@ function setTitle(html, value) {
     : html.replace(/<\/head>/i, '  ' + tag + '\n</head>');
 }
 function getMeta(html, key, attr = 'name') {
-  const re = new RegExp('<meta\\b[^>]*' + attr + '=["\\']' + escapeRegex(key) + '["\\'][^>]*>', 'i');
+  const re = new RegExp("<meta\\b[^>]*" + attr + "=[\"']" + escapeRegex(key) + "[\"'][^>]*>", "i");
   const tag = (html.match(re) || [''])[0];
   const m = tag.match(/\bcontent=["']([^"']*)["']/i);
   return m ? m[1] : '';
@@ -328,7 +328,7 @@ function upsertHead(html, regex, tag) {
   return html.replace(/<\/head>/i, '  ' + tag + '\n</head>');
 }
 function upsertMeta(html, key, value, attr = 'name') {
-  const re = new RegExp('<meta\\b[^>]*' + attr + '=["\\']' + escapeRegex(key) + '["\\'][^>]*>', 'i');
+  const re = new RegExp("<meta\\b[^>]*" + attr + "=[\"']" + escapeRegex(key) + "[\"'][^>]*>", "i");
   return upsertHead(html, re, '<meta ' + attr + '="' + escapeAttr(key) + '" content="' + escapeAttr(value) + '">');
 }
 function localImageFor(rel, html) {
