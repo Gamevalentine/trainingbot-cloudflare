@@ -67,12 +67,12 @@
         .then((data) => Array.isArray(data) ? data : [])
         .catch(() => []);
 
-      const adminPosts = fetch("/api/posts?limit=100", { cache: "no-store" })
+      const adminPosts = fetch("/api/posts?limit=100&search=1", { cache: "no-store" })
         .then((response) => response.ok ? response.json() : { posts: [] })
         .then((data) => Array.isArray(data.posts) ? data.posts.map((post) => ({
           title: post.title || "Bài viết TrainingBot",
           description: post.summary || "",
-          text: [post.title, post.summary, post.category].filter(Boolean).join(" "),
+          text: [post.title, post.summary, post.category, post.content].filter(Boolean).join(" ").slice(0, 12000),
           url: post.url || (post.slug ? `/bai-viet/${post.slug}` : "/news"),
           type: post.category || "Tin tức"
         })) : [])
