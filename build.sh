@@ -116,7 +116,7 @@ let source=fs.readFileSync(file,'utf8');
 if(!source.includes('admin_visitor_tracking_v177.js')){
   const marker='document.open();document.write(h);document.close()';
   if(!source.includes(marker))throw new Error('Admin V2 loader marker not found for visitor tracking');
-  const patch=`h=h.replace('</body>','<script defer src="/admin_visitor_tracking_v177.js?v=178"><\\/script></body>');${marker}`;
+  const patch=`h=h.replace('</body>','<script defer src="/admin_visitor_tracking_v177.js?v=180"><\\/script></body>');${marker}`;
   source=source.replace(marker,patch);
   fs.writeFileSync(file,source);
 }
