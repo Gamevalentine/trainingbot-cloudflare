@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /contact-inbox
+Sitemap: https://trainingbot.io.vn/sitemap.xml
+Sitemap: https://trainingbot.io.vn/sitemap-posts.xml
