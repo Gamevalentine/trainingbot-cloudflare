@@ -43,6 +43,10 @@ while IFS= read -r -d '' page; do
     sed -i 's#</body>#  <script defer src="/footer_v135.js?v=178"></script>\n</body>#' "$page"
   fi
   sed -i 's#href="/updates"#href="/ban-cap-nhat"#g; s#href="updates\.html"#href="/ban-cap-nhat"#g' "$page"
+  sed -i 's#href="index\.html"#href="/"#g; s#href="news\.html"#href="/news"#g; s#href="wiki\.html"#href="/wiki"#g; s#href="community\.html"#href="/community"#g; s#href="contact\.html"#href="/contact"#g' "$page"
+  sed -i 's#href="contact\.html">Điều khoản<#href="/terms">Điều khoản<#g; s#href="/contact">Điều khoản<#href="/terms">Điều khoản<#g; s#href="contact\.html">Di?u kho?n<#href="/terms">Điều khoản<#g' "$page"
+  sed -i 's#href="contact\.html">Quyền riêng tư<#href="/privacy">Quyền riêng tư<#g; s#href="/contact">Quyền riêng tư<#href="/privacy">Quyền riêng tư<#g; s#href="contact\.html">Quy?n ring tu<#href="/privacy">Quyền riêng tư<#g' "$page"
+  sed -i 's#defer="True"#defer#g' "$page"
   if ! grep -q 'header_search_v152\.css' "$page"; then
     sed -i 's#</head>#  <link rel="stylesheet" href="/header_search_v152.css?v=152">\n</head>#' "$page"
   fi
