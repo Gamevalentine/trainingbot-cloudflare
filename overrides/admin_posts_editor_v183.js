@@ -1,4 +1,4 @@
-/* TrainingBot Admin - rich post editor v183 */
+/* TrainingBot Admin - rich post editor v184 */
 (()=>{
   "use strict";
 
@@ -31,8 +31,8 @@
 .tb-rich-fields{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:10px;margin-bottom:10px}.tb-rich-field{display:grid;gap:6px}.tb-rich-field label{color:#8fa0ba;font-size:10px;font-weight:900}.tb-rich-field input,.tb-rich-field select,.tb-rich-field textarea{width:100%;box-sizing:border-box;border:1px solid #2a3854;border-radius:10px;background:#071020;color:#fff;padding:10px 11px;outline:none;font:inherit}.tb-rich-field input:focus,.tb-rich-field select:focus,.tb-rich-field textarea:focus{border-color:#745cff}
 .tb-rich-toolbar{position:sticky;top:-16px;z-index:4;display:flex;flex-wrap:wrap;gap:6px;padding:10px;margin:0 0 10px;border:1px solid #26344e;border-radius:12px;background:rgba(9,17,31,.97);box-shadow:0 8px 24px rgba(0,0,0,.22)}
 .tb-rich-tool,.tb-rich-toolbar select{min-height:34px;border:1px solid #30405f;border-radius:8px;background:#111c30;color:#dce4f2;padding:0 9px;font-size:11px;font-weight:800;cursor:pointer}.tb-rich-tool:hover{border-color:#745cff;color:#fff}.tb-rich-tool.strong{font-weight:1000}.tb-rich-toolbar select{cursor:pointer}
-.tb-rich-editor{min-height:430px;padding:22px;border:1px solid #2a3854;border-radius:14px;background:#0b1424;color:#dce4f2;outline:none;font-size:16px;line-height:1.82;overflow-wrap:anywhere}.tb-rich-editor:focus{border-color:#745cff;box-shadow:0 0 0 3px rgba(116,92,255,.08)}
-.tb-rich-editor p{margin:0 0 15px}.tb-rich-editor h2{margin:26px 0 10px;font-size:30px;line-height:1.22;color:#fff}.tb-rich-editor h3{margin:22px 0 9px;font-size:24px;line-height:1.25;color:#fff}.tb-rich-editor h4{margin:20px 0 8px;font-size:19px;color:#fff}.tb-rich-editor ul,.tb-rich-editor ol{padding-left:25px}.tb-rich-editor blockquote{margin:14px 0;padding:12px 15px;border-left:3px solid #745cff;background:rgba(116,92,255,.09);border-radius:10px}.tb-rich-editor figure{display:grid;justify-items:center;gap:7px;margin:18px 0}.tb-rich-editor img{display:block;max-width:100%;height:auto;border-radius:12px;cursor:pointer}.tb-rich-editor img.tb-rich-image-selected{outline:3px solid #745cff;outline-offset:3px}.tb-rich-editor figcaption{color:#8290a6;font-size:12px}
+.tb-rich-editor{min-height:430px;padding:22px;border:1px solid #2a3854;border-radius:14px;background:#0b1424;color:#dce4f2;outline:none;font-family:"Segoe UI",Tahoma,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.82;overflow-wrap:anywhere}.tb-rich-editor:focus{border-color:#745cff;box-shadow:0 0 0 3px rgba(116,92,255,.08)}
+.tb-rich-editor p{margin:0 0 15px}.tb-rich-editor h2,.tb-rich-editor h3,.tb-rich-editor h4{font-family:"Arial Black","Segoe UI Black","Segoe UI",Arial,sans-serif;font-weight:900;letter-spacing:-.025em}.tb-rich-editor h2{margin:26px 0 10px;font-size:34px;line-height:1.18;color:#fff}.tb-rich-editor h3{margin:22px 0 9px;font-size:27px;line-height:1.2;color:#fff}.tb-rich-editor h4{margin:20px 0 8px;font-size:21px;line-height:1.24;color:#fff}.tb-rich-editor strong,.tb-rich-editor b{font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif;font-weight:800;color:#fff}.tb-rich-editor ul,.tb-rich-editor ol{padding-left:25px}.tb-rich-editor blockquote{margin:14px 0;padding:12px 15px;border-left:3px solid #745cff;background:rgba(116,92,255,.09);border-radius:10px}.tb-rich-editor figure{display:grid;justify-items:center;gap:7px;margin:18px 0}.tb-rich-editor img{display:block;max-width:100%;height:auto;border-radius:12px;cursor:pointer}.tb-rich-editor img.tb-rich-image-selected{outline:3px solid #745cff;outline-offset:3px}.tb-rich-editor figcaption{color:#8290a6;font-size:12px}
 .tb-rich-note{margin-top:8px;color:#71819b;font-size:10px;line-height:1.5}
 .tb-rich-side h4{margin:0 0 10px;font-size:12px}.tb-rich-cover{width:100%;aspect-ratio:16/9;display:grid;place-items:center;margin-bottom:9px;border:1px dashed #31415f;border-radius:12px;background:#071020;overflow:hidden;color:#66768f;font-size:10px}.tb-rich-cover img{width:100%;height:100%;object-fit:cover}
 .tb-rich-side-btn{width:100%;min-height:38px;border:1px solid #30405f;border-radius:10px;background:#111c30;color:#dce4f2;font-size:10px;font-weight:900;cursor:pointer}.tb-rich-side-btn.primary{border:0;background:linear-gradient(135deg,#745cff,#2acbea);color:#fff}.tb-rich-side-btn:disabled{opacity:.55;cursor:wait}
@@ -103,6 +103,18 @@
     });
     rememberRange();
   }
+  function setFontFamily(family){
+    if(!family)return;
+    $("tbRichEditor")?.focus();
+    document.execCommand("fontName",false,family);
+    $("tbRichEditor")?.querySelectorAll("font[face]").forEach(font=>{
+      const span=document.createElement("span");
+      span.style.fontFamily=font.getAttribute("face")||family;
+      while(font.firstChild)span.appendChild(font.firstChild);
+      font.replaceWith(span);
+    });
+    rememberRange();
+  }
 
   function imageTarget(file,prefix="inline"){
     const base=slugify(currentPost?.slug||currentPost?.title||"bai-viet");
@@ -164,6 +176,17 @@
       <select id="tbRichBlock" aria-label="Kiểu đoạn">
         <option value="p">Đoạn văn</option><option value="h2">Tiêu đề lớn</option><option value="h3">Tiêu đề vừa</option><option value="h4">Tiêu đề nhỏ</option><option value="blockquote">Trích dẫn</option>
       </select>
+      <select id="tbRichFont" aria-label="Phông chữ">
+        <option value="">Phông chữ</option>
+        <option value="Segoe UI">Segoe UI</option>
+        <option value="Arial Black">Arial Black — rất đậm</option>
+        <option value="Arial">Arial</option>
+        <option value="Tahoma">Tahoma</option>
+        <option value="Verdana">Verdana</option>
+        <option value="Trebuchet MS">Trebuchet MS</option>
+        <option value="Georgia">Georgia</option>
+        <option value="Times New Roman">Times New Roman</option>
+      </select>
       <button type="button" class="tb-rich-tool strong" data-cmd="bold">B</button>
       <button type="button" class="tb-rich-tool" data-cmd="italic"><i>I</i></button>
       <button type="button" class="tb-rich-tool" data-cmd="underline"><u>U</u></button>
@@ -181,7 +204,7 @@
     `;
 
     const editor=make("div","tb-rich-editor");editor.id="tbRichEditor";editor.contentEditable="true";editor.spellcheck=true;
-    const note=make("div","tb-rich-note","Bôi đen 1 chữ, 1 câu hoặc 1 đoạn rồi chọn cỡ chữ. Bấm vào ảnh trong bài để đổi ảnh hoặc chỉnh kích thước.");
+    const note=make("div","tb-rich-note","Bôi đen 1 chữ, 1 câu hoặc 1 đoạn rồi chọn phông chữ hoặc cỡ chữ. Tiêu đề lớn dùng font đậm riêng để nổi bật rõ. Bấm vào ảnh trong bài để đổi ảnh hoặc chỉnh kích thước.");
     main.append(fields,summaryWrap,toolbar,editor,note);
 
     const side=make("aside","tb-rich-side");
@@ -217,6 +240,7 @@
       const button=e.target.closest("[data-cmd]");if(button)exec(button.dataset.cmd);
     });
     $("tbRichBlock").addEventListener("change",e=>{restoreRange();setBlock(e.target.value);e.target.value="p";});
+    $("tbRichFont").addEventListener("change",e=>{restoreRange();setFontFamily(e.target.value);e.target.value="";});
     $("tbRichSize").addEventListener("change",e=>{restoreRange();setFontSize(Number(e.target.value));e.target.value="";});
     editor.addEventListener("mouseup",rememberRange);editor.addEventListener("keyup",rememberRange);
     editor.addEventListener("click",e=>selectImage(e.target.closest("img")));
