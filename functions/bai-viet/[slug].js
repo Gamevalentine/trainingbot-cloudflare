@@ -17,8 +17,12 @@ async function setup(db){
     published_at TEXT NOT NULL
   )`).run();
   const columns=await db.prepare("PRAGMA table_info(tb_manual_posts_v1)").all();
-  if(!(columns.results||[]).some(column=>column.name==="featured_at")){
+  const names=new Set((columns.results||[]).map(column=>column.name));
+  if(!names.has("featured_at")){
     await db.prepare("ALTER TABLE tb_manual_posts_v1 ADD COLUMN featured_at TEXT NOT NULL DEFAULT ''").run();
+  }
+  if(!names.has("rich_content")){
+    await db.prepare("ALTER TABLE tb_manual_posts_v1 ADD COLUMN rich_content TEXT NOT NULL DEFAULT ''").run();
   }
 }
 
