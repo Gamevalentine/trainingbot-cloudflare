@@ -25,7 +25,7 @@ const editor='admin_posts_editor_v183.js';
 if(!source.includes(manual)||!source.includes(feature)||!source.includes(editor)){
   const marker='document.open();document.write(h);document.close()';
   if(!source.includes(marker))throw new Error('Admin V2 loader marker not found');
-  const scripts=`<script defer src="/${manual}?v=173"><\\/script><script defer src="/${feature}?v=173"><\\/script><script defer src="/${editor}?v=184"><\\/script>`;
+  const scripts=`<script defer src="/${manual}?v=173"><\\/script><script defer src="/${feature}?v=173"><\\/script><script defer src="/${editor}?v=185"><\\/script>`;
   source=source.replace(marker,`h=h.replace('</body>','${scripts}</body>');${marker}`);
   fs.writeFileSync(file,source);
 }
