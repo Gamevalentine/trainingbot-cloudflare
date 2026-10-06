@@ -49,6 +49,20 @@ function safeUrl(value,kind="link"){
   if(kind==="link" && /^https?:\/\//i.test(raw))return raw;
   return "";
 }
+function safeFontFamily(value){
+  const key=String(value||"").replace(/["']/g,"").trim().toLowerCase();
+  const fonts={
+    "segoe ui":'"Segoe UI",Arial,sans-serif',
+    "arial":"Arial,sans-serif",
+    "arial black":'"Arial Black","Segoe UI Black",Arial,sans-serif',
+    "georgia":"Georgia,serif",
+    "tahoma":"Tahoma,Arial,sans-serif",
+    "verdana":"Verdana,Arial,sans-serif",
+    "trebuchet ms":'"Trebuchet MS",Arial,sans-serif',
+    "times new roman":'"Times New Roman",serif'
+  };
+  return fonts[key]||"";
+}
 function safeStyle(value,tag){
   const out=[];
   for(const raw of String(value||"").split(";")){
@@ -57,6 +71,9 @@ function safeStyle(value,tag){
     const val=rest.join(":").trim().toLowerCase();
     if(!prop||!val)continue;
     if(prop==="font-size" && /^(?:1[0-9]|[2-6][0-9]|7[0-2])px$/.test(val) && ["span","p","h2","h3","h4","li","blockquote"].includes(tag))out.push(`font-size:${val}`);
+    if(prop==="font-family" && ["span","p","h2","h3","h4","li","blockquote"].includes(tag)){
+      const family=safeFontFamily(val);if(family)out.push(`font-family:${family}`);
+    }
     if(prop==="text-align" && /^(left|center|right)$/.test(val) && ["p","h2","h3","h4","blockquote","figure"].includes(tag))out.push(`text-align:${val}`);
     if(prop==="width" && /^(?:[1-9]|[1-9][0-9]|100)%$/.test(val) && tag==="img")out.push(`width:${val}`);
   }
