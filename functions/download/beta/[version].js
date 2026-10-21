@@ -1,3 +1,5 @@
+import { recordBetaDownload, isInitialBetaDownloadRequest } from "../../_lib/beta-download-counts.js";
+
 const H={"content-type":"text/plain; charset=UTF-8","cache-control":"no-store","x-content-type-options":"nosniff"};
 
 function reply(message,status=400){
@@ -54,6 +56,22 @@ export async function onRequest({request,env,params}){
   }
   if(!upstream.ok&&upstream.status!==206){
     return reply("Máy chủ nguồn không trả về tệp tải.",upstream.status||502);
+  }
+
+  const type=String(upstream.headers.get("Content-Type")||"").toLowerCase();
+  if(type.includes("text/html")||type.includes("application/json")||type.includes("text/plain")){
+    try{await upstream.body?.cancel();}catch{}
+    return reply("Máy chủ nguồn không trả về tệp APK hợp lệ.",502);
+  }
+
+  // Count only a verified, initial GET; never count HEAD or resumed byte ranges.
+  if(isInitialBetaDownloadRequest(request)){
+    try{
+      await recordBetaDownload(env.DB, version);
+    }catch(error){
+      console.error("beta download counter",error);
+      // Counting failure must not break a valid download.
+    }
   }
 
   const out=new Headers();
