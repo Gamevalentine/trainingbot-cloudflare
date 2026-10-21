@@ -20,3 +20,31 @@
 @media(max-width:900px){.tb-home-video-main{width:min(100%,360px)}.tb-home-video-shelf{width:min(calc(100% - 28px),760px);min-height:238px;margin-top:18px}.tb-home-video-card{flex-basis:138px}.tb-home-video-title{font-size:11px}}
 @media(max-width:520px){.tb-home-video-main{width:min(86vw,330px)}.hero-tiktok .tb-home-video-main-frame{border-radius:18px}.tb-home-video-shelf{width:calc(100% - 24px);min-height:218px;margin-top:14px}.tb-home-video-strip{gap:10px}.tb-home-video-card{flex-basis:124px}.tb-home-video-thumb{border-radius:12px}.tb-home-video-play{width:30px;height:30px;font-size:11px}.tb-home-video-title{margin-top:7px;font-size:10.5px;line-height:1.4;min-height:30px}}
 @media(hover:none){.tb-home-video-card:hover{transform:none;filter:none}}
+
+/* V192: native browser scrollbar, always available when the video shelf overflows. */
+.tb-home-video-strip {
+  overflow-x: scroll !important;
+  overflow-y: hidden !important;
+  scrollbar-width: auto !important;
+  scrollbar-color: #846aff #172239 !important;
+  scrollbar-gutter: stable !important;
+  padding-bottom: 11px !important;
+}
+.tb-home-video-strip::-webkit-scrollbar {
+  display: block !important;
+  height: 15px !important;
+}
+.tb-home-video-strip::-webkit-scrollbar-track {
+  background: #172239 !important;
+  border-radius: 100px !important;
+}
+.tb-home-video-strip::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #725bff, #3daaf3) !important;
+  border: 3px solid #172239 !important;
+  border-radius: 100px !important;
+}
+.tb-home-video-strip::-webkit-scrollbar-thumb:hover {
+  background: #9584ff !important;
+}
+/* Avoid showing two bars if an earlier video script inserts a custom track. */
+.tb-home-video-scroll-track { display: none !important; }
