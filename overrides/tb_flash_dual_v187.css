@@ -127,3 +127,24 @@
 @media (prefers-reduced-motion: reduce) {
   .tb-flash-card .tb-flash-download { transition: none; }
 }
+
+/* Homepage Flash download counts. Under the orange button, visually secondary. */
+.tb-flash-download-count {
+  display: block;
+  margin-top: 9px;
+  min-height: 17px;
+  color: #aeb8ce;
+  font: 600 11px/1.4 Inter, sans-serif;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.tb-flash-download-count::before {
+  content: "↓";
+  display: inline-block;
+  margin-right: 6px;
+  color: #ff833f;
+  font-weight: 800;
+}
+@media (max-width: 620px) {
+  .tb-flash-download-count { font-size: 10px; margin-top: 7px; }
+}
