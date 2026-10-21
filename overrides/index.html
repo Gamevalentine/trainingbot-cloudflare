@@ -28,6 +28,35 @@
 @media(max-width:520px){.hero-tiktok{margin-top:18px}.hero-tiktok iframe{width:min(86vw,330px);border-radius:18px}.hero-lower{transform:translateY(-6px)}.light-signup-card{grid-template-columns:86px minmax(0,1fr);gap:12px;margin-top:18px;padding:11px;border-radius:16px}.light-signup-card img{width:86px;height:86px;border-radius:12px}.light-signup-copy strong{font-size:1rem}.light-signup-copy span{margin-top:5px;font-size:.75rem}.light-experience-btn{width:min(100%,230px);min-height:40px;margin-top:10px;padding:0 13px;font-size:.74rem;border-radius:9px}.light-experience-btn+.light-signup-btn{margin-top:7px}.light-signup-btn{min-height:34px;margin-top:10px;padding:0 13px;font-size:.74rem;border-radius:9px}}
 </style>
 <link rel="stylesheet" href="/tb_flash_dual_v187.css?v=187"/>
+<style id="tb-video-scrollbar-native-v192">
+/* V192: native browser scrollbar, always available when the video shelf overflows. */
+.tb-home-video-strip {
+  overflow-x: scroll !important;
+  overflow-y: hidden !important;
+  scrollbar-width: auto !important;
+  scrollbar-color: #846aff #172239 !important;
+  scrollbar-gutter: stable !important;
+  padding-bottom: 11px !important;
+}
+.tb-home-video-strip::-webkit-scrollbar {
+  display: block !important;
+  height: 15px !important;
+}
+.tb-home-video-strip::-webkit-scrollbar-track {
+  background: #172239 !important;
+  border-radius: 100px !important;
+}
+.tb-home-video-strip::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #725bff, #3daaf3) !important;
+  border: 3px solid #172239 !important;
+  border-radius: 100px !important;
+}
+.tb-home-video-strip::-webkit-scrollbar-thumb:hover {
+  background: #9584ff !important;
+}
+/* Avoid showing two bars if an earlier video script inserts a custom track. */
+.tb-home-video-scroll-track { display: none !important; }
+</style>
 </head>
 <body>
 <header class="site-header">
