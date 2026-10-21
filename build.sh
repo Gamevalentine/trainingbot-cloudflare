@@ -77,7 +77,7 @@ node --check public/ad_placeholder_test_v179.js >/dev/null
 test -f public/home_videos_v165.css
 test -f public/home_videos_v165.js
 if ! grep -q 'home_videos_v165\.css' public/index.html; then
-  sed -i 's#</head>#  <link rel="stylesheet" href="/home_videos_v165.css?v=191">\n</head>#' public/index.html
+  sed -i 's#</head>#  <link rel="stylesheet" href="/home_videos_v165.css?v=192">\n</head>#' public/index.html
 fi
 if ! grep -q 'home_videos_v165\.js' public/index.html; then
   sed -i 's#</body>#  <script defer src="/home_videos_v165.js?v=191"></script>\n</body>#' public/index.html
