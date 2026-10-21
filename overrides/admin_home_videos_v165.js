@@ -47,7 +47,7 @@
     list.innerHTML=videos.map((video,index)=>`
       <article class="tb-hv-row">
         <span class="tb-hv-order">${index+1}</span>
-        <div class="tb-hv-copy"><b>Video TikTok ${index===0?'<span class="tb-hv-new">MỚI NHẤT</span>':''}</b><small>${esc(video.url||video.external_id)}</small></div>
+        <div class="tb-hv-copy"><b>${/\/photo\//.test(video.url||"")?"Ảnh TikTok":"Video TikTok"} ${index===0?'<span class="tb-hv-new">MỚI NHẤT</span>':''}</b><small>${esc(video.url||video.external_id)}</small></div>
         <button type="button" data-delete-video="${esc(video.external_id)}">Xóa</button>
       </article>`).join("");
   }
@@ -68,7 +68,7 @@
     try{
       const data=await adminApi({method:"POST",body:JSON.stringify({url:value})});
       rows(data.videos||[]);
-      status("✓ Đã cập nhật. Video này đang là video mới nhất trên trang chủ.","ok");
+      status("✓ Đã cập nhật. Bài đăng này đang là nội dung mới nhất trên trang chủ.","ok");
       return true;
     }catch(error){status(error.message||"Không cập nhật được video.","error");return false;}
   }
@@ -104,8 +104,8 @@
     box.id="tbHomeVideosAdmin";
     box.className="tb-hv-admin";
     box.innerHTML=`
-      <div class="tb-hv-head"><div><span class="eyebrow">TRANG CHỦ</span><h3>Video TikTok</h3><p>Video mới nhất ở khung lớn. Các video cũ tự xếp ngang bên dưới.</p></div><button id="tbHomeVideoEdit" class="tb-hv-edit" type="button">Sửa video mới nhất</button></div>
-      <div class="tb-hv-add"><input id="tbHomeVideoUrl" type="url" placeholder="Dán link TikTok mới"><button id="tbHomeVideoAdd" type="button">Thêm video</button></div>
+      <div class="tb-hv-head"><div><span class="eyebrow">TRANG CHỦ</span><h3>Video và ảnh TikTok</h3><p>Bài đăng mới nhất ở khung lớn. Các bài cũ tự xếp ngang bên dưới.</p></div><button id="tbHomeVideoEdit" class="tb-hv-edit" type="button">Sửa video mới nhất</button></div>
+      <div class="tb-hv-add"><input id="tbHomeVideoUrl" type="url" placeholder="Dán link video hoặc ảnh TikTok"><button id="tbHomeVideoAdd" type="button">Thêm bài đăng</button></div>
       <div id="tbHomeVideosStatus" class="tb-hv-status"></div>
       <div id="tbHomeVideosList" class="tb-hv-list"></div>`;
     const title=panel.querySelector(".section-title");
