@@ -1,0 +1,129 @@
+/* TrainingBot homepage: matching Flash Beta 4.6.1 / 4.7.0 cards. */
+@media (min-width: 1001px) {
+  .hero .hero-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.9fr) minmax(300px, .9fr);
+    gap: 26px;
+    align-items: start;
+  }
+  .hero .hero-copy { min-width: 0; }
+  .hero .hero-copy > h1 { max-width: 570px; }
+  .hero .hero-copy .hero-lower > p { max-width: 590px; }
+  .hero .hero-tiktok { min-width: 0; margin-top: 0; }
+  .hero .hero-tiktok iframe, .hero .hero-tiktok .tb-home-video-main,
+  .hero .hero-tiktok .tb-home-video-main-frame { max-width: 100%; }
+}
+
+.tb-flash-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+  margin-top: 24px;
+}
+.tb-flash-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+  min-height: 185px;
+  align-items: center;
+  padding: 16px 13px;
+  box-sizing: border-box;
+  border-radius: 20px;
+  border: 1px solid rgba(123, 142, 188, .42);
+  background: radial-gradient(circle at 18% 50%, rgba(255, 102, 18, .16), transparent 43%), linear-gradient(135deg, #211f2f, #1b1b29 52%, #131723);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .30), inset 0 1px rgba(255, 255, 255, .04);
+  color: #fff;
+}
+.tb-flash-card .tb-flash-new {
+  position: absolute;
+  top: 8px;
+  left: 102px;
+  z-index: 1;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff6f12 0%, #ff4b00 100%);
+  color: #fff;
+  font: 900 10px/1 Inter, sans-serif;
+  box-shadow: 0 6px 18px rgba(255, 86, 7, .34);
+}
+.tb-flash-card .tb-flash-image {
+  display: block;
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 15px;
+  border: 1px solid rgba(148, 163, 184, .2);
+}
+.tb-flash-content {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  padding-top: 15px;
+  text-align: center;
+}
+.tb-flash-content h2 {
+  margin: 0;
+  color: #f7f9ff;
+  font: 800 clamp(13px, 1.1vw, 18px)/1.2 "Space Grotesk", Inter, sans-serif;
+  letter-spacing: -.025em;
+  overflow-wrap: break-word;
+}
+.tb-flash-content p {
+  margin: 8px 0 0 !important;
+  padding: 0;
+  color: #aeb8ce;
+  font: 600 13px/1.35 Inter, sans-serif;
+  text-align: center;
+}
+.tb-flash-card .tb-flash-download {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 15px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ff6f12, #ff4b00);
+  box-shadow: 0 10px 24px rgba(255, 86, 7, .24);
+  color: #fff;
+  font: 800 13px/1.2 Inter, sans-serif;
+  text-decoration: none;
+  transition: transform .15s ease, filter .15s ease;
+}
+.tb-flash-card .tb-flash-download:hover { transform: translateY(-1px); filter: brightness(1.07); }
+.tb-flash-card .tb-flash-download:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+@media (min-width: 1001px) and (max-width: 1300px) {
+  .tb-flash-card { grid-template-columns: 80px minmax(0, 1fr); gap: 9px; padding: 14px 10px; }
+  .tb-flash-card .tb-flash-image { width: 80px; height: 80px; border-radius: 12px; }
+  .tb-flash-card .tb-flash-new { left: 79px; font-size: 9px; }
+  .tb-flash-content h2 { font-size: 13px; }
+  .tb-flash-content p { font-size: 11px; }
+  .tb-flash-card .tb-flash-download { font-size: 11px; min-height: 40px; padding: 7px; }
+}
+@media (max-width: 1000px) {
+  .hero .hero-layout { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .hero .hero-copy, .hero .hero-tiktok { min-width: 0; }
+  .tb-flash-card { min-height: 175px; }
+}
+@media (max-width: 620px) {
+  .tb-flash-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 18px; }
+  .tb-flash-card { grid-template-columns: 86px minmax(0, 1fr); min-height: 142px; gap: 12px; padding: 13px; border-radius: 16px; }
+  .tb-flash-card .tb-flash-image { width: 86px; height: 86px; border-radius: 12px; }
+  .tb-flash-card .tb-flash-new { top: 7px; left: 86px; font-size: 9px; padding: 4px 8px; }
+  .tb-flash-content { padding-top: 11px; }
+  .tb-flash-content h2 { font-size: clamp(12px, 3.7vw, 16px); }
+  .tb-flash-content p { font-size: 12px; margin-top: 5px !important; }
+  .tb-flash-card .tb-flash-download { min-height: 36px; margin-top: 10px; padding: 7px; font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tb-flash-card .tb-flash-download { transition: none; }
+}
