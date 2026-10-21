@@ -16,7 +16,7 @@ function parseTikTok(raw){
   try{
     const url=new URL(value);
     if(!/(^|\.)tiktok\.com$/i.test(url.hostname))return null;
-    const match=url.pathname.match(/\/video\/(\d{10,25})/)||url.pathname.match(/\/player\/v1\/(\d{10,25})/);
+    const match=url.pathname.match(/\/(?:video|photo)\/(\d{10,25})(?:\/|$)/)||url.pathname.match(/\/player\/v1\/(\d{10,25})(?:\/|$)/);
     if(!match)return null;
     return {external_id:match[1],url:value};
   }catch{return null;}
@@ -83,7 +83,7 @@ export async function onRequestPost({request,env}){
     await ensureTable(env);
     const body=await request.json().catch(()=>({}));
     const video=parseTikTok(body.url);
-    if(!video)return json({ok:false,message:"Link TikTok không hợp lệ."},400);
+    if(!video)return json({ok:false,message:"Link TikTok không hợp lệ. Hãy dùng link /video/ hoặc /photo/ từ TikTok."},400);
     const suppliedTitle=cleanText(body.title);
     const title=suppliedTitle||await resolveTitle(video.url);
     const now=new Date().toISOString();
