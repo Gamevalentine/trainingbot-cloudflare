@@ -1,10 +1,15 @@
-/* TrainingBot homepage video shelf v170 */
+/* TrainingBot homepage video shelf v191 — visible horizontal scrollbar */
 .tb-home-video-main{width:min(100%,390px)}
 .hero-tiktok .tb-home-video-main-frame{display:block;width:100%;height:auto;aspect-ratio:9/16;border:1px solid rgba(148,163,184,.22);border-radius:24px;background:#000;box-shadow:0 28px 70px rgba(0,0,0,.35)}
-.tb-home-video-shelf{width:min(calc(100% - 32px),1180px);min-height:254px;margin:16px auto 8px;display:flex;align-items:flex-start;overflow:hidden}
+.tb-home-video-shelf{width:min(calc(100% - 32px),1180px);min-height:254px;margin:16px auto 8px;display:flex;flex-direction:column;align-items:stretch;overflow:visible}
 .tb-home-video-shelf[hidden]{display:none}
 .tb-home-video-strip{display:flex;align-items:flex-start;gap:14px;width:100%;padding:5px 0 9px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-inline:contain;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .tb-home-video-strip::-webkit-scrollbar{display:none}
+.tb-home-video-scroll-track{position:relative;display:block;flex:0 0 auto;height:14px;margin:12px 3px 11px;overflow:hidden;border:1px solid rgba(135,151,188,.26);border-radius:999px;background:rgba(92,108,151,.18);cursor:pointer;touch-action:none;user-select:none}
+.tb-home-video-scroll-track[hidden]{display:none}
+.tb-home-video-scroll-track:focus-visible{outline:2px solid #8b80ff;outline-offset:3px}
+.tb-home-video-scroll-thumb{position:absolute;top:0;left:0;display:block;height:100%;min-width:48px;border-radius:999px;background:linear-gradient(90deg,#755dff,#509cfb);box-shadow:0 0 13px rgba(112,105,255,.28);cursor:grab;will-change:transform}
+.tb-home-video-scroll-track:active .tb-home-video-scroll-thumb{cursor:grabbing;background:linear-gradient(90deg,#927aff,#46bde9)}
 .tb-home-video-card{flex:0 0 150px;min-width:0;scroll-snap-align:start;cursor:pointer;color:#f8fafc;transition:transform .18s ease,filter .18s ease}
 .tb-home-video-card:hover{transform:translateY(-2px);filter:brightness(1.06)}
 .tb-home-video-thumb{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden;border:1px solid rgba(148,163,184,.22);border-radius:14px;background:#05070d;box-shadow:0 12px 30px rgba(0,0,0,.22)}
