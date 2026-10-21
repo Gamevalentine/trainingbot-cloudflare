@@ -227,9 +227,9 @@ done
 test -f public/beta_versions_public_v175.js
 node --check public/beta_versions_public_v175.js >/dev/null
 for page in public/updates.html public/ban-cap-nhat.html; do
-  sed -i 's#beta_versions_public_v175\.js?v=[0-9]*#beta_versions_public_v175.js?v=181#g' "$page"
+  sed -i 's#beta_versions_public_v175\.js?v=[0-9]*#beta_versions_public_v175.js?v=197#g' "$page"
   if ! grep -q 'beta_versions_public_v175\.js' "$page"; then
-    sed -i 's#</body>#  <script defer src="/beta_versions_public_v175.js?v=181"></script>\n</body>#' "$page"
+    sed -i 's#</body>#  <script defer src="/beta_versions_public_v175.js?v=197"></script>\n</body>#' "$page"
   fi
 done
 
