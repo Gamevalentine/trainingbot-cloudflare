@@ -1,4 +1,4 @@
-/* TrainingBot homepage video shelf v172 */
+/* TrainingBot homepage video shelf v191 — draggable horizontal video scroll thumb */
 (() => {
   "use strict";
 
@@ -154,7 +154,85 @@
     const strip = document.createElement("div");
     strip.className = "tb-home-video-strip";
     strip.setAttribute("aria-label", "Các video trước của TrainingBot");
-    shelf.replaceChildren(strip);
+    strip.id = "tbHomeVideoStrip";
+    strip.tabIndex = 0;
+    const track = document.createElement("div");
+    track.className = "tb-home-video-scroll-track";
+    track.tabIndex = 0;
+    track.setAttribute("role", "scrollbar");
+    track.setAttribute("aria-label", "Kéo sang trái hoặc phải để xem thêm video");
+    track.setAttribute("aria-controls", strip.id);
+    track.setAttribute("aria-orientation", "horizontal");
+    track.setAttribute("aria-valuemin", "0");
+    track.setAttribute("aria-valuemax", "100");
+    const thumb = document.createElement("div");
+    thumb.className = "tb-home-video-scroll-thumb";
+    track.appendChild(thumb);
+    shelf.replaceChildren(strip, track);
+
+    const updateTrack = () => {
+      const maxScroll = Math.max(0, strip.scrollWidth - strip.clientWidth);
+      track.hidden = maxScroll <= 1;
+      if (track.hidden) return;
+      const trackWidth = track.clientWidth;
+      const width = Math.max(48, Math.min(trackWidth, trackWidth * strip.clientWidth / strip.scrollWidth));
+      const available = Math.max(0, trackWidth - width);
+      const progress = Math.max(0, Math.min(1, strip.scrollLeft / maxScroll));
+      thumb.style.width = `${width}px`;
+      thumb.style.transform = `translateX(${available * progress}px)`;
+      track.setAttribute("aria-valuenow", String(Math.round(progress * 100)));
+      track.setAttribute("aria-valuetext", `${Math.round(progress * 100)}% danh sách video`);
+    };
+
+    const moveTrack = (clientX, offset) => {
+      const box = track.getBoundingClientRect();
+      const travel = Math.max(0, track.clientWidth - thumb.offsetWidth);
+      if (!travel) return;
+      const progress = Math.max(0, Math.min(1, (clientX - box.left - offset) / travel));
+      strip.scrollLeft = progress * Math.max(0, strip.scrollWidth - strip.clientWidth);
+      updateTrack();
+    };
+
+    let dragging = false;
+    let dragOffset = 0;
+    track.addEventListener("pointerdown", event => {
+      if (event.button !== 0 || track.hidden) return;
+      dragging = true;
+      const thumbRect = thumb.getBoundingClientRect();
+      dragOffset = event.target === thumb ? event.clientX - thumbRect.left : thumbRect.width / 2;
+      track.setPointerCapture(event.pointerId);
+      moveTrack(event.clientX, dragOffset);
+      event.preventDefault();
+    });
+    track.addEventListener("pointermove", event => {
+      if (dragging) moveTrack(event.clientX, dragOffset);
+    });
+    const stopDragging = () => { dragging = false; };
+    track.addEventListener("pointerup", stopDragging);
+    track.addEventListener("pointercancel", stopDragging);
+    track.addEventListener("lostpointercapture", stopDragging);
+    track.addEventListener("keydown", event => {
+      const jump = Math.max(80, strip.clientWidth * .7);
+      const maxScroll = Math.max(0, strip.scrollWidth - strip.clientWidth);
+      let next = strip.scrollLeft;
+      if (event.key === "ArrowRight") next += 100;
+      else if (event.key === "ArrowLeft") next -= 100;
+      else if (event.key === "PageDown") next += jump;
+      else if (event.key === "PageUp") next -= jump;
+      else if (event.key === "Home") next = 0;
+      else if (event.key === "End") next = maxScroll;
+      else return;
+      event.preventDefault();
+      strip.scrollLeft = Math.max(0, Math.min(maxScroll, next));
+      updateTrack();
+    });
+    strip.addEventListener("scroll", updateTrack, {passive: true});
+    window.addEventListener("resize", updateTrack);
+    if ("ResizeObserver" in window) {
+      const observer = new ResizeObserver(updateTrack);
+      observer.observe(strip);
+      observer.observe(shelf);
+    }
 
     const paint = () => {
       const active = videos.find(video => video.external_id === activeId) || videos[0];
@@ -167,6 +245,7 @@
         paint();
         window.scrollTo({top: host.getBoundingClientRect().top + window.scrollY - 90, behavior: "smooth"});
       })));
+      requestAnimationFrame(updateTrack);
     };
 
     paint();
