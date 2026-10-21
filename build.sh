@@ -80,7 +80,7 @@ if ! grep -q 'home_videos_v165\.css' public/index.html; then
   sed -i 's#</head>#  <link rel="stylesheet" href="/home_videos_v165.css?v=170">\n</head>#' public/index.html
 fi
 if ! grep -q 'home_videos_v165\.js' public/index.html; then
-  sed -i 's#</body>#  <script defer src="/home_videos_v165.js?v=170"></script>\n</body>#' public/index.html
+  sed -i 's#</body>#  <script defer src="/home_videos_v165.js?v=190"></script>\n</body>#' public/index.html
 fi
 node --check public/home_videos_v165.js >/dev/null
 
@@ -94,7 +94,7 @@ let source=fs.readFileSync(file,'utf8');
 if(!source.includes('admin_home_videos_v165.js')){
   const marker='document.open();document.write(h);document.close()';
   if(!source.includes(marker))throw new Error('Admin V2 loader marker not found');
-  const patch=`h=h.replace('</body>','<script defer src="/admin_home_videos_v165.js?v=165"><\\/script></body>');${marker}`;
+  const patch=`h=h.replace('</body>','<script defer src="/admin_home_videos_v165.js?v=190"><\\/script></body>');${marker}`;
   source=source.replace(marker,patch);
   fs.writeFileSync(file,source);
 }
