@@ -64,7 +64,7 @@
   function canonicalUrl(video) {
     try {
       const url = new URL(video.url);
-      if (/\/video\/\d{10,25}/.test(url.pathname)) return `${url.origin}${url.pathname}`;
+      if (/\/(?:video|photo)\/\d{10,25}(?:\/|$)/.test(url.pathname)) return `${url.origin}${url.pathname}`;
     } catch {}
     return `https://www.tiktok.com/@trainingbot.ai2/video/${video.external_id}`;
   }
