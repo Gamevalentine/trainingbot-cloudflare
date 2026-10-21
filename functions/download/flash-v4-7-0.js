@@ -1,3 +1,5 @@
+import { countFlashDownload, isInitialDownloadRequest } from "../_lib/flash-download-counts.js";
+
 // TrainingBot: stream the public 4.7.0 APK through a same-site download endpoint.
 // The public homepage no longer links to a Google Drive page.
 const FILE_ID = "1Qd9M4Mwi97hqmWgygXHl_KS-xr6Od5Tx";
@@ -16,7 +18,7 @@ function failure(message, status = 502) {
   });
 }
 
-export async function onRequest({ request }) {
+export async function onRequest({ request, env }) {
   if (request.method !== "GET" && request.method !== "HEAD") {
     return new Response("Method Not Allowed", {
       status: 405,
@@ -68,6 +70,15 @@ export async function onRequest({ request }) {
   for (const name of ["Content-Length", "Content-Range", "Accept-Ranges", "ETag", "Last-Modified"]) {
     const value = upstream.headers.get(name);
     if (value) responseHeaders.set(name, value);
+  }
+
+  if (env.DB && isInitialDownloadRequest(request)) {
+    try {
+      await countFlashDownload(env.DB, "v4.7.0");
+    } catch (error) {
+      // An analytics outage must not interrupt a valid file transfer.
+      console.error("Flash v4.7.0 download counter", error);
+    }
   }
 
   return new Response(request.method === "HEAD" ? null : upstream.body, {
