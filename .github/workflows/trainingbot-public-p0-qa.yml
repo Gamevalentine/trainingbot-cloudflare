@@ -46,3 +46,54 @@ jobs:
           assert(footer.includes("https://discord.com/invite/5u5PbZMqx"), "Footer Discord link missing");
           console.log("Public P0 static smoke tests: PASS");
           NODE
+
+      - name: Test Preview public read-only fallback with no D1
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from "node:assert/strict";
+          import fs from "node:fs";
+          const source=fs.readFileSync("functions/_middleware.js","utf8");
+          const file="data:text/javascript;base64,"+Buffer.from(source).toString("base64");
+          const {onRequest}=await import(file);
+          const calls=[];
+          const oldFetch=globalThis.fetch;
+          globalThis.fetch=async(target,options)=>{
+            calls.push({target:String(target),options});
+            return new Response('{"ok":true,"versions":[{"version":"V4.7.3","status":"released"}]}',{
+              status:200,headers:{"content-type":"application/json"}
+            });
+          };
+          try{
+            let nextCount=0;
+            const run=async (path,method="GET",host="65eecdd1.trainingbot-cloudflare.pages.dev")=>
+              await onRequest({request:new Request("https://"+host+path,{method}),
+                env:{}, next:async()=>{nextCount++;return new Response("LOCAL");}});
+            const r=await run("/api/beta-versions");
+            assert.equal(r.status,200);
+            assert.equal((await r.json()).versions[0].status,"released");
+            assert.equal(calls[0].target,"https://trainingbot.io.vn/api/beta-versions");
+            assert.equal(calls[0].options.method,"GET");
+            assert.equal(calls[0].options.headers.Authorization,undefined);
+            assert.equal(calls[0].options.headers.Cookie,undefined);
+            await run("/api/posts?limit=3&search=1&untrusted=ignored");
+            assert.equal(calls.at(-1).target,"https://trainingbot.io.vn/api/posts?limit=3&search=1");
+            await run("/api/flash-download-counts");
+            await run("/api/beta-download-counts");
+            await run("/api/home-videos");
+            await run("/bai-viet/test-post");
+            await run("/user-posts/cover-123.webp");
+            assert.equal(calls.length,7);
+            await run("/api/v71/admin/beta-versions");
+            await run("/download/beta/V4.7.3");
+            await run("/api/beta-versions","POST");
+            await run("/api/beta-versions","GET","trainingbot.io.vn");
+            await run("/api/beta-versions","GET","trainingbot-cloudflare.pages.dev");
+            assert.equal(calls.length,7,"No mutations/admin/production must proxy");
+            assert.equal(nextCount,5,"All disallowed routes must continue untouched");
+            globalThis.fetch=async()=>new Response("unavailable",{status:503});
+            const failed=await run("/api/beta-versions");
+            assert.equal(failed.status,503);
+            assert.equal((await failed.json()).ok,false);
+            console.log("Read-only Preview public data tests: PASS");
+          }finally{globalThis.fetch=oldFetch;}
+          NODE

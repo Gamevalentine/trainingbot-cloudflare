@@ -44,6 +44,25 @@
     article.innerHTML=`<div class="beta-build-art"><img src="/pubg-game-avatar.webp?v=140" alt="PUBG Mobile ${esc(row.version)}" loading="lazy"></div><div class="beta-build-body"><div class="beta-build-title">PUBG MOBILE BETA</div><div class="beta-build-version-row"><span class="beta-build-version">${esc(row.version)}</span><span class="beta-build-arch">${esc(row.arch||"x64")}</span></div><div class="beta-build-actions">${action}${downloadsText(row)}</div></div>`;
     return article;
   };
+
+  function renderUnavailability(){
+    // Never display old static releases as real data when the API is offline.
+    document.querySelectorAll(".beta-build-group").forEach(node=>{node.hidden=true;});
+    const label=document.querySelector(".beta-versions summary");
+    if(label)label.textContent="Danh sách phiên bản tạm thời không khả dụng";
+    const list=document.querySelector(".beta-version-list");
+    if(list)list.replaceChildren();
+    const hero=document.querySelector(".release-hero");
+    const heading=hero?.querySelector(".version-row h1");
+    if(heading)heading.textContent="Đang cập nhật";
+    const action=hero?.querySelector(".hero-actions .btn.primary");
+    if(action){
+      action.removeAttribute("href");
+      action.removeAttribute("download");
+      action.setAttribute("aria-disabled","true");
+      action.textContent="Dữ liệu chưa sẵn sàng";
+    }
+  }
   async function load(){
     const list=document.querySelector(".beta-version-list");
     const details=document.querySelector(".beta-versions");
@@ -51,7 +70,7 @@
     try{
       const response=await fetch("/api/beta-versions",{cache:"no-store"});
       const data=await response.json().catch(()=>({}));
-      if(!response.ok||!data.ok||!Array.isArray(data.versions)||!data.versions.length){await displayCounts();return;}
+      if(!response.ok||!data.ok||!Array.isArray(data.versions)||!data.versions.length){renderUnavailability();await displayCounts();return;}
 
       const staticMajors=[...list.querySelectorAll(".beta-version-item")].map(el=>el.textContent.trim()).filter(Boolean);
       const grouped=new Map();
@@ -141,6 +160,7 @@
       await displayCounts();
     }catch(error){
       console.warn("beta versions",error);
+      renderUnavailability();
       await displayCounts();
     }
   }
