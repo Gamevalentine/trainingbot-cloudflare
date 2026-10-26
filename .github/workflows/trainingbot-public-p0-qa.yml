@@ -1,0 +1,48 @@
+name: TrainingBot Public P0 QA
+on:
+  push:
+    branches:
+      - aion-trainingbot-public-p0-20261027
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check shell scripts
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+      - name: Build public website without deploying
+        run: npm run build
+      - name: Run focused public smoke tests
+        run: |
+          node <<'NODE'
+          const fs = require("node:fs");
+          const assert = require("node:assert/strict");
+          const read = (path) => fs.readFileSync(path, "utf8");
+          const home = read("public/index.html");
+          const videos = read("public/home_videos_v165.js");
+          const updates = read("public/ban-cap-nhat.html");
+          const beta = read("public/beta_versions_public_v175.js");
+          const community = read("public/community.html");
+          const footer = read("public/footer_v135.js");
+          assert(!/<iframe[^>]*tiktok\.com/i.test(home), "Homepage must not autoload a TikTok iframe");
+          assert(home.includes("Tra cứu Wiki"), "Homepage must retain its Wiki action");
+          assert(home.includes("home_videos_v165.js?v=201"), "Video JS cache version was not bumped");
+          assert(videos.includes("function mainPreview"), "Poster-first video playback missing");
+          assert(!videos.includes("updateCommunityCta"), "Video script must not rewrite Wiki CTA");
+          assert(!videos.includes('iframe.loading = "eager"'), "Video player must not eagerly load");
+          assert(!updates.includes("Trang chỷ"), "Homepage label typo remains");
+          assert(!updates.includes("v2.0.4"), "Placeholder website version is still shown");
+          assert(updates.includes("tb-site-changelog"), "Game and website changes not separated");
+          assert(beta.includes("newest actually downloadable release"), "Beta hero still picks unreleased latest");
+          assert(community.includes("https://discord.com/invite/5u5PbZMqx"), "Community Discord link missing");
+          assert(footer.includes("https://discord.com/invite/5u5PbZMqx"), "Footer Discord link missing");
+          console.log("Public P0 static smoke tests: PASS");
+          NODE
