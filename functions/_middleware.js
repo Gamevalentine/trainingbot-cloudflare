@@ -14,8 +14,8 @@ const PUBLIC_READ_PATHS = new Set([
   "/api/home-videos",
   "/api/posts"
 ]);
-const ARTICLE_PATH = /^\\/bai-viet\\/[a-zA-Z0-9][a-zA-Z0-9-]{0,180}$/;
-const PUBLIC_POST_IMAGE = /^\\/user-posts\\/[a-zA-Z0-9._-]+\\.(?:png|jpe?g|webp|gif|avif)$/i;
+const ARTICLE_PATH = new RegExp("^/bai-viet/[a-zA-Z0-9][a-zA-Z0-9-]{0,180}$");
+const PUBLIC_POST_IMAGE = new RegExp("^/user-posts/[a-zA-Z0-9._-]+[.](?:png|jpe?g|webp|gif|avif)$","i");
 function isTrainingBotPreview(hostname){
   return hostname.endsWith(".trainingbot-cloudflare.pages.dev");
 }
