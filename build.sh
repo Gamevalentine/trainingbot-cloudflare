@@ -77,10 +77,10 @@ node --check public/ad_placeholder_test_v179.js >/dev/null
 test -f public/home_videos_v165.css
 test -f public/home_videos_v165.js
 if ! grep -q 'home_videos_v165\.css' public/index.html; then
-  sed -i 's#</head>#  <link rel="stylesheet" href="/home_videos_v165.css?v=192">\n</head>#' public/index.html
+  sed -i 's#</head>#  <link rel="stylesheet" href="/home_videos_v165.css?v=201">\n</head>#' public/index.html
 fi
 if ! grep -q 'home_videos_v165\.js' public/index.html; then
-  sed -i 's#</body>#  <script defer src="/home_videos_v165.js?v=191"></script>\n</body>#' public/index.html
+  sed -i 's#</body>#  <script defer src="/home_videos_v165.js?v=201"></script>\n</body>#' public/index.html
 fi
 node --check public/home_videos_v165.js >/dev/null
 
@@ -227,9 +227,9 @@ done
 test -f public/beta_versions_public_v175.js
 node --check public/beta_versions_public_v175.js >/dev/null
 for page in public/updates.html public/ban-cap-nhat.html; do
-  sed -i 's#beta_versions_public_v175\.js?v=[0-9]*#beta_versions_public_v175.js?v=197#g' "$page"
+  sed -i 's#beta_versions_public_v175\.js?v=[0-9]*#beta_versions_public_v175.js?v=201#g' "$page"
   if ! grep -q 'beta_versions_public_v175\.js' "$page"; then
-    sed -i 's#</body>#  <script defer src="/beta_versions_public_v175.js?v=197"></script>\n</body>#' "$page"
+    sed -i 's#</body>#  <script defer src="/beta_versions_public_v175.js?v=201"></script>\n</body>#' "$page"
   fi
 done
 
