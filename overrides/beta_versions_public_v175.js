@@ -97,8 +97,10 @@
       buttons.forEach(button=>button.addEventListener("click",()=>show(button.dataset.betaMajor)));
 
       const ordered=[...data.versions].sort((a,b)=>cmp(a.version,b.version));
-      const latest=ordered.at(-1);
-      const highestMajor=latest?.major||[...grouped.keys()].sort(cmp).at(-1);
+      // The hero must point to the newest actually downloadable release.
+      // Future versions remain visible as "Sắp ra mắt" in the version grid.
+      const latest=ordered.filter(row=>row.status==="released"&&row.download_url).at(-1)||ordered.at(-1);
+      const highestMajor=[...grouped.keys()].sort(cmp).at(-1);
       if(highestMajor)show(highestMajor.replace(/^V/i,""));
 
       if(latest){
