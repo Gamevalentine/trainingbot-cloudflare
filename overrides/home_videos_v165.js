@@ -2,7 +2,6 @@
 (() => {
   "use strict";
 
-  const COMMUNITY_URL = "https://discord.com/invite/5u5PbZMqx";
   const FALLBACK = [
     {
       external_id: "7681293376775277832",
@@ -23,24 +22,6 @@
       created_at: "2026-09-01T00:00:00Z"
     }
   ];
-
-  function updateCommunityCta() {
-    for (const el of document.querySelectorAll("a,button")) {
-      const label = String(el.textContent || "").replace(/\s+/g, " ").trim();
-      if (!label.startsWith("Tra cứu Wiki") && !label.startsWith("Tham gia cộng đồng")) continue;
-      el.textContent = "Tham gia cộng đồng";
-      if (el.tagName === "A") {
-        el.setAttribute("href", COMMUNITY_URL);
-        el.setAttribute("target", "_blank");
-        el.setAttribute("rel", "noopener noreferrer");
-      } else {
-        el.onclick = () => window.open(COMMUNITY_URL, "_blank", "noopener,noreferrer");
-      }
-      break;
-    }
-  }
-
-  updateCommunityCta();
 
   const host = document.querySelector(".hero-tiktok");
   const heroLayout = host?.closest(".hero-layout");
@@ -64,7 +45,7 @@
   function canonicalUrl(video) {
     try {
       const url = new URL(video.url);
-      if (/\/(?:video|photo)\/\d{10,25}(?:\/|$)/.test(url.pathname)) return `${url.origin}${url.pathname}`;
+      if ((url.hostname === "tiktok.com" || url.hostname.endsWith(".tiktok.com")) && /\/(?:video|photo)\/\d{10,25}(?:\/|$)/.test(url.pathname)) return `${url.origin}${url.pathname}`;
     } catch {}
     return `https://www.tiktok.com/@trainingbot.ai2/video/${video.external_id}`;
   }
@@ -88,9 +69,63 @@
     iframe.className = "tb-home-video-main-frame";
     iframe.src = playerUrl(video.external_id, false);
     iframe.title = video.title || "Video TikTok nổi bật của TrainingBot";
-    iframe.loading = "eager";
+    iframe.loading = "lazy";
     iframe.allow = "fullscreen; autoplay; encrypted-media; picture-in-picture";
     return iframe;
+  }
+
+
+  // A poster is shown initially. The third-party player is loaded only after a click.
+  function mainPreview(video) {
+    const container = document.createElement("div");
+    container.className = "tb-home-video-preview";
+
+    const externalLink = () => {
+      const link = document.createElement("a");
+      link.className = "tb-home-video-external";
+      link.href = canonicalUrl(video);
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = "Mở trên TikTok";
+      return link;
+    };
+
+    const showPoster = () => {
+      const poster = document.createElement("div");
+      poster.className = "tb-home-video-poster";
+      const image = document.createElement("img");
+      image.src = "/pubg-game-avatar.webp?v=140";
+      image.alt = "Ảnh đại diện PUBG MOBILE";
+      image.loading = "lazy";
+      const caption = document.createElement("div");
+      caption.className = "tb-home-video-overlay";
+      const heading = document.createElement("h3");
+      heading.textContent = video.title || "Video PUBG MOBILE nổi bật";
+      const play = document.createElement("button");
+      play.type = "button";
+      play.className = "tb-home-video-play-button";
+      play.textContent = "▶ Phát video";
+      play.setAttribute("aria-label", "Phát " + (video.title || "video nổi bật"));
+      play.addEventListener("click", showPlayer);
+      caption.append(heading, play, externalLink());
+      poster.append(image, caption);
+      container.replaceChildren(poster);
+    };
+
+    const showPlayer = () => {
+      const frame = mainFrame(video);
+      const controls = document.createElement("div");
+      controls.className = "tb-home-video-controls";
+      const close = document.createElement("button");
+      close.type = "button";
+      close.textContent = "Đóng trình phát";
+      close.addEventListener("click", showPoster);
+      controls.append(close, externalLink());
+      container.replaceChildren(frame, controls);
+    };
+
+    showPoster();
+    return container;
   }
 
   function miniCard(video, index, select) {
@@ -103,12 +138,10 @@
     const thumb = document.createElement("div");
     thumb.className = "tb-home-video-thumb";
 
-    const iframe = document.createElement("iframe");
-    iframe.src = playerUrl(video.external_id, true);
-    iframe.title = "";
-    iframe.tabIndex = -1;
-    iframe.loading = "lazy";
-    iframe.setAttribute("aria-hidden", "true");
+    const image = document.createElement("img");
+    image.src = "/pubg-game-avatar.webp?v=140";
+    image.alt = "";
+    image.loading = "lazy";
 
     const play = document.createElement("span");
     play.className = "tb-home-video-play";
@@ -124,7 +157,7 @@
       }
     });
 
-    thumb.append(iframe, play);
+    thumb.append(image, play);
     card.append(thumb);
     if (video.title) {
       const title = document.createElement("div");
@@ -236,7 +269,7 @@
 
     const paint = () => {
       const active = videos.find(video => video.external_id === activeId) || videos[0];
-      main.replaceChildren(mainFrame(active));
+      main.replaceChildren(mainPreview(active));
       strip.replaceChildren();
       const others = videos.filter(video => video.external_id !== active.external_id);
       shelf.hidden = others.length === 0;
