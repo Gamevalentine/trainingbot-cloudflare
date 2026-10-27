@@ -175,3 +175,6 @@ jobs:
           node --check public/wiki_compare_p1.js
           node --check 'functions/bai-viet/[slug].js'
           node tools/qa/p1-content.mjs
+
+      - name: P1 verify static sitemap and canonical links
+        run: node tools/qa/p1-seo.mjs

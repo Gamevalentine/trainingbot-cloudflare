@@ -52,6 +52,17 @@ try{
       assert.equal(await page.locator(".tb203-hero-copy").count(),1);
       await page.waitForFunction(()=>document.querySelectorAll("#tb203Dots button").length>=3,undefined,{timeout:3000});
     }
+    if(pageName==="/wiki.html"){
+      const left=page.locator("#tbP1First"),right=page.locator("#tbP1Second");
+      assert.equal(await left.count(),1);
+      assert.equal(await right.count(),1);
+      await page.waitForFunction(()=>document.querySelectorAll("#tbP1First option").length>10,undefined,{timeout:5000});
+      await left.selectOption("M416");
+      await right.selectOption("AKM");
+      assert(await page.locator("#tbP1Result").innerText().then(s=>s.includes("M416")&&s.includes("AKM")&&s.includes("Ngày kiểm chứng: chưa có")));
+      await right.selectOption("UMP45");
+      assert(await page.locator("#tbP1Result").innerText().then(s=>s.includes("UMP45")));
+    }
     if(pageName==="/contact.html"&&width<=430){
       assert.equal(await page.locator('.mobile-nav a[href="/"]').count(),1);
       const form=page.locator('#tbContactForm button[type="submit"]');
