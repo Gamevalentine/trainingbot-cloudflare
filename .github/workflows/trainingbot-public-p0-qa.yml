@@ -117,3 +117,41 @@ jobs:
           node --check public/contact_public_v202.js
           node --check functions/api/contact.js
           node --check functions/api/v71/admin/contact-messages.js
+
+      - name: Contact storage and validation unit tests (mock D1, no production write)
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          import assert from "node:assert/strict";
+          globalThis.crypto ??= (await import("node:crypto")).webcrypto;
+          const source=fs.readFileSync("functions/api/contact.js","utf8");
+          const {onRequestPost}=await import("data:text/javascript;base64,"+Buffer.from(source).toString("base64"));
+          const saved=[];
+          const db={prepare(sql){
+            const q={vals:[],bind(...args){this.vals=args;return this;},
+              async run(){if(sql.startsWith("INSERT INTO"))saved.push(this.vals);return {success:true};},
+              async first(){return {n:saved.length};}};
+            return q;
+          }};
+          const good={name:"Nguyen Van A",email:"a@example.com",subject:"Góp ý nội dung",message:"Gop y kiem thu, khong gui that"};
+          const req=(data,origin="https://trainingbot.io.vn")=>new Request("https://trainingbot.io.vn/api/contact",{
+            method:"POST",headers:{"content-type":"application/json","Origin":origin,"CF-Connecting-IP":"192.0.2.1"},
+            body:JSON.stringify(data)});
+          const missing=await onRequestPost({request:req(good),env:{}});
+          assert.equal(missing.status,503);
+          assert.equal(saved.length,0);
+          const invalid=await onRequestPost({request:req({...good,email:"invalid"}),env:{DB:db}});
+          assert.equal(invalid.status,400);
+          const cross=await onRequestPost({request:req(good,"https://attacker.invalid"),env:{DB:db}});
+          assert.equal(cross.status,403);
+          for(let i=0;i<3;i++){
+            const response=await onRequestPost({request:req(good),env:{DB:db}});
+            assert.equal(response.status,201);
+            assert.equal((await response.json()).received,true);
+          }
+          assert.equal(saved.length,3);
+          const limited=await onRequestPost({request:req(good),env:{DB:db}});
+          assert.equal(limited.status,429);
+          assert.equal(saved.length,3);
+          console.log("Contact mock D1 persistence, validation and rate limit: PASS");
+          NODE
