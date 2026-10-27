@@ -169,3 +169,9 @@ jobs:
             echo "=== HEAD $path ==="
             curl -sS -I -L --max-time 20 -o /dev/null -w '%{http_code} %{content_type} %{url_effective}\n' "https://trainingbot.io.vn$path" || true
           done
+
+      - name: P1 Wiki and article SEO tests
+        run: |
+          node --check public/wiki_compare_p1.js
+          node --check 'functions/bai-viet/[slug].js'
+          node tools/qa/p1-content.mjs

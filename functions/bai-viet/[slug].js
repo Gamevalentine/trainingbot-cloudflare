@@ -138,7 +138,37 @@ function isoDate(value){
   return Number.isNaN(d.getTime())?"":d.toISOString();
 }
 
-function page(post){
+
+function articleExcerpt(post){
+ const text=String(post.summary||post.content||post.rich_content||"").replace(/<[^>]*>/g," ").replace(/^#{1,6}\s+/gm,"").replace(/\*\*/g,"").replace(/\s+/g," ").trim();
+ if(text.length<=165)return text;
+ const cut=text.slice(0,163),end=Math.max(cut.lastIndexOf(". "),cut.lastIndexOf("? "),cut.lastIndexOf("! "));
+ if(end>=90)return cut.slice(0,end+1);
+ const space=cut.lastIndexOf(" ");return (space>=90?cut.slice(0,space):cut)+"…";
+}
+function articleSources(post){
+ const found=new Set(),content=String(post.content||"")+" "+String(post.rich_content||"");
+ for(const raw of content.match(/https?:\/\/[^\s<>"')\]]+/g)||[]){
+   try{const u=new URL(raw.replace(/[.,;]+$/,""));if((u.protocol==="https:"||u.protocol==="http:")&&!u.username&&!u.password&&u.hostname!=="trainingbot.io.vn")found.add(u.href);}catch{}
+   if(found.size>=8)break;
+ }
+ if(!found.size)return '<section class="tb-p1-box"><h2>Nguồn tham khảo</h2><p>Chưa có liên kết nguồn trực tiếp để đối chiếu nội dung bài viết.</p></section>';
+ return '<section class="tb-p1-box"><h2>Nguồn được bài viết dẫn</h2><ul>'+
+ [...found].map(u=>'<li><a target="_blank" rel="noopener noreferrer nofollow" href="'+esc(u)+'">'+esc(new URL(u).hostname)+'</a></li>').join("")+
+ '</ul></section>';
+}
+function articleRelated(rows){
+ const posts=(rows||[]).filter(p=>/^[a-z0-9-]{1,110}$/.test(String(p.slug||""))).slice(0,3);
+ if(!posts.length)return "";
+ return '<aside class="tb-p1-box"><h2>Bài viết liên quan</h2><ul>'+
+ posts.map(p=>'<li><a href="/bai-viet/'+encodeURIComponent(p.slug)+'">'+esc(p.title||"Bài viết")+'</a></li>').join("")+'</ul></aside>';
+}
+function articleHasHeading(post){
+ return /<h2\b/i.test(String(post.rich_content||""))||/^##\s/m.test(String(post.content||""));
+}
+
+function page(post,related=[]){
+ const excerpt=articleExcerpt(post);
   const canonical=`${ORIGIN}/bai-viet/${encodeURIComponent(post.slug)}`;
   const shareImage=absoluteUrl(post.cover_url,`${ORIGIN}/news-pubg-mobile-4-6-cover.webp`);
   const published=isoDate(post.published_at);
@@ -149,7 +179,7 @@ function page(post){
     "@graph":[
       {"@type":"Organization","@id":ORIGIN+"/#organization","name":"TrainingBot","url":ORIGIN+"/","logo":{"@type":"ImageObject","url":ORIGIN+"/favicon.svg"}},
       {"@type":"WebSite","@id":ORIGIN+"/#website","url":ORIGIN+"/","name":"TrainingBot","publisher":{"@id":ORIGIN+"/#organization"},"inLanguage":"vi-VN"},
-      {"@type":"NewsArticle","@id":canonical+"#article","mainEntityOfPage":canonical,"headline":post.title,"description":post.summary||"","image":[shareImage],"datePublished":published||undefined,"dateModified":modified||undefined,"author":{"@id":ORIGIN+"/#organization"},"publisher":{"@id":ORIGIN+"/#organization"},"inLanguage":"vi-VN"}
+      {"@type":"NewsArticle","@id":canonical+"#article","mainEntityOfPage":canonical,"headline":post.title,"description":excerpt,"image":[shareImage],"datePublished":published||undefined,"dateModified":modified||undefined,"author":{"@id":ORIGIN+"/#organization"},"publisher":{"@id":ORIGIN+"/#organization"},"inLanguage":"vi-VN"}
     ]
   };
   const jsonLd=JSON.stringify(graph).replace(/</g,"\\u003c");
@@ -158,19 +188,19 @@ function page(post){
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="${esc(post.summary)}">
+<meta name="description" content="${esc(excerpt)}">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="${esc(canonical)}">
 <meta property="og:site_name" content="TrainingBot">
 <meta property="og:locale" content="vi_VN">
 <meta property="og:type" content="article">
 <meta property="og:title" content="${esc(post.title)}">
-<meta property="og:description" content="${esc(post.summary)}">
+<meta property="og:description" content="${esc(excerpt)}">
 <meta property="og:url" content="${esc(canonical)}">
 <meta property="og:image" content="${esc(shareImage)}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(post.title)}">
-<meta name="twitter:description" content="${esc(post.summary)}">
+<meta name="twitter:description" content="${esc(excerpt)}">
 <meta name="twitter:image" content="${esc(shareImage)}">
 ${published?`<meta property="article:published_time" content="${esc(published)}">`:""}
 ${modified?`<meta property="article:modified_time" content="${esc(modified)}">`:""}
@@ -183,11 +213,12 @@ ${modified?`<meta property="article:modified_time" content="${esc(modified)}">`:
 <link rel="stylesheet" href="/header_search_v152.css?v=152">
 <style>
 .tb-user-article{padding:44px 0 72px}.tb-user-wrap{max-width:900px;margin:auto}.tb-user-tag{display:inline-flex;padding:7px 12px;border:1px solid rgba(118,92,255,.28);border-radius:999px;color:#b9b2ff;font-size:.76rem;font-weight:800}.tb-user-wrap h1{max-width:850px;margin:16px 0 12px;font-size:clamp(1.8rem,3.6vw,2.8rem);line-height:1.08;letter-spacing:-.035em}.tb-user-lead{max-width:790px;color:#b9c3d5;font-size:1rem;line-height:1.7}.tb-user-meta{margin-top:12px;color:#7f8ba3;font-size:.84rem}.tb-cover{display:block;width:100%;max-height:520px;object-fit:cover;margin:28px 0;border-radius:18px;border:1px solid rgba(148,163,184,.18)}.tb-user-story{max-width:790px;display:grid;gap:15px;color:#d9e0ee;font-family:"Segoe UI",Tahoma,Arial,sans-serif;font-size:1rem;font-weight:400;line-height:1.82}.tb-user-story h2,.tb-user-story h3,.tb-user-story h4{color:#fff;font-family:"Arial Black","Segoe UI Black","Segoe UI",Arial,sans-serif;font-weight:900;line-height:1.2;letter-spacing:-.025em}.tb-user-story h2{margin:42px 0 16px;padding:13px 16px 14px 18px;border-left:4px solid #765cff;border-radius:0 12px 12px 0;background:linear-gradient(90deg,rgba(118,92,255,.16),rgba(118,92,255,.035) 72%,transparent);box-shadow:inset 0 0 0 1px rgba(118,92,255,.08);font-size:clamp(1.85rem,3.35vw,2.35rem)}.tb-user-story h3{margin:32px 0 11px;padding-left:13px;border-left:3px solid rgba(42,203,234,.72);font-size:clamp(1.46rem,2.45vw,1.82rem)}.tb-user-story h4{margin:25px 0 8px;font-size:1.23rem}.tb-user-story strong,.tb-user-story b{color:#fff;font-family:"Segoe UI Semibold","Segoe UI",Arial,sans-serif;font-weight:800}.tb-user-story p,.tb-user-story ul,.tb-user-story ol,.tb-user-story blockquote,.tb-user-story figure{margin:0}.tb-user-story ul,.tb-user-story ol{padding-left:24px}.tb-user-story blockquote{padding:12px 16px;border-left:3px solid rgba(116,92,255,.8);background:rgba(116,92,255,.08);border-radius:10px}.tb-user-story figure{display:grid;justify-items:center;gap:8px}.tb-user-story img{display:block;max-width:100%;height:auto;border-radius:14px}.tb-user-story figcaption{color:#8d9ab0;font-size:.82rem;text-align:center}.tb-back{display:inline-flex;margin-top:30px;color:#9fb0ca;font-weight:750}@media(max-width:640px){.tb-user-article{padding:30px 0 52px}.tb-cover{margin:22px 0;border-radius:14px}.tb-user-story{font-size:.96rem;line-height:1.76}.tb-user-story h2{margin-top:34px;padding:11px 12px 12px 14px;font-size:1.62rem}.tb-user-story h3{margin-top:27px;font-size:1.32rem}}
+.tb-p1-box{margin:24px 0 0;padding:18px 21px;border:1px solid #32435e;background:#111b2c;border-radius:14px}.tb-p1-box h2{margin:0 0 10px;font-size:1.14rem;color:#fff}.tb-p1-box li{padding:4px 0}.tb-p1-box p{color:#acbad2}.tb-p1-box a{color:#bbcdff;text-decoration:underline;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
 <header class="site-header"><div class="container header-inner"><a class="brand" href="/"><span class="brand-logo"></span><span>TRAININGBOT<small>Gaming Knowledge Hub</small></span></a><nav class="desktop-nav" aria-label="Điều hướng chính"><a class="nav-link" href="/">Trang chủ</a><a class="nav-link" href="/ban-cap-nhat">Bản cập nhật</a><a class="nav-link active" href="/news">Tin tức</a><a class="nav-link" href="/wiki">Wiki</a><a class="nav-link" href="/community">Cộng đồng</a><a class="nav-link" href="/contact">Liên hệ</a></nav><div class="header-actions"><button class="icon-button" aria-label="Tìm kiếm"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3-3"></path></svg></button><button class="menu-button" aria-label="Mở menu" aria-expanded="false"><span></span><span></span><span></span></button></div></div><nav class="mobile-nav" aria-label="Điều hướng di động"></nav></header>
-<main class="tb-user-article"><article class="container tb-user-wrap"><span class="tb-user-tag">${esc(post.category)}</span><h1>${esc(post.title)}</h1><p class="tb-user-lead">${esc(post.summary)}</p><div class="tb-user-meta">${dateVi(post.published_at)} · TrainingBot</div>${cover}<div class="tb-user-story">${post.rich_content?sanitizeRich(post.rich_content):renderContent(post.content)}</div><a class="tb-back" href="/news">← Quay lại Tin tức</a></article></main>
+<main class="tb-user-article"><article class="container tb-user-wrap"><span class="tb-user-tag">${esc(post.category)}</span><h1>${esc(post.title)}</h1><p class="tb-user-lead">${esc(excerpt)}</p><div class="tb-user-meta">${dateVi(post.published_at)} · TrainingBot</div>${cover}<div class="tb-user-story">${articleHasHeading(post)?"":"<h2>Nội dung bài viết</h2>"}${post.rich_content?sanitizeRich(post.rich_content):renderContent(post.content)}</div>${articleSources(post)}${articleRelated(related)}<a class="tb-back" href="/news">← Quay lại Tin tức</a></article></main>
 <footer><div class="container footer-inner"><span>© 2026 TrainingBot.</span><div class="footer-links"><a href="/contact">Điều khoản</a><a href="/contact">Quyền riêng tư</a></div></div></footer>
 <script defer src="/navigation_v124.js?v=124"></script>
 <script defer src="/header_search_v152.js?v=182"></script>
@@ -203,5 +234,10 @@ export async function onRequestGet({env,params}){
   if(!/^[a-z0-9-]{1,110}$/.test(slug))return new Response("Không tìm thấy bài viết.",{status:404});
   const post=await env.DB.prepare("SELECT slug,title,summary,content,rich_content,category,cover_url,published_at,updated_at FROM tb_manual_posts_v1 WHERE slug=? AND status='published' LIMIT 1").bind(slug).first();
   if(!post)return new Response("Không tìm thấy bài viết.",{status:404});
-  return new Response(page(post),{status:200,headers:{"content-type":"text/html; charset=UTF-8","cache-control":"public, max-age=30, stale-while-revalidate=120","x-content-type-options":"nosniff"}});
+  let related=[];
+  try{
+    const q=await env.DB.prepare("SELECT slug,title FROM tb_manual_posts_v1 WHERE status='published' AND slug!=? AND category=? ORDER BY published_at DESC LIMIT 3").bind(slug,post.category).all();
+    related=q.results||[];
+  }catch(error){console.error("Related posts unavailable",error);}
+  return new Response(page(post,related),{status:200,headers:{"content-type":"text/html; charset=UTF-8","cache-control":"public, max-age=30, stale-while-revalidate=120","x-content-type-options":"nosniff"}});
 }
