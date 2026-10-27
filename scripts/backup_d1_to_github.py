@@ -41,12 +41,12 @@ def main():
     if meta.get("name") != DATABASE_NAME or meta.get("uuid", DATABASE_ID) != DATABASE_ID:
         raise RuntimeError("D1 identity mismatch: export aborted")
     result = request_json(API + "/export", {"output_format": "polling"})
-    bookmark = result.get("at_bookmark")
-    if not bookmark:
-        raise RuntimeError("D1 export did not return a bookmark")
     if result.get("status") == "error":
         raise RuntimeError("D1 export failed; Cloudflare reported an error")
+    bookmark = result.get("at_bookmark")
     signed_url = (result.get("result") or {}).get("signed_url")
+    if not bookmark and not signed_url:
+        raise RuntimeError("D1 export returned neither a bookmark nor completed download")
     for _ in range(120):
         if signed_url:
             break
