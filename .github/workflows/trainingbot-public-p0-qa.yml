@@ -178,3 +178,8 @@ jobs:
 
       - name: P1 verify static sitemap and canonical links
         run: node tools/qa/p1-seo.mjs
+
+      - name: P2 public search, safety headers and performance QA
+        run: |
+          node --check public/header_search_v152.js
+          node tools/qa/p2-search.mjs

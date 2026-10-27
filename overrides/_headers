@@ -4,3 +4,8 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Content-Security-Policy: base-uri 'self'; object-src 'none'; frame-ancestors 'self'
+
+/search-index-v152.json
+  Cache-Control: public, max-age=300, stale-while-revalidate=300
+  X-Content-Type-Options: nosniff

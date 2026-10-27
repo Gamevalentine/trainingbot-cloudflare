@@ -48,7 +48,7 @@
   active=(index+slides.length)%slides.length;
   const x=slides[active],card=el("div","tb203-slide");
   card.style.background=x.type==="news"?"#112640":"radial-gradient(circle at 60% 18%,#3a3374,#0b2344 65%,#080f24)";
-  const image=el("img",x.type==="news"?"":"tb203-game");image.src=x.image;image.alt="";image.decoding="async";image.loading="lazy";
+  const image=el("img",x.type==="news"?"":"tb203-game");image.src=x.image;image.alt="";image.decoding="async";image.loading="eager";
   image.onerror=()=>{if(!image.dataset.fallback){image.dataset.fallback="1";image.src="/pubg-game-avatar.webp?v=140";}};
   const cover=el("a","tb203-cover-link");cover.href=x.detail;cover.setAttribute("aria-label","Xem chi tiết "+x.title);
   const copy=el("div","tb203-copy"),tag=el("strong","",x.label),title=el("h2","",x.title),meta=el("p","",x.meta);
