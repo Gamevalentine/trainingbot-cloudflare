@@ -1,7 +1,17 @@
 name: TrainingBot D1 encrypted GitHub backup (manual)
 
-# Manual, never scheduled. Export can temporarily block D1 requests.
+# Export is ONLY initiated by explicit one-time approval at merge or by manual dispatch.
+# Never scheduled. Export can temporarily block D1 requests.
 on:
+  pull_request:
+    paths:
+      - ".github/workflows/trainingbot-d1-encrypted-backup.yml"
+      - "scripts/backup_d1_to_github.py"
+      - "tests/test_trainingbot_d1_backup.py"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/trainingbot-d1-encrypted-backup.yml"
   workflow_dispatch:
     inputs:
       confirmation:
@@ -13,8 +23,22 @@ permissions:
   contents: read
 
 jobs:
+  dry-run-validation:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Python and mock Cloudflare export without any secrets
+        run: |
+          python3 -m py_compile scripts/backup_d1_to_github.py
+          python3 -m unittest discover -s tests -p 'test_trainingbot_d1_backup.py' -v
+
   encrypted-backup:
-    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'BACKUP-TRAININGBOT-D1'
+    # One-time approved merge tag OR explicit manual run on main.
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[TRAININGBOT-D1-BACKUP-APPROVED]')) ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.confirmation == 'BACKUP-TRAININGBOT-D1')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
