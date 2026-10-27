@@ -1,0 +1,78 @@
+name: TrainingBot D1 encrypted GitHub backup (manual)
+
+# Export is ONLY initiated by explicit one-time approval at merge or by manual dispatch.
+# Never scheduled. Export can temporarily block D1 requests.
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/trainingbot-d1-encrypted-backup.yml"
+      - "scripts/backup_d1_to_github.py"
+      - "tests/test_trainingbot_d1_backup.py"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/trainingbot-d1-encrypted-backup.yml"
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: "Type BACKUP-TRAININGBOT-D1 to confirm temporary D1 query interruption"
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  dry-run-validation:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Python and mock Cloudflare export without any secrets
+        run: |
+          python3 -m py_compile scripts/backup_d1_to_github.py
+          python3 -m unittest discover -s tests -p 'test_trainingbot_d1_backup.py' -v
+
+  encrypted-backup:
+    # One-time approved merge tag OR explicit manual run on main.
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[TRAININGBOT-D1-BACKUP-APPROVED]')) ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.confirmation == 'BACKUP-TRAININGBOT-D1')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check backup secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.TRAININGBOT_D1_EXPORT_TOKEN }}
+          TRAININGBOT_BACKUP_PASSPHRASE: ${{ secrets.TRAININGBOT_BACKUP_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "Cloudflare export token not configured"; exit 1; }
+          test "$(printf '%s' "$TRAININGBOT_BACKUP_PASSPHRASE" | wc -c)" -ge 32 || { echo "Backup passphrase must be >=32 characters"; exit 1; }
+
+      - name: Export, verify, gzip and encrypt D1
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.TRAININGBOT_D1_EXPORT_TOKEN }}
+          TRAININGBOT_BACKUP_PASSPHRASE: ${{ secrets.TRAININGBOT_BACKUP_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          export_dir="$(mktemp -d)"
+          trap 'rm -rf "$export_dir"' EXIT
+          python3 scripts/backup_d1_to_github.py "$export_dir/backup.sql"
+          gzip -n -c "$export_dir/backup.sql" > "$export_dir/backup.sql.gz"
+          mkdir -p backup-artifact
+          outfile="trainingbot-db-$(date -u +%Y%m%dT%H%M%SZ).sql.gz.gpg"
+          printf '%s' "$TRAININGBOT_BACKUP_PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --symmetric --cipher-algo AES256 --output "backup-artifact/$outfile" "$export_dir/backup.sql.gz"
+          (cd backup-artifact && sha256sum "$outfile" > "$outfile.sha256")
+          echo "Encrypted D1 backup and ciphertext SHA-256 ready."
+
+      - name: Save encrypted GitHub Actions artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-db-encrypted-${{ github.run_id }}
+          path: backup-artifact/
+          retention-days: 90
+          if-no-files-found: error
+          compression-level: 0
