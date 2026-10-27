@@ -55,3 +55,16 @@ if(process.argv.includes("--extract")){
   fs.writeFileSync(target,decoded);
   console.log("Decoded local-only copy: .admin-audit-runtime/admin.decoded.html");
 }
+
+if(process.argv.includes("--layout")){
+  const offset=decoded.indexOf('class="nav-item"');
+  const headerStart=offset>=0?Math.max(0,offset-850):0;
+  const navChunk=decoded.slice(headerStart,offset+4400)
+    .replace(/<script[\s\S]*?<\/script>/gi,"[script omitted]");
+  const markers=["function showView","function setView","const titles","data-view-panel=\"dashboard\"","data-view-panel=\"content\"","const view=","function navigate","location.hash"];
+  const snippets=Object.fromEntries(markers.map(marker=>{
+    const i=decoded.indexOf(marker);
+    return [marker,i>=0?decoded.slice(Math.max(0,i-120),i+420).replace(/\s+/g," ").slice(0,540):"(not present)"];
+  }));
+  console.log("ADM-00 LAYOUT MAP (source snippets only; no credentials)\n"+JSON.stringify({navChunk,snippets},null,2));
+}
