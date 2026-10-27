@@ -35,7 +35,7 @@
 
   function render(posts){
     const home=document.querySelector(".article-grid");
-    if(home){posts.slice(0,3).reverse().forEach(post=>home.prepend(homeCard(post)));while(home.children.length>3)home.lastElementChild.remove();}
+    if(home&&!home.hasAttribute("data-v202")){posts.slice(0,3).reverse().forEach(post=>home.prepend(homeCard(post)));while(home.children.length>3)home.lastElementChild.remove();}
     const news=document.querySelector(".tb-latest-grid-v157");
     if(news)posts.slice().reverse().forEach(post=>news.prepend(newsCard(post)));
   }

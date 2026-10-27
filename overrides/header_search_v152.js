@@ -3,6 +3,8 @@
 
   const SEARCH_SELECTOR = '.header-actions button[aria-label="Tìm kiếm"], .header-actions .icon-button[aria-label*="Tìm"]';
   let searchIndexPromise = null;
+  let previousFocus = null;
+  let renderVersion = 0;
   let overlay = null;
   let input = null;
   let results = null;
@@ -23,6 +25,17 @@
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 
+  // Search entries must be first-party routes. Reject external/javascript/data links,
+  // including protocol-relative URLs, from both the static index and D1 posts.
+  function safeRoute(value) {
+    const raw=String(value||"").trim();
+    if (!raw.startsWith("/") || raw.startsWith("//") || /[\\\u0000-\u001f]/.test(raw) || raw.length>512) return "";
+    try {
+      const parsed=new URL(raw,location.origin);
+      if(parsed.origin!==location.origin) return "";
+      return parsed.pathname+parsed.search+parsed.hash;
+    } catch { return ""; }
+  }
   function ensureModal() {
     if (overlay) return;
     overlay = document.createElement("div");
@@ -42,7 +55,7 @@
           <input type="search" autocomplete="off" spellcheck="false" placeholder="Tìm tin tức, bản cập nhật, Wiki..." aria-label="Nhập nội dung cần tìm">
           <kbd>ESC</kbd>
         </label>
-        <p class="tb-search-status">Nhập ít nhất 2 ký tự để tìm trên TrainingBot.</p>
+        <p class="tb-search-status" role="status" aria-live="polite">Nhập ít nhất 2 ký tự để tìm trên TrainingBot.</p>
         <div class="tb-search-results" aria-live="polite"></div>
       </section>`;
     document.body.appendChild(overlay);
@@ -59,32 +72,36 @@
 
   function loadIndex() {
     if (!searchIndexPromise) {
-      const staticIndex = fetch("/search-index-v152.json", { cache: "no-store" })
-        .then((response) => {
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          return response.json();
-        })
-        .then((data) => Array.isArray(data) ? data : [])
-        .catch(() => []);
-
+      const staticIndex = fetch("/search-index-v152.json", { cache: "default" })
+        .then(response => {if(!response.ok)throw Error("Static index unavailable");return response.json();})
+        .then(data => {if(!Array.isArray(data))throw Error("Invalid index");return data;});
       const adminPosts = fetch("/api/posts?limit=100&search=1", { cache: "no-store" })
-        .then((response) => response.ok ? response.json() : { posts: [] })
-        .then((data) => Array.isArray(data.posts) ? data.posts.map((post) => ({
-          title: post.title || "Bài viết TrainingBot",
-          description: post.summary || "",
-          text: [post.title, post.summary, post.category, post.content].filter(Boolean).join(" ").slice(0, 12000),
-          url: post.url || (post.slug ? `/bai-viet/${post.slug}` : "/news"),
-          type: post.category || "Tin tức"
-        })) : [])
-        .catch(() => []);
-
-      searchIndexPromise = Promise.all([staticIndex, adminPosts]).then(([base, dynamic]) => {
-        const merged = new Map();
-        [...base, ...dynamic].forEach((item) => {
-          if (!item || !item.url) return;
-          merged.set(item.url, item);
+        .then(response => {if(!response.ok)throw Error("Posts unavailable");return response.json();})
+        .then(data => {
+          if(!data.ok || !Array.isArray(data.posts))throw Error("Invalid posts");
+          return data.posts.map(post=>({
+            title:post.title||"Bài viết TrainingBot",
+            description:post.summary||"",
+            text:[post.title,post.summary,post.category,post.content].filter(Boolean).join(" ").slice(0,12000),
+            url:post.url||(post.slug?`/bai-viet/${post.slug}`:"/news"),
+            type:post.category||"Tin tức"
+          }));
         });
+      searchIndexPromise=Promise.allSettled([staticIndex,adminPosts]).then(outcomes=>{
+        if(outcomes.every(item=>item.status==="rejected"))throw Error("Both index sources unavailable");
+        const merged=new Map();
+        for(const outcome of outcomes){
+          if(outcome.status!=="fulfilled")continue;
+          for(const item of outcome.value){
+            const route=safeRoute(item?.url);
+            if(!route)continue;
+            merged.set(route,{...item,url:route});
+          }
+        }
         return [...merged.values()];
+      }).catch(error=>{
+        searchIndexPromise=null; // Retry on next use; never cache failed requests as empty results.
+        throw error;
       });
     }
     return searchIndexPromise;
@@ -114,53 +131,61 @@
 
   async function render(query) {
     ensureModal();
-    const q = String(query || "").trim();
-    if (q.length < 2) {
-      results.innerHTML = "";
-      status.textContent = "Nhập ít nhất 2 ký tự để tìm trên TrainingBot.";
+    const token=++renderVersion,q=String(query||"").trim();
+    if(q.length<2){
+      results.replaceChildren();
+      status.textContent="Nhập ít nhất 2 ký tự để tìm trên TrainingBot.";
       return;
     }
-
-    status.textContent = "Đang tìm…";
-    const index = await loadIndex();
-    const matches = index
-      .map((item) => ({ item, score: scoreItem(item, q) }))
-      .filter((entry) => entry.score > 0)
-      .sort((a, b) => b.score - a.score || String(a.item.title).localeCompare(String(b.item.title), "vi"))
-      .slice(0, 10);
-
-    if (!matches.length) {
-      status.textContent = `Không tìm thấy kết quả cho “${q}”.`;
-      results.innerHTML = '<div class="tb-search-empty">Thử từ khóa ngắn hơn hoặc tìm theo tên bài viết, phiên bản, Wiki.</div>';
-      return;
+    status.textContent="Đang tìm…";
+    results.replaceChildren();
+    try{
+      const index=await loadIndex();
+      if(token!==renderVersion || overlay.hidden)return;
+      const matches=index.map(item=>({item,score:scoreItem(item,q)}))
+        .filter(result=>result.score>0)
+        .sort((a,b)=>b.score-a.score||String(a.item.title).localeCompare(String(b.item.title),"vi"))
+        .slice(0,10);
+      if(!matches.length){
+        status.textContent=`Không tìm thấy kết quả cho “${q}”.`;
+        results.innerHTML='<div class="tb-search-empty">Thử từ khóa ngắn hơn hoặc tìm theo tên bài viết, phiên bản, Wiki.</div>';
+        return;
+      }
+      status.textContent=`${matches.length} kết quả phù hợp`;
+      results.innerHTML=matches.map(({item})=>`
+        <a class="tb-search-result" href="${escapeHtml(item.url)}">
+          <span class="tb-search-result-type">${escapeHtml(item.type||"TrainingBot")}</span>
+          <strong>${escapeHtml(item.title||"TrainingBot")}</strong>
+          <p>${escapeHtml(item.description||"")}</p>
+          <span class="tb-search-result-link">Mở nội dung →</span>
+        </a>`).join("");
+    }catch(error){
+      if(token!==renderVersion || overlay.hidden)return;
+      status.textContent="Không thể tải dữ liệu tìm kiếm. Hãy kiểm tra kết nối và thử lại.";
+      results.innerHTML='<div class="tb-search-empty">Dữ liệu tìm kiếm tạm thời gián đoạn. <button type="button" class="tb-search-retry">Thử lại</button></div>';
+      results.querySelector(".tb-search-retry")?.addEventListener("click",()=>{
+        searchIndexPromise=null;render(input.value);
+      });
     }
-
-    status.textContent = `${matches.length} kết quả phù hợp`;
-    results.innerHTML = matches.map(({ item }) => `
-      <a class="tb-search-result" href="${escapeHtml(item.url)}">
-        <span class="tb-search-result-type">${escapeHtml(item.type || "TrainingBot")}</span>
-        <strong>${escapeHtml(item.title || "TrainingBot")}</strong>
-        <p>${escapeHtml(item.description || "")}</p>
-        <span class="tb-search-result-link">Mở nội dung →</span>
-      </a>`).join("");
   }
 
-  async function openSearch() {
+  function openSearch() {
     ensureModal();
-    overlay.hidden = false;
+    if(overlay.hidden)previousFocus=document.activeElement;
+    overlay.hidden=false;
     document.body.classList.add("tb-search-open");
-    status.textContent = "Đang chuẩn bị tìm kiếm…";
-    await loadIndex();
-    status.textContent = input.value.trim().length >= 2
-      ? status.textContent
-      : "Nhập ít nhất 2 ký tự để tìm trên TrainingBot.";
-    requestAnimationFrame(() => input.focus());
+    if(input.value.trim().length>=2)render(input.value);
+    else{status.textContent="Nhập ít nhất 2 ký tự để tìm trên TrainingBot.";results.replaceChildren();}
+    requestAnimationFrame(()=>input.focus());
   }
 
   function closeSearch() {
-    if (!overlay) return;
-    overlay.hidden = true;
+    if(!overlay || overlay.hidden)return;
+    overlay.hidden=true;
+    ++renderVersion;
     document.body.classList.remove("tb-search-open");
+    if(previousFocus?.isConnected && typeof previousFocus.focus==="function")previousFocus.focus();
+    previousFocus=null;
   }
 
   function addMobileContact(searchButton) {
@@ -191,6 +216,13 @@
     });
 
     document.addEventListener("keydown", (event) => {
+      if(overlay && !overlay.hidden && event.key==="Tab"){
+        const controls=[...overlay.querySelectorAll('button:not([disabled]),input:not([disabled]),a[href]')];
+        const first=controls[0],last=controls.at(-1);
+        if(!first || !last)return;
+        if(event.shiftKey && document.activeElement===first){event.preventDefault();last.focus();}
+        else if(!event.shiftKey && document.activeElement===last){event.preventDefault();first.focus();}
+      }
       if (event.key === "Escape" && overlay && !overlay.hidden) closeSearch();
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();

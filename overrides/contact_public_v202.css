@@ -1,0 +1,20 @@
+
+.tb202-contact{min-height:75vh;padding:40px 0 95px;background:radial-gradient(circle at 13% 0,rgba(115,93,236,.17),transparent 50%),#09101c;color:#eef3ff}
+.tb202-contact .container{width:min(1070px,calc(100% - 32px));margin:auto}.tb202-contact h1{font:800 clamp(2rem,5vw,3.7rem)/1.05 "Space Grotesk",Inter,sans-serif;margin:13px 0}.tb202-contact p{color:#b6c5da;line-height:1.6}
+.tb202-contact-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(275px,.85fr);gap:18px;margin-top:25px}.tb202-contact-panel{padding:26px;border:1px solid #344365;border-radius:22px;background:linear-gradient(140deg,#172138,#101a2a)}
+.tb202-contact-panel h2{margin:0;font-size:1.4rem}.tb202-contact-panel>a{display:block;padding:15px 0;border-bottom:1px solid #344261;color:#bcd0ff;overflow-wrap:anywhere}
+#tbContactForm{display:grid;gap:14px;margin-top:18px}#tbContactForm label{display:grid;gap:6px;color:#e6eeff;font-size:.86rem;font-weight:750}
+#tbContactForm input,#tbContactForm select,#tbContactForm textarea{box-sizing:border-box;width:100%;padding:12px;background:#0a1222;color:#fff;border:1px solid #455474;border-radius:10px;font:inherit}
+#tbContactForm button{padding:15px;background:linear-gradient(110deg,#7356ff,#29a5ee);color:#fff;font-weight:800;border:0;border-radius:11px;cursor:pointer}
+#tbContactForm button:disabled{opacity:.6}#tbContactStatus{min-height:1.4em;margin:0;font-size:.83rem}#tbContactStatus[data-state="error"]{color:#ffc1b5}#tbContactStatus[data-state="success"]{color:#a3f1cc}
+.tb202-trap{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+@media(max-width:760px){.tb202-contact-grid{grid-template-columns:1fr}.tb202-contact-panel{padding:19px}}
+
+/* P0 mobile: allow room below form for the existing fixed mobile navigation. */
+@media(max-width:760px){
+  .tb202-contact{padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))}
+  .tb202-contact-grid,.tb202-contact-panel{min-width:0}
+  #tbContactForm label,#tbContactForm input,#tbContactForm select,#tbContactForm textarea{min-width:0;max-width:100%}
+  #tbContactForm input,#tbContactForm select,#tbContactForm textarea{font-size:16px}
+  #tbContactForm button{min-height:46px}
+}

@@ -234,3 +234,8 @@ body.tb-community-page{background:#070a12;color:#f6f8ff}
   .tb-community-contact{padding:34px 20px 36px;border-radius:16px}
   .tb-community-email{width:100%;padding:0 14px}
 }
+/* P0: include the Discord channel used by TrainingBot homepage. */
+@media(min-width:901px){.tb-community-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tb-community-card.discord{--accent:#5865f2;--accent2:#8ea1ff}
+.tb-social-icon.discord{background:rgba(88,101,242,.22);color:#fff;border-radius:50%;font-size:24px}
+.tb-community-card.discord .tb-community-cta{color:#a5b4fc}

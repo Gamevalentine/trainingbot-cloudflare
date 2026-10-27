@@ -1,0 +1,205 @@
+name: TrainingBot Public P0 QA
+on:
+  push:
+    branches:
+      - aion-trainingbot-public-p0-20261027
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check shell scripts
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+      - name: Build public website without deploying
+        run: npm run build
+      - name: Run focused public smoke tests
+        run: |
+          node <<'NODE'
+          const fs = require("node:fs");
+          const assert = require("node:assert/strict");
+          const read = (path) => fs.readFileSync(path, "utf8");
+          const home = read("public/index.html");
+          const videos = read("public/home_videos_v165.js");
+          const updates = read("public/ban-cap-nhat.html");
+          const beta = read("public/beta_versions_public_v175.js");
+          const community = read("public/community.html");
+          const footer = read("public/footer_v135.js");
+          assert(!/<iframe[^>]*tiktok\.com/i.test(home), "Homepage must not autoload a TikTok iframe");
+          assert(home.includes("Tra cứu Wiki"), "Homepage must retain its Wiki action");
+          assert(home.includes("home_videos_v165.js?v=201"), "Video JS cache version was not bumped");
+          assert(videos.includes("function mainPreview"), "Poster-first video playback missing");
+          assert(!videos.includes("updateCommunityCta"), "Video script must not rewrite Wiki CTA");
+          assert(!videos.includes('iframe.loading = "eager"'), "Video player must not eagerly load");
+          assert(!updates.includes("Trang chỷ"), "Homepage label typo remains");
+          assert(!updates.includes("v2.0.4"), "Placeholder website version is still shown");
+          assert(updates.includes("tb-site-changelog"), "Game and website changes not separated");
+          assert(beta.includes("newest actually downloadable release"), "Beta hero still picks unreleased latest");
+          assert(community.includes("https://discord.com/invite/5u5PbZMqx"), "Community Discord link missing");
+          assert(footer.includes("https://discord.com/invite/5u5PbZMqx"), "Footer Discord link missing");
+          console.log("Public P0 static smoke tests: PASS");
+          NODE
+
+      - name: Test Preview public read-only fallback with no D1
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from "node:assert/strict";
+          import fs from "node:fs";
+          const source=fs.readFileSync("functions/_middleware.js","utf8");
+          const file="data:text/javascript;base64,"+Buffer.from(source).toString("base64");
+          const {onRequest}=await import(file);
+          const calls=[];
+          const oldFetch=globalThis.fetch;
+          globalThis.fetch=async(target,options)=>{
+            calls.push({target:String(target),options});
+            return new Response('{"ok":true,"versions":[{"version":"V4.7.3","status":"released"}]}',{
+              status:200,headers:{"content-type":"application/json"}
+            });
+          };
+          try{
+            let nextCount=0;
+            const run=async (path,method="GET",host="65eecdd1.trainingbot-cloudflare.pages.dev")=>
+              await onRequest({request:new Request("https://"+host+path,{method}),
+                env:{}, next:async()=>{nextCount++;return new Response("LOCAL");}});
+            const r=await run("/api/beta-versions");
+            assert.equal(r.status,200);
+            assert.equal((await r.json()).versions[0].status,"released");
+            assert.equal(calls[0].target,"https://trainingbot.io.vn/api/beta-versions");
+            assert.equal(calls[0].options.method,"GET");
+            assert.equal(calls[0].options.headers.Authorization,undefined);
+            assert.equal(calls[0].options.headers.Cookie,undefined);
+            await run("/api/posts?limit=3&search=1&untrusted=ignored");
+            assert.equal(calls.at(-1).target,"https://trainingbot.io.vn/api/posts?limit=3&search=1");
+            await run("/api/flash-download-counts");
+            await run("/api/beta-download-counts");
+            await run("/api/home-videos");
+            await run("/bai-viet/test-post");
+            await run("/user-posts/cover-123.webp");
+            assert.equal(calls.length,7);
+            const adminDenied=await run("/api/v71/admin/beta-versions");
+            assert.equal(adminDenied.status,403);
+            const legacyDenied=await run("/api/v34/contacts");
+            assert.equal(legacyDenied.status,403);
+            const unknownDenied=await run("/api/unknown-legacy-route");
+            assert.equal(unknownDenied.status,403);
+            const redirected=await run("/download/beta/V4.7.3");
+            assert.equal(redirected.status,307);
+            assert.equal(redirected.headers.get("location"),"https://trainingbot.io.vn/download/beta/V4.7.3");
+            const mutationDenied=await run("/api/beta-versions","POST");
+            assert.equal(mutationDenied.status,403);
+            const contactDenied=await run("/api/contact","POST");
+            assert.equal(contactDenied.status,403);
+            const deleteDenied=await run("/api/v71/admin/posts","DELETE");
+            assert.equal(deleteDenied.status,403);
+            await run("/api/beta-versions","GET","trainingbot.io.vn");
+            await run("/api/beta-versions","GET","trainingbot-cloudflare.pages.dev");
+            assert.equal(calls.length,7,"No mutations/admin/production must proxy");
+            assert.equal(nextCount,2,"Only production and canonical Pages host should continue");
+            globalThis.fetch=async()=>new Response("unavailable",{status:503});
+            const failed=await run("/api/beta-versions");
+            assert.equal(failed.status,503);
+            assert.equal((await failed.json()).ok,false);
+            console.log("Read-only Preview public data tests: PASS");
+          }finally{globalThis.fetch=oldFetch;}
+          NODE
+
+      - name: Public refresh smoke tests
+        run: |
+          node <<'NODE'
+          const fs=require("fs"),assert=require("node:assert/strict");
+          const h=fs.readFileSync("public/index.html","utf8"),c=fs.readFileSync("public/contact.html","utf8");
+          assert(h.includes('id="tbHomeBetaState"'));
+          assert(h.includes('id="tbHomeArticleGrid"'));
+          assert(h.includes('id="tbFeaturedVideos"'));
+          assert(c.includes('id="tbContactForm"'));
+          assert(!c.includes("nội dung mẫu"));
+          assert(fs.existsSync("public/home_public_v202.js"));
+          console.log("Public refresh: PASS");
+          NODE
+          node --check public/home_public_v202.js
+          node --check public/contact_public_v202.js
+          node --check functions/api/contact.js
+          node --check functions/api/v71/admin/contact-messages.js
+
+      - name: Contact storage and validation unit tests (mock D1, no production write)
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          import assert from "node:assert/strict";
+          globalThis.crypto ??= (await import("node:crypto")).webcrypto;
+          const source=fs.readFileSync("functions/api/contact.js","utf8");
+          const {onRequestPost}=await import("data:text/javascript;base64,"+Buffer.from(source).toString("base64"));
+          const saved=[];
+          const db={prepare(sql){
+            const q={vals:[],bind(...args){this.vals=args;return this;},
+              async run(){if(sql.startsWith("INSERT INTO"))saved.push(this.vals);return {success:true};},
+              async first(){return {n:saved.length};}};
+            return q;
+          }};
+          const good={name:"Nguyen Van A",email:"a@example.com",subject:"Góp ý nội dung",message:"Gop y kiem thu, khong gui that"};
+          const req=(data,origin="https://trainingbot.io.vn")=>new Request("https://trainingbot.io.vn/api/contact",{
+            method:"POST",headers:{"content-type":"application/json","Origin":origin,"CF-Connecting-IP":"192.0.2.1"},
+            body:JSON.stringify(data)});
+          const missing=await onRequestPost({request:req(good),env:{}});
+          assert.equal(missing.status,503);
+          assert.equal(saved.length,0);
+          const invalid=await onRequestPost({request:req({...good,email:"invalid"}),env:{DB:db}});
+          assert.equal(invalid.status,400);
+          const cross=await onRequestPost({request:req(good,"https://attacker.invalid"),env:{DB:db}});
+          assert.equal(cross.status,403);
+          for(let i=0;i<3;i++){
+            const response=await onRequestPost({request:req(good),env:{DB:db}});
+            assert.equal(response.status,201);
+            assert.equal((await response.json()).received,true);
+          }
+          assert.equal(saved.length,3);
+          const limited=await onRequestPost({request:req(good),env:{DB:db}});
+          assert.equal(limited.status,429);
+          assert.equal(saved.length,3);
+          console.log("Contact mock D1 persistence, validation and rate limit: PASS");
+          NODE
+
+      - name: P0 contact inbox and download stream unit checks
+        run: node tools/qa/p0-runtime.mjs
+      - name: P0 mobile, tablet and desktop browser checks
+        run: |
+          npm install --no-save --no-package-lock playwright
+          node tools/qa/p0-responsive.mjs
+      - name: P0 download HEAD probes (no counts, no file transfer)
+        continue-on-error: true
+        run: |
+          for path in /download/beta/V4.7.3 /download/flash-v4-6-1 /download/flash-v4-7-0; do
+            echo "=== HEAD $path ==="
+            curl -sS -I -L --max-time 20 -o /dev/null -w '%{http_code} %{content_type} %{url_effective}\n' "https://trainingbot.io.vn$path" || true
+          done
+
+      - name: P1 Wiki and article SEO tests
+        run: |
+          node --check public/wiki_compare_p1.js
+          node --check 'functions/bai-viet/[slug].js'
+          node tools/qa/p1-content.mjs
+
+      - name: P1 verify static sitemap and canonical links
+        run: node tools/qa/p1-seo.mjs
+
+      - name: P2 public search, safety headers and performance QA
+        run: |
+          node --check public/header_search_v152.js
+          node tools/qa/p2-search.mjs
+
+      - name: P2 live Preview headers read-only probe
+        continue-on-error: true
+        run: node tools/qa/p2-live-headers.mjs
+
+      - name: P3.1 Preview D1 and legacy API isolation
+        run: node tools/qa/p3-1-d1-preview-isolation.mjs
+
+      - name: P3.2–P3.5 integrated acceptance (mocked local preview only)
+        run: node tools/qa/p3-2-5-regression.mjs
