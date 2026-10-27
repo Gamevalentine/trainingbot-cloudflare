@@ -155,3 +155,17 @@ jobs:
           assert.equal(saved.length,3);
           console.log("Contact mock D1 persistence, validation and rate limit: PASS");
           NODE
+
+      - name: P0 contact inbox and download stream unit checks
+        run: node tools/qa/p0-runtime.mjs
+      - name: P0 mobile, tablet and desktop browser checks
+        run: |
+          npm install --no-save --no-package-lock playwright
+          node tools/qa/p0-responsive.mjs
+      - name: P0 download HEAD probes (no counts, no file transfer)
+        continue-on-error: true
+        run: |
+          for path in /download/beta/V4.7.3 /download/flash-v4-6-1 /download/flash-v4-7-0; do
+            echo "=== HEAD $path ==="
+            curl -sS -I -L --max-time 20 -o /dev/null -w '%{http_code} %{content_type} %{url_effective}\n' "https://trainingbot.io.vn$path" || true
+          done

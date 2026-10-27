@@ -19,7 +19,8 @@ export async function onRequestPost({request,env}){
   const count=await env.DB.prepare("SELECT COUNT(*) AS n FROM tb_contact_messages_v202 WHERE source_hash=? AND received_at>=?").bind(hash,cutoff).first();
   if(Number(count?.n||0)>=3)return json({ok:false,message:"Bạn đã gửi quá nhiều yêu cầu, vui lòng thử sau."},429);
   const id=crypto.randomUUID();
-  await env.DB.prepare("INSERT INTO tb_contact_messages_v202 (id,name,email,subject,message,source_hash,received_at) VALUES (?,?,?,?,?,?,?)").bind(id,name,email,subject,message,hash,new Date().toISOString()).run();
+  const saved=await env.DB.prepare("INSERT INTO tb_contact_messages_v202 (id,name,email,subject,message,source_hash,received_at) VALUES (?,?,?,?,?,?,?)").bind(id,name,email,subject,message,hash,new Date().toISOString()).run();
+  if(saved?.success!==true)throw new Error("D1 did not acknowledge contact storage");
   return json({ok:true,received:true,id:id.slice(0,8)},201);
  }catch(err){console.error("TrainingBot contact",err);return json({ok:false,message:"Hệ thống chưa lưu được yêu cầu."},503);}
 }
