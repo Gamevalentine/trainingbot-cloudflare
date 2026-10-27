@@ -1,0 +1,31 @@
+name: TrainingBot Admin rework QA (Preview only)
+on:
+  push:
+    branches:
+      - aion-trainingbot-admin-rework-20261028
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  admin-baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build without publishing
+        run: npm run build
+      - name: ADM-00 audit original packed runtime
+        run: |
+          node --check tools/admin/audit-runtime.mjs
+          node tools/admin/audit-runtime.mjs
+      - name: Check critical admin endpoint resources
+        run: |
+          test -f public/admin.html
+          test -f public/admin_beta_versions_v175.js
+          test -f public/admin_posts_manual_v171.js
+          test -f public/admin_posts_editor_v183.js
+          test -f functions/api/v71/admin/beta-versions.js
+          test -f functions/api/v71/admin/posts.js
+          echo "Admin baseline and critical endpoints: PRESENT"
