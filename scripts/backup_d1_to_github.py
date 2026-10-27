@@ -44,7 +44,9 @@ def main():
     bookmark = result.get("at_bookmark")
     if not bookmark:
         raise RuntimeError("D1 export did not return a bookmark")
-    signed_url = result.get("signed_url")
+    if result.get("status") == "error":
+        raise RuntimeError("D1 export failed; Cloudflare reported an error")
+    signed_url = (result.get("result") or {}).get("signed_url")
     for _ in range(120):
         if signed_url:
             break
@@ -52,7 +54,9 @@ def main():
         result = request_json(API + "/export", {
             "output_format": "polling", "current_bookmark": bookmark
         })
-        signed_url = result.get("signed_url")
+        if result.get("status") == "error":
+            raise RuntimeError("D1 export failed during polling")
+        signed_url = (result.get("result") or {}).get("signed_url")
     if not signed_url:
         raise RuntimeError("D1 export timed out before download was ready")
     with urllib.request.urlopen(signed_url, timeout=70) as response:
