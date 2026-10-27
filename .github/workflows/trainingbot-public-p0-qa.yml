@@ -200,3 +200,6 @@ jobs:
 
       - name: P3.1 Preview D1 and legacy API isolation
         run: node tools/qa/p3-1-d1-preview-isolation.mjs
+
+      - name: P3.2–P3.5 integrated acceptance (mocked local preview only)
+        run: node tools/qa/p3-2-5-regression.mjs
