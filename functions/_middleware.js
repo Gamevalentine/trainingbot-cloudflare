@@ -63,6 +63,13 @@ async function previewPublicReadOnly({request},url){
 export async function onRequest(context){
   const {request,env}=context;
   const url=new URL(request.url);
+  // Preview has no D1: an explicit download opens the canonical public endpoint.
+  // No credentials are forwarded, and no background count is created.
+  if(isTrainingBotPreview(url.hostname)&&["GET","HEAD"].includes(request.method)&&
+    (/^\/download\/beta\/V\d+\.\d+\.\d+$/i.test(url.pathname)||
+     /^\/download\/flash-v4-(?:6-1|7-0)$/.test(url.pathname))){
+    return Response.redirect("https://trainingbot.io.vn"+url.pathname,307);
+  }
   const publicPreview=await previewPublicReadOnly(context,url);
   if(publicPreview)return publicPreview;
 

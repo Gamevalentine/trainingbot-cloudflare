@@ -24,7 +24,7 @@
   ];
 
   const host = document.querySelector(".hero-tiktok");
-  const heroLayout = host?.closest(".hero-layout");
+  const heroLayout = host?.closest(".tb202-video-stage");
   if (!host || !heroLayout) return;
 
   const playerUrl = (id, compact = false) =>
@@ -61,6 +61,7 @@
         video.title = String(data?.title || "").replace(/\s+/g, " ").trim().slice(0, 140);
       } catch {}
     }));
+    videos.forEach(video=>{if(/^(TikTok(?: - Make Your Day)?|Make Your Day)$/i.test(video.title))video.title="";});
     return videos;
   }
 

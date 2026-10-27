@@ -1,0 +1,19 @@
+
+.tb202-main{background:#090d18;color:#edf2ff}
+.tb202-hero{padding:43px 0;background:radial-gradient(circle at 14% 10%,rgba(101,76,242,.23),transparent 55%),radial-gradient(circle at 85% 60%,rgba(22,184,230,.12),transparent 55%)}
+.tb202-main .container{width:min(1180px,calc(100% - 32px));margin:auto}
+.tb202-hero h1{max-width:770px;margin:15px 0;font:800 clamp(2.15rem,5vw,4.25rem)/1.05 "Space Grotesk",Inter,sans-serif;letter-spacing:-.045em}
+.tb202-hero p{max-width:680px;color:#bdcce4;line-height:1.65}
+.tb202-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}.tb202-actions .button,.tb202-actions button{min-height:45px;display:inline-flex;align-items:center;padding:0 18px;border-radius:12px;font-weight:800;font-size:.84rem}.tb202-actions button{background:#162342;border:1px solid #536896;color:#e6f1ff;cursor:pointer}
+.tb202-section{padding:44px 0;scroll-margin-top:85px}.tb202-beta,.tb202-videos{background:#0e1728}.tb202-wiki{background:#0b1020}
+.tb202-heading{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:23px}.tb202-heading h2{font:800 clamp(1.6rem,3vw,2.3rem)/1.12 "Space Grotesk",Inter,sans-serif;margin:8px 0 0}.tb202-heading>a{font-size:.85rem;font-weight:800;color:#b5d0ff;text-decoration:none}
+.tb202-live-beta{min-height:92px;display:flex;flex-direction:column;justify-content:center;padding:22px;border-radius:20px;border:1px solid #394c75;background:linear-gradient(110deg,#24204c,#11233e)}
+.tb202-live-beta b{font-size:clamp(1.1rem,2.7vw,1.58rem)}.tb202-live-beta p{color:#bdc9df;margin:8px 0;font-size:.87rem}.tb202-live-beta a{color:#bbd1ff;font-weight:800}
+.tb202-beta h3{font-size:.9rem;margin:24px 0 13px}.tb202-beta .tb-flash-grid{margin:0}.tb202-note{color:#9faec9;font-size:.79rem;line-height:1.6;margin-top:16px}
+#tbHomeArticleGrid{min-height:175px}#tbHomeArticleGrid .tb202-error{grid-column:1/-1;padding:22px;border-radius:15px;border:1px solid #394764;color:#d0dcf0;background:#151f34}
+.tb202-wiki-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.tb202-wiki-grid a{min-height:136px;border:1px solid #334267;border-radius:18px;display:flex;flex-direction:column;gap:8px;padding:20px 18px;color:#edf2ff;text-decoration:none;background:linear-gradient(130deg,#1c2642,#121d30)}.tb202-wiki-grid a:hover{border-color:#868bff}.tb202-wiki-grid a span{font-size:1.5rem}.tb202-wiki-grid a small{color:#a8bdd8}
+.tb202-videos .tb202-video-stage{display:flex;justify-content:center}.tb202-videos .hero-tiktok{width:min(100%,390px);min-height:0!important;margin:0!important}.tb202-videos .tb-home-video-shelf{width:100%;max-width:1180px;margin:16px auto}.tb202-videos p,.tb202-community p{color:#b8c9df}
+.tb202-community{background:radial-gradient(circle at 90% 30%,rgba(100,71,242,.2),transparent 60%),#131c32}.tb202-community h2{font-size:clamp(1.5rem,3vw,2.3rem);margin:10px 0}.tb202-community .button{display:inline-flex;margin-top:12px;margin-right:7px}
+.tb202-main a:focus-visible,.tb202-main button:focus-visible{outline:3px solid #a6bdff;outline-offset:3px}
+@media(max-width:740px){.tb202-wiki-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tb202-heading{align-items:start}.tb202-heading>a{font-size:.75rem}.tb202-section{padding:32px 0}.tb202-hero{padding:33px 0}.tb202-actions .button,.tb202-actions button{flex:1 1 130px;justify-content:center}.tb202-community{padding-bottom:95px}.tb202-community .button{width:100%;justify-content:center}}
+@media(max-width:360px){.tb202-wiki-grid a{padding:14px 11px}.tb202-hero h1{font-size:2rem}}

@@ -84,12 +84,14 @@ jobs:
             await run("/user-posts/cover-123.webp");
             assert.equal(calls.length,7);
             await run("/api/v71/admin/beta-versions");
-            await run("/download/beta/V4.7.3");
+            const redirected=await run("/download/beta/V4.7.3");
+            assert.equal(redirected.status,307);
+            assert.equal(redirected.headers.get("location"),"https://trainingbot.io.vn/download/beta/V4.7.3");
             await run("/api/beta-versions","POST");
             await run("/api/beta-versions","GET","trainingbot.io.vn");
             await run("/api/beta-versions","GET","trainingbot-cloudflare.pages.dev");
             assert.equal(calls.length,7,"No mutations/admin/production must proxy");
-            assert.equal(nextCount,5,"All disallowed routes must continue untouched");
+            assert.equal(nextCount,4,"All disallowed routes must continue untouched");
             globalThis.fetch=async()=>new Response("unavailable",{status:503});
             const failed=await run("/api/beta-versions");
             assert.equal(failed.status,503);
@@ -97,3 +99,21 @@ jobs:
             console.log("Read-only Preview public data tests: PASS");
           }finally{globalThis.fetch=oldFetch;}
           NODE
+
+      - name: Public refresh smoke tests
+        run: |
+          node <<'NODE'
+          const fs=require("fs"),assert=require("node:assert/strict");
+          const h=fs.readFileSync("public/index.html","utf8"),c=fs.readFileSync("public/contact.html","utf8");
+          assert(h.includes('id="tbHomeBetaState"'));
+          assert(h.includes('id="tbHomeArticleGrid"'));
+          assert(h.includes('id="tbFeaturedVideos"'));
+          assert(c.includes('id="tbContactForm"'));
+          assert(!c.includes("nội dung mẫu"));
+          assert(fs.existsSync("public/home_public_v202.js"));
+          console.log("Public refresh: PASS");
+          NODE
+          node --check public/home_public_v202.js
+          node --check public/contact_public_v202.js
+          node --check functions/api/contact.js
+          node --check functions/api/v71/admin/contact-messages.js
