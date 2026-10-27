@@ -2,6 +2,7 @@ name: TrainingBot D1 encrypted GitHub backup (manual)
 
 # Export is ONLY initiated by explicit one-time approval at merge or by manual dispatch.
 # Never scheduled. Export can temporarily block D1 requests.
+# Fresh one-time event: pick up the updated GitHub Actions repository secrets.
 on:
   pull_request:
     paths:
