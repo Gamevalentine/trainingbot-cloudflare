@@ -102,6 +102,7 @@ try{
   const updates=await open("/ban-cap-nhat.html");
   await updates.waitForFunction(()=>document.querySelector(".release-hero .version-row h1")?.textContent?.includes("V4.7.3"),{timeout:9000});
   assert.equal(await updates.locator(".release-hero .hero-actions .btn.primary").first().getAttribute("href"),"/download/beta/V4.7.3");
+  await updates.locator(".beta-versions summary").click();
   await updates.locator('.beta-version-item[data-beta-major="4.7"]').click();
   const coming=updates.locator(".beta-build-card").filter({hasText:"V4.7.4"});
   assert.equal(await coming.locator('a[href^="/download/"]').count(),0,"Coming soon linked to download");
