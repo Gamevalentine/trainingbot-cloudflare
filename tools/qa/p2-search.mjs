@@ -26,7 +26,8 @@ try{
    return route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({ok:true,posts:[
     {title:"P2 Search Result",slug:"p2-safe",url:"/bai-viet/p2-safe",summary:"Mẫu kiểm thử kết quả",category:"Tin tức"},
     {title:"P2 Malicious Result",slug:"bad",url:"javascript:alert(1)",summary:"Không được nhấp",category:"Tin tức"},
-    {title:"P2 External Result",url:"//attacker.invalid/fake",summary:"Không được nhấp"}
+    {title:"P2 External Result",url:"//attacker.invalid/fake",summary:"Không được nhấp"},
+    {title:"P2 <img src=x onerror=alert(1)>",url:"/bai-viet/p2-escaped",summary:"<svg onload=alert(1)>"}
    ]})});
   });
   await context.route("**/api/beta-versions",route=>route.fulfill({status:200,contentType:"application/json",body:'{"ok":true,"versions":[]}'}));
@@ -43,6 +44,10 @@ try{
   const rendered=await page.locator(".tb-search-results a").evaluateAll(links=>links.map(n=>n.getAttribute("href")));
   assert(rendered.includes("/bai-viet/p2-safe"));
   assert(!rendered.some(h=>h?.startsWith("javascript:")||h?.startsWith("//attacker.invalid")));
+  assert(rendered.includes("/bai-viet/p2-escaped"));
+  const escapedMarkup=await page.locator('.tb-search-result[href="/bai-viet/p2-escaped"]');
+  assert.equal(await escapedMarkup.locator("img,svg,script").count(),0);
+  assert((await escapedMarkup.innerText()).includes("<img src=x onerror=alert(1)>"));
   await input.fill("zzzzzz-no-results-unique");
   await page.getByText("Không tìm thấy kết quả", {exact:false}).first().waitFor();
   await page.keyboard.press("Escape");

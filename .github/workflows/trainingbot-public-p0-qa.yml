@@ -183,3 +183,7 @@ jobs:
         run: |
           node --check public/header_search_v152.js
           node tools/qa/p2-search.mjs
+
+      - name: P2 live Preview headers read-only probe
+        continue-on-error: true
+        run: node tools/qa/p2-live-headers.mjs
