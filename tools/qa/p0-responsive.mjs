@@ -21,7 +21,7 @@ try{
    if(!url.startsWith(base))return route.abort();
    return route.continue();
   });
-  for(const pageName of ["/","/contact","/ban-cap-nhat","/wiki"]){
+  for(const pageName of ["/","/contact.html","/ban-cap-nhat.html","/wiki.html"]){
     const page=await context.newPage();
     await page.goto(base+pageName,{waitUntil:"domcontentloaded",timeout:15000});
     await page.waitForTimeout(500);
@@ -39,10 +39,10 @@ try{
       const hero=page.locator("#tb203Spotlight");
       assert.equal(await hero.count(),1);
       assert.equal(await page.locator(".tb203-hero-copy").count(),1);
-      await page.waitForFunction(()=>document.querySelectorAll("#tb203Dots button").length>=3,{timeout:3000}).catch(()=>{});
+      await page.waitForFunction(()=>document.querySelectorAll("#tb203Dots button").length>=3,undefined,{timeout:3000});
     }
-    if(pageName==="/contact"&&width<=430){
-      assert.equal(await page.locator('.mobile-nav a[href="/contact"]').count(),1);
+    if(pageName==="/contact.html"&&width<=430){
+      assert.equal(await page.locator('.mobile-nav a[href="/"]').count(),1);
       const form=page.locator('#tbContactForm button[type="submit"]');
       assert.equal(await form.count(),1);
       assert.equal(await form.isVisible(),true);
