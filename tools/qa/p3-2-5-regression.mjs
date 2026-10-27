@@ -88,12 +88,12 @@ try{
   await form.locator('[name="subject"]').selectOption({label:"Báo lỗi website"});
   await form.locator('[name="message"]').fill("Đây là tin nhắn kiểm thử, không ghi vào D1.");
   await form.locator('button[type="submit"]').click();
-  await contact.waitForFunction(()=>document.querySelector("#tbContactStatus")?.dataset.state==="error",{timeout:7000});
+  await contact.waitForFunction(()=>document.querySelector("#tbContactStatus")?.dataset.state==="error",undefined,{timeout:7000});
   assert.equal(sent,1,"Mocked contact failure did not submit once");
   assert.equal(await form.locator('button[type="submit"]').isEnabled(),true);
   mode="success";
   await form.locator('button[type="submit"]').click();
-  await contact.waitForFunction(()=>document.querySelector("#tbContactStatus")?.dataset.state==="success",{timeout:7000});
+  await contact.waitForFunction(()=>document.querySelector("#tbContactStatus")?.dataset.state==="success",undefined,{timeout:7000});
   assert((await status.innerText()).includes("Đã lưu yêu cầu"));
   assert.equal(await form.locator('[name="message"]').inputValue(),"");
   assert.equal(sent,2);
