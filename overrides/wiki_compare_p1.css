@@ -1,0 +1,15 @@
+.tb-p1-compare{padding:37px 0 54px;background:radial-gradient(circle at 95% 15%,rgba(83,76,177,.14),transparent 50%),#0a1120}
+.tb-p1-compare h2{margin:9px 0;font:800 clamp(1.5rem,3vw,2.4rem)/1.2 "Space Grotesk",Inter,sans-serif}
+.tb-p1-compare p{max-width:900px;color:#b4c4df;font-size:.86rem;line-height:1.67}
+.tb-p1-fields,.tb-p1-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin:18px 0}
+.tb-p1-fields label{display:grid;gap:7px;font-weight:800;font-size:.86rem;color:#dce7fa}
+.tb-p1-fields select{width:100%;max-width:100%;min-height:45px;border:1px solid #4c628d;border-radius:11px;background:#15203b;color:#fff;padding:9px 12px;font:inherit}
+.tb-p1-weapon{min-width:0;background:linear-gradient(140deg,#1b2543,#101b2d);border:1px solid #39486a;border-radius:16px;padding:20px}
+.tb-p1-weapon h3{font-size:1.35rem;margin:0 0 14px}
+.tb-p1-fact{display:flex;justify-content:space-between;gap:13px;padding:10px 0;border-top:1px solid #ffffff17;font-size:.86rem}
+.tb-p1-fact span{color:#a9bedb}.tb-p1-fact b{text-align:right}
+.tb-p1-status{margin-top:12px;padding-left:12px;border-left:3px solid #8977f5;font-size:.77rem!important}
+.tb-p1-provenance{margin-top:17px;padding:19px;background:#131c2e;border:1px solid #324365;border-radius:15px}
+.tb-p1-provenance a{color:#b4cdff;text-decoration:underline}
+.tb-p1-fields select:focus-visible{outline:3px solid #91aaff;outline-offset:2px}
+@media(max-width:620px){.tb-p1-fields,.tb-p1-results{grid-template-columns:1fr}.tb-p1-weapon{padding:15px}}
