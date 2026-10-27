@@ -19,7 +19,7 @@ jobs:
       - name: ADM-00 audit original packed runtime
         run: |
           node --check tools/admin/audit-runtime.mjs
-          node tools/admin/audit-runtime.mjs
+          node tools/admin/audit-runtime.mjs --layout
       - name: Check critical admin endpoint resources
         run: |
           test -f public/admin.html
