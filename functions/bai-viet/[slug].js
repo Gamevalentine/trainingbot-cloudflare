@@ -52,9 +52,16 @@ function renderContent(source){
 function safeUrl(value,kind="link"){
   const raw=String(value||"").trim();
   if(!raw)return "";
-  if(raw.startsWith("/"))return raw.replace(/[\u0000-\u001f]/g,"");
-  if(kind==="image" && /^https:\/\//i.test(raw))return raw;
-  if(kind==="link" && /^https?:\/\//i.test(raw))return raw;
+  // Protocol-relative URLs (//host), backslashes and control bytes can turn
+  // ostensibly local editorial links into untrusted cross-origin navigation.
+  if(/[\u0000-\u001f\\]/.test(raw))return "";
+  if(raw.startsWith("/") && !raw.startsWith("//"))return raw;
+  try{
+    const url=new URL(raw);
+    if(url.username||url.password)return "";
+    if(kind==="image" && url.protocol==="https:")return url.href;
+    if(kind==="link" && (url.protocol==="https:"||url.protocol==="http:"))return url.href;
+  }catch{}
   return "";
 }
 function safeFontFamily(value){
@@ -170,10 +177,11 @@ function articleHasHeading(post){
 function page(post,related=[]){
  const excerpt=articleExcerpt(post);
   const canonical=`${ORIGIN}/bai-viet/${encodeURIComponent(post.slug)}`;
-  const shareImage=absoluteUrl(post.cover_url,`${ORIGIN}/news-pubg-mobile-4-6-cover.webp`);
+  const safeCover=safeUrl(post.cover_url,"image");
+  const shareImage=absoluteUrl(safeCover,`${ORIGIN}/news-pubg-mobile-4-6-cover.webp`);
   const published=isoDate(post.published_at);
   const modified=isoDate(post.updated_at)||published;
-  const cover=post.cover_url?`<img class="tb-cover" src="${esc(post.cover_url)}" alt="${esc(post.title)}">`:"";
+  const cover=safeCover?`<img class="tb-cover" src="${esc(safeCover)}" alt="${esc(post.title)}">`:"";
   const graph={
     "@context":"https://schema.org",
     "@graph":[
