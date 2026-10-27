@@ -83,15 +83,25 @@ jobs:
             await run("/bai-viet/test-post");
             await run("/user-posts/cover-123.webp");
             assert.equal(calls.length,7);
-            await run("/api/v71/admin/beta-versions");
+            const adminDenied=await run("/api/v71/admin/beta-versions");
+            assert.equal(adminDenied.status,403);
+            const legacyDenied=await run("/api/v34/contacts");
+            assert.equal(legacyDenied.status,403);
+            const unknownDenied=await run("/api/unknown-legacy-route");
+            assert.equal(unknownDenied.status,403);
             const redirected=await run("/download/beta/V4.7.3");
             assert.equal(redirected.status,307);
             assert.equal(redirected.headers.get("location"),"https://trainingbot.io.vn/download/beta/V4.7.3");
-            await run("/api/beta-versions","POST");
+            const mutationDenied=await run("/api/beta-versions","POST");
+            assert.equal(mutationDenied.status,403);
+            const contactDenied=await run("/api/contact","POST");
+            assert.equal(contactDenied.status,403);
+            const deleteDenied=await run("/api/v71/admin/posts","DELETE");
+            assert.equal(deleteDenied.status,403);
             await run("/api/beta-versions","GET","trainingbot.io.vn");
             await run("/api/beta-versions","GET","trainingbot-cloudflare.pages.dev");
             assert.equal(calls.length,7,"No mutations/admin/production must proxy");
-            assert.equal(nextCount,4,"All disallowed routes must continue untouched");
+            assert.equal(nextCount,2,"Only production and canonical Pages host should continue");
             globalThis.fetch=async()=>new Response("unavailable",{status:503});
             const failed=await run("/api/beta-versions");
             assert.equal(failed.status,503);
@@ -187,3 +197,6 @@ jobs:
       - name: P2 live Preview headers read-only probe
         continue-on-error: true
         run: node tools/qa/p2-live-headers.mjs
+
+      - name: P3.1 Preview D1 and legacy API isolation
+        run: node tools/qa/p3-1-d1-preview-isolation.mjs

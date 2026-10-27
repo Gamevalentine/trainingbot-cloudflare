@@ -12,7 +12,8 @@ const PUBLIC_READ_PATHS = new Set([
   "/api/beta-download-counts",
   "/api/flash-download-counts",
   "/api/home-videos",
-  "/api/posts"
+  "/api/posts",
+  "/api/team-finder"
 ]);
 const ARTICLE_PATH = new RegExp("^/bai-viet/[a-zA-Z0-9][a-zA-Z0-9-]{0,180}$");
 const PUBLIC_POST_IMAGE = new RegExp("^/user-posts/[a-zA-Z0-9._-]+[.](?:png|jpe?g|webp|gif|avif)$","i");
@@ -28,6 +29,12 @@ async function previewPublicReadOnly({request},url){
   if(!isApi && !isArticle && !isImage)return null;
 
   const target=new URL(path, "https://trainingbot.io.vn");
+  if(path==="/api/team-finder"){
+    for(const key of ["server","rank","mode","play_time","language","needed","mic","q","sort"]){
+      const value=url.searchParams.get(key);
+      if(value!==null)target.searchParams.set(key,value.slice(0,100));
+    }
+  }
   if(path==="/api/posts"){
     // Only the public query parameters already supported by this endpoint.
     for(const key of ["limit","search"]){
@@ -63,6 +70,32 @@ async function previewPublicReadOnly({request},url){
 export async function onRequest(context){
   const {request,env}=context;
   const url=new URL(request.url);
+
+  /*
+   * P3.1 hard isolation: a Preview must never send mutations to D1, R2 or
+   * legacy upstream routes, even if someone later attaches production bindings
+   * or enables API secrets for this Pages environment by mistake.
+   *
+   * GET /api/* is allowlisted for public read-through only. All other API
+   * routes (including versioned admin/legacy fallbacks) are denied. Pages
+   * Production/custom domain and the canonical pages.dev host are unaffected.
+   */
+  if(isTrainingBotPreview(url.hostname)){
+    const apiPath=url.pathname.startsWith("/api/");
+    if(!["GET","HEAD"].includes(request.method) ||
+       (apiPath&&(request.method!=="GET"||!PUBLIC_READ_PATHS.has(url.pathname)))){
+      return new Response(JSON.stringify({
+        ok:false,message:"Bản Preview chỉ cho phép đọc dữ liệu công khai."
+      }),{
+        status:403,headers:{
+          "content-type":"application/json; charset=utf-8",
+          "cache-control":"no-store",
+          "x-content-type-options":"nosniff",
+          "x-robots-tag":"noindex, nofollow"
+        }
+      });
+    }
+  }
   // Preview has no D1: an explicit download opens the canonical public endpoint.
   // No credentials are forwarded, and no background count is created.
   if(isTrainingBotPreview(url.hostname)&&["GET","HEAD"].includes(request.method)&&
