@@ -23,16 +23,12 @@ const apply=(label,before,after)=>{
 apply("userStats mapping",
  'const map = {kpiUsers:stats.total??0,kpiActive24:stats.active_24h??0,kpiNewToday:stats.new_today??0,usersTotal:stats.total??0,users24:stats.active_24h??0,users7:stats.active_7d??0,usersToday:stats.new_today??0};',
  'const map = {kpiUsers:stats.total??"—",kpiActive24:stats.active_24h??"—",kpiNewToday:stats.new_today??"—",usersTotal:stats.total??"—",users24:stats.active_24h??"—",users7:stats.active_7d??"—",usersToday:stats.new_today??"—"};');
-apply("users7 field",
- '$( "kpiActive7" )'.replaceAll(" ",""),
- '$( "kpiActive7" )'.replaceAll(" ","")); // additional exact field replacement follows below
-patches.pop(); // above marker only checks existence; avoid a no-op patch
 apply("users7 count",
  'stats.active_7d ?? 0',
  'stats.active_7d ?? "—"');
 apply("users badge",
- '$( "userNavBadge" ).textContent = stats.total ?? 0;'.replaceAll(" ",""),
- '$( "userNavBadge" ).textContent = stats.total ?? "—";'.replaceAll(" ",""));
+ '$("userNavBadge").textContent = stats.total ?? 0;',
+ '$("userNavBadge").textContent = stats.total ?? "—";');
 apply("inbox counts map",
  'const map = {kpiUnread:counts.unread??0,mailTotal:counts.total??0,mailUnread:counts.unread??0,mailRead:counts.read??0,mailReplied:counts.replied??0};',
  'const map = {kpiUnread:counts.unread??"—",mailTotal:counts.total??"—",mailUnread:counts.unread??"—",mailRead:counts.read??"—",mailReplied:counts.replied??"—"};');
@@ -40,8 +36,8 @@ apply("inbox total sublabel",
  'counts.total ?? 0',
  'counts.total ?? "—"');
 apply("inbox badge",
- '$( "inboxNavBadge" ).textContent = counts.unread ?? 0;'.replaceAll(" ",""),
- '$( "inboxNavBadge" ).textContent = counts.unread ?? "—";'.replaceAll(" ",""));
+ '$("inboxNavBadge").textContent = counts.unread ?? 0;',
+ '$("inboxNavBadge").textContent = counts.unread ?? "—";');
 apply("dashboard user fetch fallbacks",
  [
  '    if (u.status === "fulfilled") {',
