@@ -47,6 +47,9 @@ for(const item of items){
  '<h2 id="tb-seo-topic-title">'+esc(item.title)+'</h2><p>'+esc(item.intro)+'</p>'+
  '<div class="tb-seo-topic__links">'+cards+'</div><p class="tb-seo-topic__note">'+esc(item.note)+'</p></section>';
  if((section.match(/href="/g)||[]).length!==3)throw Error("Expected three internal links "+file);
+ const placeholder="Nội dung của chuyên mục này đang được gom lại từ các bài đã xuất bản. Trang này được phục hồi để liên kết không còn lỗi trong khi không tự thêm thông tin chưa kiểm chứng.";
+ if(!h.includes(placeholder))throw Error("Expected original placeholder before enhancement: "+file);
+ h=h.replace(placeholder,"Khám phá các bài và kênh liên quan được TrainingBot giới thiệu bên dưới.");
  h=h.replace(/<\/head>/i,css+"\n</head>").replace(/<\/main>/i,section+"\n</main>");
  fs.writeFileSync(file,h);
  console.log("SEO-08 improved "+item.file+" with 3 verified internal routes");
