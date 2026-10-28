@@ -11,27 +11,6 @@ const escXml=value=>String(value??"")
   .replace(/"/g,"&quot;")
   .replace(/'/g,"&apos;");
 
-async function setup(db){
-  await db.prepare(`CREATE TABLE IF NOT EXISTS tb_manual_posts_v1 (
-    id TEXT PRIMARY KEY,
-    slug TEXT NOT NULL UNIQUE,
-    title TEXT NOT NULL,
-    summary TEXT NOT NULL DEFAULT '',
-    content TEXT NOT NULL,
-    category TEXT NOT NULL DEFAULT 'Tin mới',
-    cover_url TEXT NOT NULL DEFAULT '',
-    status TEXT NOT NULL DEFAULT 'published',
-    featured_at TEXT NOT NULL DEFAULT '',
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL,
-    published_at TEXT NOT NULL
-  )`).run();
-  const columns=await db.prepare("PRAGMA table_info(tb_manual_posts_v1)").all();
-  if(!(columns.results||[]).some(column=>column.name==="featured_at")){
-    await db.prepare("ALTER TABLE tb_manual_posts_v1 ADD COLUMN featured_at TEXT NOT NULL DEFAULT ''").run();
-  }
-}
-
 function isoDay(value){
   const d=new Date(value);
   return Number.isNaN(d.getTime())?"":d.toISOString().slice(0,10);
@@ -42,7 +21,6 @@ export async function onRequestGet({env}){
   let rows=[];
   if(env.DB){
     try{
-      await setup(env.DB);
       const result=await env.DB.prepare(
         "SELECT slug,updated_at,published_at FROM tb_manual_posts_v1 WHERE status='published' ORDER BY published_at DESC LIMIT 5000"
       ).all();
