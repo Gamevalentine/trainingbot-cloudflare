@@ -1,0 +1,55 @@
+name: TrainingBot Wiki V2 Stage F — practice guides QA
+on:
+  push:
+    branches:
+      - aion-trainingbot-wiki-stage-f-20261029
+  pull_request:
+    branches:
+      - aion-trainingbot-wiki-stage-e-20261029
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions:
+  contents: read
+jobs:
+  wiki-f:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build integrated Wiki A through F
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          npm run build
+          for asset in wiki-stage-f-guides.js wiki-stage-f-guides.css wiki-stage-f-guides.json wiki-stage-c-evidence.json wiki-stage-d-evidence.json; do
+            test -f "public/$asset"
+          done
+          node --check public/wiki-stage-f-guides.js
+          node --check tools/wiki/stage-f-browser-qa.mjs
+          test ! -e public/admin-demo.html
+          ! grep -q wiki-stage-f-guides.js public/admin.html
+      - name: Install isolated browser runner
+        run: npm install --no-save --no-package-lock playwright
+      - name: F1–F6 real browser acceptance
+        run: |
+          mkdir -p wiki-stage-f-screenshots
+          node tools/wiki/stage-f-browser-qa.mjs
+      - name: Regression E/D/C/B, SEO and Preview D1 isolation
+        run: |
+          node tools/wiki/stage-e-browser-qa.mjs
+          node tools/wiki/stage-d-browser-qa.mjs
+          node tools/wiki/stage-c-browser-qa.mjs
+          node tools/wiki/stage-b-browser-qa.mjs
+          node tools/qa/p1-seo.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
+      - name: QA screenshots and evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-wiki-stage-f-qa
+          path: |
+            wiki-stage-f-screenshots/
+            wiki-stage-e-screenshots/
+            wiki-stage-d-screenshots/
+            wiki-stage-c-screenshots/
+          if-no-files-found: ignore
+          retention-days: 14
