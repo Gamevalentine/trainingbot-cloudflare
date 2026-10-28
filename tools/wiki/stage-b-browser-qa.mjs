@@ -31,7 +31,20 @@ try{
   page.on("pageerror",e=>errors.push(e.stack||e.message));
   try{
    await page.goto(ROOT+"/wiki.html",{waitUntil:"domcontentloaded",timeout:25000});
-   await page.waitForFunction(()=>document.body.classList.contains("tb-wiki-stage-b")&&DATA.weapons.length===61&&document.querySelectorAll("#tbWikiGrid .tb-wiki-card").length===61,undefined,{timeout:21000});
+   try{
+    await page.waitForFunction(()=>document.body.classList.contains("tb-wiki-stage-b")&&DATA.weapons.length===61&&document.querySelectorAll("#tbWikiGrid .tb-wiki-card").length===61,undefined,{timeout:14000});
+   }catch(error){
+    const diagnostic=await page.evaluate(()=>({
+      title:document.title,stageB:document.body.className,
+      data:typeof DATA==="undefined"?"missing":Object.fromEntries(Object.entries(DATA).map(([key,value])=>[key,value.length])),
+      grid:document.querySelectorAll("#tbWikiGrid .tb-wiki-card").length,
+      errorText:document.querySelector("main")?.textContent?.slice(0,240),
+      assets:[...performance.getEntriesByType("resource")].filter(x=>/wiki-stage-b-v2|wiki_catalog_verified_v147|wiki_audit_v149/.test(x.name)).map(x=>({name:x.name,status:x.responseStatus})),
+      bIntro:!!document.querySelector(".tb-b-intro")
+    }));
+    console.log("B INITIALIZATION DIAGNOSTIC",JSON.stringify({diagnostic,errors,external:external.slice(0,6)}));
+    throw error;
+   }
    await page.waitForTimeout(1100);
    assert.equal(await page.locator(".tb-b-intro").count(),1);
    assert.equal(await page.locator(".tb-b-controls").count(),1);
