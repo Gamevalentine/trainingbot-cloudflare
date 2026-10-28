@@ -1,0 +1,62 @@
+name: TrainingBot Admin V5 — Six Category Sidebar QA
+on:
+  push:
+    branches:
+      - aion-trainingbot-admin-six-groups-20261029
+permissions:
+  contents: read
+jobs:
+  admin-category-hub:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build unchanged Admin engine with V5 interface layer
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          npm run build
+          test -f public/admin-six-groups-v5.js
+          test -f public/admin-six-groups-v5.css
+          test -f public/admin-workspace-polish-v5.css
+          test -f public/admin-typography-v5.css
+          grep -q admin-typography-v5.css public/admin-six-groups-v5.js
+          ! grep -q 'fonts.googleapis.com' public/admin-typography-v5.css
+          grep -q admin-workspace-polish-v5.css public/admin-six-groups-v5.js
+          ! test -e public/admin-cyber-cards-v5.css
+          ! test -e public/admin-sidebar-glitch-v5.css
+          test -f public/admin.html
+          test ! -e public/admin-demo.html
+          ! grep -q admin-demo-runtime.js public/admin.html
+          grep -q admin-six-groups-v5.js public/admin.html
+          node --check public/admin-six-groups-v5.js
+          node --check tools/admin/admin-six-groups-v5-qa.mjs
+      - name: Install local browser QA
+        run: npm install --no-save --no-package-lock playwright
+      - name: Verify actual six-group navigation and 13 safe function destinations
+        run: node tools/admin/admin-six-groups-v5-qa.mjs
+      - name: Original backend mock and static source regressions
+        run: |
+          node tools/admin/adm01-state-qa.mjs
+          node tools/admin/adm06-draft-handler-qa.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
+          node tools/qa/p1-seo.mjs
+      - name: Build synthetic Demo for isolated Preview
+        env:
+          TRAININGBOT_LOCAL_DEMO: "1"
+        run: |
+          npm run build
+          test -f public/admin-demo.html
+          test -f public/admin-demo-runtime.js
+          ! grep -q admin-demo-runtime.js public/admin.html
+          node --check tools/admin/admin-v5-demo-qa.mjs
+      - name: Test six-category Demo without real API traffic
+        run: node tools/admin/admin-v5-demo-qa.mjs
+      - name: Save browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-admin-v5-six-group-screenshots
+          path: admin-qa-screenshots/admin-v5-*.png
+          if-no-files-found: ignore
+          retention-days: 7

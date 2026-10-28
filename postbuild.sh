@@ -123,3 +123,37 @@ for page in index ban-cap-nhat news wiki community contact; do
   grep -q 'tb-community-header-v205.css' "public/$page.html"
   grep -q 'tb-community-header-unified' "public/$page.html"
 done
+
+
+# Admin V5: six categories in sidebar, all function cards on the main screen.
+# The original 13 legacy links and their handlers remain intact but hidden.
+test -f public/admin-six-groups-v5.js
+test -f public/admin-six-groups-v5.css
+node --check public/admin-six-groups-v5.js
+node <<'NODE'
+const fs=require("node:fs"),file="public/admin.html";
+let html=fs.readFileSync(file,"utf8");
+const marker="document.open();document.write(h);document.close()";
+if(!html.includes(marker)||!html.includes("admin-visual-v3.js"))throw Error("V5 requires completed Admin V3");
+if(html.includes("admin-six-groups-v5.js"))throw Error("V5 duplicated");
+// The reconstructed Admin HTML uses document.open/write/close; deferring the
+// final script inside that HTML can prevent execution in Chrome. Attach it to
+// the finished document explicitly after document.close().
+const attach=';setTimeout(()=>{const s=document.createElement("script");s.src="/admin-six-groups-v5.js?v=2";document.body?.append(s)},0)';
+html=html.replace(marker,marker+attach);
+fs.writeFileSync(file,html);
+NODE
+grep -q 'admin-six-groups-v5.js' public/admin.html
+
+# Admin V5 isolated fake-data Preview; NEVER emit Demo from main/Production.
+if [[ "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-admin-six-groups-20261029" || "${TRAININGBOT_LOCAL_DEMO:-}" == "1" ]]; then
+  test -f public/admin-demo-runtime.js
+  node --check public/admin-demo-runtime.js
+  node tools/admin/build-demo.mjs
+  test -f public/admin-demo.html
+  if grep -q 'admin-demo-runtime.js' public/admin.html; then
+    echo "Demo runtime leaked into real Admin" >&2; exit 1
+  fi
+else
+  rm -f public/admin-demo-runtime.js public/admin-demo.html
+fi
