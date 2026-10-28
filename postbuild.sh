@@ -43,3 +43,19 @@ fi
 
 # ADM-01: guarded readable state corrections to generated Admin HTML only.
 node tools/admin/adm01-runtime-transform.mjs
+
+# ADM-02/03 only: append readable presentation logic after all legacy Admin
+# scripts (includes Bài viết and Theo dõi truy cập dynamic navigation).
+test -f public/admin-stage-b-ui.js
+node --check public/admin-stage-b-ui.js
+node <<'NODE'
+const fs=require('fs'),p='public/admin.html';
+let source=fs.readFileSync(p,'utf8');
+const marker='document.open();document.write(h);document.close()';
+if(!source.includes(marker))throw new Error('Stage B Admin loader marker changed');
+if(source.includes('admin-stage-b-ui.js'))throw new Error('Stage B UI accidentally injected twice');
+const statement="h=h.replace('</body>','<script defer src=\"/admin-stage-b-ui.js?v=1\"><\\/script></body>');";
+source=source.replace(marker,statement+marker);
+fs.writeFileSync(p,source);
+NODE
+grep -q 'admin-stage-b-ui.js' public/admin.html
