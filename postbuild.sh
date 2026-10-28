@@ -136,8 +136,11 @@ let html=fs.readFileSync(file,"utf8");
 const marker="document.open();document.write(h);document.close()";
 if(!html.includes(marker)||!html.includes("admin-visual-v3.js"))throw Error("V5 requires completed Admin V3");
 if(html.includes("admin-six-groups-v5.js"))throw Error("V5 duplicated");
-const add="h=h.replace('</body>','<script src=\\\"/admin-six-groups-v5.js?v=1\\\"><\\\\/script></body>');";
-html=html.replace(marker,add+marker);
+// The reconstructed Admin HTML uses document.open/write/close; deferring the
+// final script inside that HTML can prevent execution in Chrome. Attach it to
+// the finished document explicitly after document.close().
+const attach=';{const s=document.createElement("script");s.src="/admin-six-groups-v5.js?v=2";document.body.append(s)}';
+html=html.replace(marker,marker+attach);
 fs.writeFileSync(file,html);
 NODE
 grep -q 'admin-six-groups-v5.js' public/admin.html
