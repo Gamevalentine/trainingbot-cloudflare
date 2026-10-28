@@ -130,3 +130,18 @@ html=html.replace(marker,
 fs.writeFileSync(p,html);
 NODE
 grep -q 'admin-layout-v4.js' public/admin.html
+
+# V4 PREVIEW DEMO: use only synthetic data; no Production credentials or writes.
+# Branch gate: this file is intentionally NOT emitted by normal Production builds.
+if [[ "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-admin-layout-v4-20261028" || "${TRAININGBOT_LOCAL_DEMO:-}" == "1" ]]; then
+  test -f public/admin-demo-runtime.js
+  node --check public/admin-demo-runtime.js
+  node tools/admin/build-demo.mjs
+  test -f public/admin-demo.html
+  grep -q 'admin-layout-v4.js' public/admin-demo.html
+  if grep -q 'admin-demo-runtime.js' public/admin.html; then
+    echo "Synthetic Demo escaped into real Admin" >&2; exit 1
+  fi
+else
+  rm -f public/admin-demo-runtime.js public/admin-demo.html
+fi
