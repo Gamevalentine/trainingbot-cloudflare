@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import {DatabaseSync} from "node:sqlite";
 
 async function load(path){
-  return import("data:text/javascript;charset=utf-8,"+encodeURIComponent(await fs.readFile(path,"utf8")));
+  return import(new URL("../../"+path,import.meta.url));
 }
 const ingest=await load("functions/api/visitor-events.js");
 const label=await load("functions/api/v72/admin/browser-label.js");

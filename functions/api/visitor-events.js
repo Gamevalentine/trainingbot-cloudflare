@@ -1,3 +1,4 @@
+import {classifyAttribution,cleanUtm} from "../_lib/traffic-attribution.js";
 const NO_STORE={"cache-control":"no-store","x-content-type-options":"nosniff"};
 
 function cleanText(value,max=180){
@@ -106,6 +107,26 @@ async function setup(db){
   if(!names.has("city"))await db.prepare("ALTER TABLE tb_visitor_sessions_v1 ADD COLUMN city TEXT NOT NULL DEFAULT ''").run();
   if(!names.has("region"))await db.prepare("ALTER TABLE tb_visitor_sessions_v1 ADD COLUMN region TEXT NOT NULL DEFAULT ''").run();
   if(!names.has("country"))await db.prepare("ALTER TABLE tb_visitor_sessions_v1 ADD COLUMN country TEXT NOT NULL DEFAULT ''").run();
+
+  // Additive migration: existing D1 visits keep their original rows and are marked as legacy.
+  const visitColumns=await db.prepare("PRAGMA table_info(tb_visitor_visits_v2)").all();
+  const visitNames=new Set((visitColumns.results||[]).map(row=>row.name));
+  const extra=[
+    ["referrer","TEXT NOT NULL DEFAULT ''"],
+    ["source_key","TEXT NOT NULL DEFAULT ''"],
+    ["source_label","TEXT NOT NULL DEFAULT ''"],
+    ["source_channel","TEXT NOT NULL DEFAULT ''"],
+    ["source_evidence","TEXT NOT NULL DEFAULT ''"],
+    ["utm_source","TEXT NOT NULL DEFAULT ''"],
+    ["utm_medium","TEXT NOT NULL DEFAULT ''"],
+    ["utm_campaign","TEXT NOT NULL DEFAULT ''"],
+    ["utm_term","TEXT NOT NULL DEFAULT ''"],
+    ["utm_content","TEXT NOT NULL DEFAULT ''"],
+    ["attribution_version","INTEGER NOT NULL DEFAULT 0"]
+  ];
+  for(const [name,type] of extra){
+    if(!visitNames.has(name))await db.prepare(`ALTER TABLE tb_visitor_visits_v2 ADD COLUMN ${name} ${type}`).run();
+  }
 }
 
 export async function onRequestPost({request,env}){
@@ -141,6 +162,17 @@ export async function onRequestPost({request,env}){
   const target=cleanPath(body.target||path);
   const label=cleanText(body.label,100);
   const referrer=cleanReferrer(body.referrer,request.url);
+  // Browser URL UTM values are campaign claims, not authenticated proof of origin.
+  const utm={
+    source:cleanUtm(body.utmSource,64),
+    medium:cleanUtm(body.utmMedium,64),
+    campaign:cleanUtm(body.utmCampaign,80),
+    term:cleanUtm(body.utmTerm,80),
+    content:cleanUtm(body.utmContent,80)
+  };
+  const attribution=classifyAttribution({
+    referrer,siteOrigin:requestUrl.origin,utmSource:utm.source,utmMedium:utm.medium
+  });
   const now=new Date().toISOString();
   const client=parseClient(request);
   const cf=request.cf||{};
@@ -174,14 +206,18 @@ export async function onRequestPost({request,env}){
           country=CASE WHEN excluded.country<>'' THEN excluded.country ELSE country END`)
         .bind(sessionId,visitorId,now,now,path,path,referrer,client.device,client.os,client.browser,geo.city,geo.region,geo.country),
       env.DB.prepare(`INSERT INTO tb_visitor_visits_v2
-        (visitor_id,visit_id,first_seen_at,last_seen_at,entry_path,current_path,country,device,os,browser)
-        VALUES(?,?,?,?,?,?,?,?,?,?)
+        (visitor_id,visit_id,first_seen_at,last_seen_at,entry_path,current_path,country,device,os,browser,
+         referrer,source_key,source_label,source_channel,source_evidence,
+         utm_source,utm_medium,utm_campaign,utm_term,utm_content,attribution_version)
+        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,1)
         ON CONFLICT(visitor_id,visit_id) DO UPDATE SET
           last_seen_at=excluded.last_seen_at,
           current_path=excluded.current_path,
           country=CASE WHEN excluded.country<>'' THEN excluded.country ELSE country END,
           device=excluded.device,os=excluded.os,browser=excluded.browser`)
-        .bind(visitorId,canonicalVisitId,now,now,path,path,geo.country,client.device,client.os,client.browser)
+        .bind(visitorId,canonicalVisitId,now,now,path,path,geo.country,client.device,client.os,client.browser,
+          referrer,attribution.source,attribution.label,attribution.channel,attribution.evidence,
+          utm.source,utm.medium,utm.campaign,utm.term,utm.content)
     ];
     if(eventType!=="heartbeat"){
       statements.push(

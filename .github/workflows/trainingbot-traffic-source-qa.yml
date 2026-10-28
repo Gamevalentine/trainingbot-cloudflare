@@ -1,0 +1,48 @@
+name: TrainingBot — Source attribution and traffic origin QA
+on:
+  push:
+    branches:
+      - aion-trainingbot-traffic-attribution-20261029
+  pull_request:
+    paths:
+      - functions/_lib/traffic-attribution.js
+      - functions/api/visitor-events.js
+      - functions/api/v72/admin/traffic-sources.js
+      - overrides/visitor_tracking_v177.js
+      - overrides/admin_traffic_sources_v1.js
+      - build.sh
+      - tools/analytics/**
+permissions:
+  contents: read
+jobs:
+  source-attribution:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax and static checks
+        run: |
+          bash -n build.sh postbuild.sh
+          node --check overrides/visitor_tracking_v177.js
+          node --check overrides/admin_traffic_sources_v1.js
+          node --check tools/analytics/traffic-sources-sqlite.mjs
+          node --input-type=module --check < functions/_lib/traffic-attribution.js
+          node --input-type=module --check < functions/api/visitor-events.js
+          node --input-type=module --check < functions/api/v72/admin/traffic-sources.js
+      - name: Build real Admin and website without deploying
+        run: npm run build
+      - name: Test true SQLite first-touch source tracking and Admin auth
+        run: node --disable-warning=ExperimentalWarning tools/analytics/traffic-sources-sqlite.mjs
+      - name: Regress visitors, Admin labels and online indicators
+        run: |
+          node tools/analytics/visitor-analytics-qa.mjs
+          node --disable-warning=ExperimentalWarning tools/analytics/visitor-analytics-sqlite.mjs
+          node --disable-warning=ExperimentalWarning tools/analytics/admin-browser-label-sqlite.mjs
+          node tools/analytics/visitor-online-ui-qa.mjs
+      - name: Regress SEO and Cloudflare Preview isolation
+        run: |
+          node tools/qa/p1-seo.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
