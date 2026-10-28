@@ -123,3 +123,21 @@ for page in index ban-cap-nhat news wiki community contact; do
   grep -q 'tb-community-header-v205.css' "public/$page.html"
   grep -q 'tb-community-header-unified' "public/$page.html"
 done
+
+
+# Admin V5: six categories in sidebar, all function cards on the main screen.
+# The original 13 legacy links and their handlers remain intact but hidden.
+test -f public/admin-six-groups-v5.js
+test -f public/admin-six-groups-v5.css
+node --check public/admin-six-groups-v5.js
+node <<'NODE'
+const fs=require("node:fs"),file="public/admin.html";
+let html=fs.readFileSync(file,"utf8");
+const marker="document.open();document.write(h);document.close()";
+if(!html.includes(marker)||!html.includes("admin-visual-v3.js"))throw Error("V5 requires completed Admin V3");
+if(html.includes("admin-six-groups-v5.js"))throw Error("V5 duplicated");
+const add="h=h.replace('</body>','<script defer src=\\\"/admin-six-groups-v5.js?v=1\\\"><\\\\/script></body>');";
+html=html.replace(marker,add+marker);
+fs.writeFileSync(file,html);
+NODE
+grep -q 'admin-six-groups-v5.js' public/admin.html
