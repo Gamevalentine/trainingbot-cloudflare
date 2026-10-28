@@ -19,6 +19,9 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - name: Verify JS and shell syntax
         run: |
           bash -n build.sh postbuild.sh
@@ -31,6 +34,8 @@ jobs:
         run: npm run build
       - name: Test analytics identities, database, authorization and bundle
         run: node tools/analytics/visitor-analytics-qa.mjs
+      - name: Verify actual SQLite semantics, multi-tab coalescing and country filters
+        run: node --disable-warning=ExperimentalWarning tools/analytics/visitor-analytics-sqlite.mjs
       - name: Regress public SEO and Preview write isolation
         run: |
           node tools/qa/p1-seo.mjs
