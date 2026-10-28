@@ -75,7 +75,7 @@ try{
      "QBZ official historical reload note absent");
    assert((await page.locator(".tb-v145.open .tb-c-release").innerText()).includes("2023"),
      "Historical version release must be clearly dated");
-   assert((await page.locator(".tb-v145.open .tb-c-disclaimer").innerText()).includes("không xác nhận"));
+   assert((await page.locator(".tb-v145.open .tb-c-disclaimer").innerText()).includes("không tự suy rộng"),"Version-specific release disclaimer missing");
    const href=await page.locator(".tb-v145.open .tb-c-source").getAttribute("href");
    assert.equal(href,e.sources["pubg-official-2.4"].url);
    if(width===1440||width===390){
