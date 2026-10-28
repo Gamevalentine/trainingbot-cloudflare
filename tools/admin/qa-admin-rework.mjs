@@ -27,7 +27,7 @@ try{
    return route.abort();
   });
   await page.goto(base+"/admin.html",{waitUntil:"domcontentloaded",timeout:20000});
-  await page.waitForSelector("body.tb-admin-reworked",{timeout:20000});
+  await page.waitForSelector("body.tb-admin-reworked",{state:"attached",timeout:20000});
   const nav=await page.locator("#sidebar .nav-item").evaluateAll(items=>items.map(x=>x.dataset.view));
   assert.deepEqual(nav,["dashboard","posts","content","wiki","beta","media","users","inbox","analytics","security","system"],
    "Navigation omitted a legacy destination");
