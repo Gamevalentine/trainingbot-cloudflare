@@ -43,6 +43,14 @@
  }
  const title=dash.querySelector(".health-score .panel-head h3");
  if(title)title.textContent="Tình trạng API đã kiểm tra";
+ // The historical post manager loads on page boot (before login). Refresh it
+ // when an authenticated user enters Bài viết, otherwise it stays stale.
+ document.addEventListener("click",event=>{
+  if(app.classList.contains("hidden"))return;
+  const target=event.target.closest(".nav-item,[data-go],[data-go-action]");
+  const key=target?.dataset?.view||target?.dataset?.go||target?.dataset?.goAction;
+  if(key==="posts")document.querySelector(".tb-post-refresh")?.click();
+ },true);
  const contentTitle=content.querySelector(".section-title h2");
  if(contentTitle)contentTitle.textContent="Trang web";
  const summary=content.querySelector(".section-title p");
