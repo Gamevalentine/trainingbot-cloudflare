@@ -44,7 +44,18 @@ try{
   },selector);
   try{
    await page.goto(ROOT+"/admin.html",{waitUntil:"domcontentloaded",timeout:23000});
-   await page.waitForFunction(()=>document.body.classList.contains("tb-admin-six-groups")&&!!document.getElementById("tb5Categories"),undefined,{timeout:22000});
+   try{
+    await page.waitForFunction(()=>document.body.classList.contains("tb-admin-six-groups")&&!!document.getElementById("tb5Categories"),undefined,{timeout:12500});
+   }catch(error){
+    const state=await page.evaluate(()=>({title:document.title,body:document.body?.innerText.slice(0,400),
+      app:!!document.getElementById("adminApp"),stageB:document.body?.className,
+      scripts:[...document.scripts].map(x=>x.src||"inline").slice(-17),
+      nav:!!document.querySelector("#sidebar .side-nav"),
+      v5script:!!document.querySelector('script[src*="admin-six-groups"]')
+    })).catch(e=>({error:String(e)}));
+    console.log("V5 INIT DIAG",JSON.stringify({state,errors,outside}));
+    throw error;
+   }
    assert.equal(await page.locator("#adminApp.hidden").count(),1,"Admin must require login");
    await page.locator("#adminToken").fill(TOKEN);
    await click('#loginForm button[type="submit"]');
