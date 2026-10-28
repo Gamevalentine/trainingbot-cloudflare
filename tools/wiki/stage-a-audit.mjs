@@ -70,6 +70,14 @@ for(const k of TYPES){
   if(changed.length){issues.push({severity:"review",kind:k,name,code:old?"patched_fields":"added_at_runtime",fields:changed});}
  }
 }
+if(runtime?.badges){
+ for(const kind of TYPES){
+  const badge=runtime.badges[kind],actual=current[kind].length;
+  if(badge!==undefined&&badge!==actual)
+   issues.push({severity:"warning",kind,code:"stale_display_count",displayed:badge,effective:actual,
+    note:"The rendered category badge differs from the actual number of records. Preserve as Stage B UI issue."});
+ }
+}
 const v147="overrides/wiki_catalog_verified_v147.js",v149="overrides/wiki_audit_v149.js";
 if(fs.existsSync(v147)&&fs.existsSync(v149)&&fs.readFileSync(v147,"utf8").includes("p90[2]='9mm'")&&fs.readFileSync(v149,"utf8").includes("p90[2]='5.7mm'"))
  issues.push({severity:"review",kind:"weapons",name:"P90",code:"conflicting_patch_layers",
