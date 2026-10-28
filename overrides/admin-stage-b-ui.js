@@ -71,6 +71,10 @@ function updateSection(){
  const key=navKey(active)||location.hash.slice(1)||"dashboard";
  const eyebrow=document.getElementById("pageEyebrow");
  if(eyebrow)eyebrow.textContent=groupOf.get(key)||"ADMIN CENTER";
+ // The historical router has no title entry for dynamically injected Posts.
+ // Visitor Tracking manages its title itself; do not interfere with that route.
+ const pageTitle=document.getElementById("pageTitle");
+ if(pageTitle&&key==="posts"&&(pageTitle.textContent==="Admin Center"||pageTitle.textContent==="Nội dung"))pageTitle.textContent="Bài viết";
  for(const node of buttons()){
   const selected=node===active;
   if(selected)node.setAttribute("aria-current","page");
