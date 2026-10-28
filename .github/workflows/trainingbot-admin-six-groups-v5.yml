@@ -18,6 +18,10 @@ jobs:
           npm run build
           test -f public/admin-six-groups-v5.js
           test -f public/admin-six-groups-v5.css
+          test -f public/admin-workspace-polish-v5.css
+          grep -q admin-workspace-polish-v5.css public/admin-six-groups-v5.js
+          ! test -e public/admin-cyber-cards-v5.css
+          ! test -e public/admin-sidebar-glitch-v5.css
           test -f public/admin.html
           test ! -e public/admin-demo.html
           ! grep -q admin-demo-runtime.js public/admin.html
