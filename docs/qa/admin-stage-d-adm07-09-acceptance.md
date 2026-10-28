@@ -57,3 +57,12 @@ Không có công việc giai đoạn D nào đang chạy nền. Không merge/dep
 - Kiểm tra thiếu/sai token → **401 trước DB/R2**; Inbox GET với token giả → **200**, đồng thời phát hiện `CREATE TABLE IF NOT EXISTS` ngay ở GET (chỉ chạy trên DB giả). Đường dẫn media không hợp lệ → **400**; ảnh hợp lệ và phục hồi R2 giả → **200**, 1 lần put và 1 lần delete trên R2 giả, **0** thao tác lên R2 thật.
 - CI mới nhất: [GitHub Actions #40615225490](https://github.com/Gamevalentine/trainingbot-cloudflare/actions/runs/40615225490) trên commit `d8beead8628fb806727d43106fb6ed27fb31b373` — **SUCCESS**, mọi bước (kể cả handler QA mới và browser regression) đều xanh.
 - Các run #40615141645 và #40615143487 từng lỗi cú pháp bộ test mới, đã được sửa trong commit `d8beead`. Không lấy kết quả lỗi cũ làm nghiệm thu, và không khẳng định các handler đã được chạy với D1/R2 thật.
+
+
+## 7. NGHIỆM THU CUỐI VỚI ĐIỀU HƯỚNG B (28/10/2026)
+
+- Đã bổ sung kiểm thử Back/Forward và điều hướng bằng bàn phím khi menu hiện có **13 mục** (bao gồm Beta). Các tình huống này được chạy lại tại **360 / 390 / 768 / 1024 / 1440 px** cùng toàn bộ sáu màn phụ.
+- Kết quả cuối: [GitHub Actions #40615342323](https://github.com/Gamevalentine/trainingbot-cloudflare/actions/runs/40615342323) — **SUCCESS**, gồm audit, build, security/syntax, API handler D1/R2 giả, regression A, regression C, và Stage D Browser QA.
+- Cloudflare Pages check của commit `6665c4eb005a0259844da74368d6faf3ac7909a9`: **SUCCESS** (Preview build). Không đồng nghĩa đã đăng nhập/ghi dữ liệu thật.
+- Hai ảnh QA giả lập 390/1440: [artifact #12785051322](https://github.com/Gamevalentine/trainingbot-cloudflare/actions/runs/40615342323/artifacts/12785051322).
+- **Kết luận không đổi:** code và QA cách ly của D đã hoàn tất; chỉ phát hành khi chủ website cho phép riêng. Không ghi hay sao lưu D1 thật.
