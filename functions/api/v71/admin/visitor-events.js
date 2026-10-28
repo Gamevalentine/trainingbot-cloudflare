@@ -56,20 +56,30 @@ export async function onRequestGet({request,env}){
     const url=new URL(request.url);
     const limit=Math.min(Math.max(Number(url.searchParams.get("limit")||120),25),200);
 
+    const adminTable=await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='tb_admin_browsers_v1'").all();
+    const hasAdmin=Boolean(adminTable.results?.length);
+    const excludeAdmin=hasAdmin
+      ? " AND NOT EXISTS (SELECT 1 FROM tb_admin_browsers_v1 a WHERE a.visitor_id=s.visitor_id)"
+      : "";
+    const excludeWhere=hasAdmin?excludeAdmin.replace(/^ AND /," WHERE "):"";
+    const adminCol=hasAdmin
+      ? "CASE WHEN EXISTS (SELECT 1 FROM tb_admin_browsers_v1 a WHERE a.visitor_id=s.visitor_id) THEN 1 ELSE 0 END AS is_admin"
+      : "0 AS is_admin";
+
     const [sessions,today,online,devices,oses,browsers]=await Promise.all([
-      env.DB.prepare(`SELECT session_id,visitor_id,first_seen_at,last_seen_at,entry_path,current_path,referrer,device,os,browser,gender,city,region,country
-        FROM tb_visitor_sessions_v1 ORDER BY last_seen_at DESC LIMIT ?`).bind(limit).all(),
+      env.DB.prepare(`SELECT session_id,visitor_id,first_seen_at,last_seen_at,entry_path,current_path,referrer,device,os,browser,gender,city,region,country,${adminCol}
+        FROM tb_visitor_sessions_v1 s ORDER BY last_seen_at DESC LIMIT ?`).bind(limit).all(),
       env.DB.prepare(`SELECT COUNT(*) AS sessions,COUNT(DISTINCT visitor_id) AS visitors
-        FROM tb_visitor_sessions_v1
-        WHERE date(first_seen_at,'+7 hours')=date('now','+7 hours')`).first(),
+        FROM tb_visitor_sessions_v1 s
+        WHERE date(first_seen_at,'+7 hours')=date('now','+7 hours')${excludeAdmin}`).first(),
       env.DB.prepare(`SELECT COUNT(*) AS sessions,COUNT(DISTINCT visitor_id) AS visitors
-        FROM tb_visitor_sessions_v1
-        WHERE julianday(last_seen_at)>=julianday('now','-5 minutes')`).first(),
-      env.DB.prepare(`SELECT device,COUNT(*) AS total FROM tb_visitor_sessions_v1
+        FROM tb_visitor_sessions_v1 s
+        WHERE julianday(last_seen_at)>=julianday('now','-5 minutes')${excludeAdmin}`).first(),
+      env.DB.prepare(`SELECT device,COUNT(DISTINCT visitor_id) AS total FROM tb_visitor_sessions_v1 s${excludeWhere}
         GROUP BY device ORDER BY total DESC,device LIMIT 8`).all(),
-      env.DB.prepare(`SELECT os,COUNT(*) AS total FROM tb_visitor_sessions_v1
+      env.DB.prepare(`SELECT os,COUNT(DISTINCT visitor_id) AS total FROM tb_visitor_sessions_v1 s${excludeWhere}
         GROUP BY os ORDER BY total DESC,os LIMIT 8`).all(),
-      env.DB.prepare(`SELECT browser,COUNT(*) AS total FROM tb_visitor_sessions_v1
+      env.DB.prepare(`SELECT browser,COUNT(DISTINCT visitor_id) AS total FROM tb_visitor_sessions_v1 s${excludeWhere}
         GROUP BY browser ORDER BY total DESC,browser LIMIT 8`).all()
     ]);
 

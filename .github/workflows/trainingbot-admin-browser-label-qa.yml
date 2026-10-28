@@ -1,0 +1,45 @@
+name: TrainingBot Admin browser identity QA
+on:
+  push:
+    branches:
+      - aion-trainingbot-admin-browser-label-20261029
+  pull_request:
+    paths:
+      - 'functions/api/v72/admin/browser-label.js'
+      - 'functions/api/v72/admin/visitor-summary.js'
+      - 'functions/api/v71/admin/visitor-events.js'
+      - 'overrides/admin_browser_label_v1.js'
+      - 'overrides/admin_visitor_analytics_v2.js'
+      - 'build.sh'
+      - 'tools/analytics/admin-browser-label-sqlite.mjs'
+permissions:
+  contents: read
+jobs:
+  admin-browser-identity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate source syntax
+        run: |
+          bash -n build.sh postbuild.sh
+          node --check overrides/admin_browser_label_v1.js
+          node --check overrides/admin_visitor_analytics_v2.js
+          node --input-type=module --check < functions/api/v72/admin/browser-label.js
+          node --input-type=module --check < functions/api/v72/admin/visitor-summary.js
+          node --input-type=module --check < functions/api/v71/admin/visitor-events.js
+      - name: Build genuine website without deployment
+        run: npm run build
+      - name: Verify real SQLite authentication and Admin labels
+        run: node --disable-warning=ExperimentalWarning tools/analytics/admin-browser-label-sqlite.mjs
+      - name: Regression existing visitor analytics
+        run: |
+          node tools/analytics/visitor-analytics-qa.mjs
+          node --disable-warning=ExperimentalWarning tools/analytics/visitor-analytics-sqlite.mjs
+      - name: Production boundary checks
+        run: |
+          node tools/qa/p1-seo.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
