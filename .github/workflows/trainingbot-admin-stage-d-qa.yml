@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Stage D source inventory
-        run: node tools/admin/adm07-legacy-inventory.mjs
+        run: node tools/admin/adm07-legacy-inventory.mjs --details
       - name: Build protected Admin Preview without deploying
         run: npm run build
       - name: Verify source safety
