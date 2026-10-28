@@ -258,3 +258,31 @@ h=h.replace('</body>','<script defer src="/wiki-stage-f-guides.js?v=1"></script>
 fs.writeFileSync(p,h);
 if(fs.readFileSync('public/admin.html','utf8').includes('wiki-stage-f-guides.js'))throw Error('Wiki F must not load in Admin');
 NODE
+
+# Wiki V2 G — isolated Admin review workbench, gated to G Preview or local QA.
+# No release path: Production/Admin remain unchanged until separate approval.
+if [[ "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-wiki-stage-g-20261029" || "${TRAININGBOT_LOCAL_G_QA:-}" == "1" ]]; then
+  for asset in wiki-stage-g-snapshot.js admin-wiki-stage-g.js admin-wiki-stage-g.css wiki-stage-f-guides.json; do
+    test -f "public/$asset"
+  done
+  node --check public/wiki-stage-g-snapshot.js
+  node --check public/admin-wiki-stage-g.js
+  node <<'NODE'
+const fs=require('node:fs');
+const wiki='public/wiki.html',admin='public/admin.html';
+let w=fs.readFileSync(wiki,'utf8');
+if(!w.includes('wiki-stage-f-guides.js')||w.includes('wiki-stage-g-snapshot.js'))throw Error('G requires F and no duplicate');
+w=w.replace('</body>','<script defer src="/wiki-stage-g-snapshot.js?v=1"></script>\n</body>');
+fs.writeFileSync(wiki,w);
+let h=fs.readFileSync(admin,'utf8');
+const marker='document.open();document.write(h);document.close()';
+if(!h.includes(marker)||!h.includes('admin-six-groups-v5.js'))throw Error('G requires genuine protected Admin V5');
+if(h.includes('admin-wiki-stage-g.js'))throw Error('G duplicated');
+const attach=';setTimeout(()=>{const l=document.createElement("link");l.rel="stylesheet";l.href="/admin-wiki-stage-g.css?v=1";document.head.append(l);const s=document.createElement("script");s.src="/admin-wiki-stage-g.js?v=1";document.body?.append(s)},150)';
+h=h.replace(marker,marker+attach);
+fs.writeFileSync(admin,h);
+if(w.includes('admin-wiki-stage-g.js')||h.includes('wiki-stage-g-snapshot.js'))throw Error('Wiki/Admin boundaries violated');
+NODE
+else
+  rm -f public/admin-wiki-stage-g.js public/admin-wiki-stage-g.css public/wiki-stage-g-snapshot.js
+fi
