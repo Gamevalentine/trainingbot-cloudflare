@@ -92,9 +92,14 @@
     get("tbAudPrev").addEventListener("click",()=>{if(state.page>1){state.page--;load();}});
     get("tbAudNext").addEventListener("click",()=>{state.page++;load();});
     get("tbVisitorRefresh")?.addEventListener("click",load);
-    const observer=new MutationObserver(()=>{if(original.classList.contains("active"))load();});
+    let wasActive=original.classList.contains("active");
+    const observer=new MutationObserver(()=>{
+      const active=original.classList.contains("active");
+      if(active&&!wasActive)load();
+      wasActive=active;
+    });
     observer.observe(original,{attributes:true,attributeFilter:["class"]});
-    if(original.classList.contains("active"))load();
+    if(wasActive)load();
     setInterval(()=>{if(original.classList.contains("active"))load();},30000);
     return true;
   }
