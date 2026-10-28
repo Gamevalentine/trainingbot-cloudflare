@@ -72,7 +72,8 @@ try{
    await page.locator("#tbGList .tb-g-row").first().click();
    const status=page.locator('#tbGDetail [data-field="status"]');
    await status.selectOption("approved");
-   assert((await page.locator("#tbGValidation").innerText()).includes("Chưa đủ URL/phiên bản/ngày"));
+   assert.equal(await status.inputValue(),"draft","Insufficient evidence must block approval");
+   assert((await page.locator("#tbGStatus").innerText()).includes("Không thể đề xuất duyệt"));
    await page.locator('#tbGDetail [data-field="sourceUrl"]').fill("http://bad.example");
    await page.locator('#tbGDetail [data-field="sourceUrl"]').blur();
    assert((await page.locator("#tbGValidation").innerText()).includes("HTTPS"));
@@ -82,10 +83,13 @@ try{
    await page.locator('#tbGDetail [data-field="sourceVersion"]').blur();
    await page.locator('#tbGDetail [data-field="sourceDate"]').fill("2023-01-04");
    await page.locator('#tbGDetail [data-field="sourceDate"]').blur();
+   await status.selectOption("approved");
+   assert.equal(await status.inputValue(),"approved","Sourced draft should allow proposal status");
    assert((await page.locator("#tbGValidation").innerText()).includes("không có lỗi cấu trúc"));
    // G.4 undo one edit, import validation and export without server save.
    await page.locator("#tbGUndo").click();
-   assert((await page.locator("#tbGValidation").innerText()).includes("Chưa đủ URL/phiên bản/ngày"));
+   assert.equal(await status.inputValue(),"draft","Undo must restore prior status");
+   assert((await page.locator("#tbGValidation").innerText()).includes("không có lỗi cấu trúc"));
    const original=await page.evaluate(()=>window.__TB_ADMIN_WIKI_G__.getDraft());
    assert.equal(original.published,false);assert(original.records.length>=1);
    const bad={...original,records:[{id:"fake-id",kind:"weapons",name:"Fake",review:{status:"approved"}}]};
