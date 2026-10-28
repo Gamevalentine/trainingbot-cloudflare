@@ -41,7 +41,7 @@ async function api(audience="all",country="ALL"){
   const request=new Request("https://trainingbot.io.vn/api/v72/admin/visitor-summary?audience="+audience+"&country="+country+"&page=1&limit=50",{
     headers:{Authorization:"Bearer topsecret"}});
   const response=await adm.onRequestGet({request,env:{DB:db,ADMIN_TOKEN:"topsecret"}});
-  assert.equal(response.status,200,await response.text().catch(()=>'')); // no live backend writes
+  assert.equal(response.status,200,"analytics API should succeed in SQLite test");
   return response.json();
 }
 await post("session_12345678","/");
