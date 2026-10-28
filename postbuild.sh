@@ -218,3 +218,22 @@ fs.writeFileSync(p,h);
 NODE
 grep -q wiki-stage-d-v2.js public/wiki.html
 if grep -q wiki-stage-d-v2.js public/admin.html; then echo 'Wiki D leaked into Admin' >&2; exit 2; fi
+
+# Wiki V2 Stage E — source-safe comparison, 2 to 3 weapons, Preview only.
+test -f public/wiki-stage-e-compare.js
+test -f public/wiki-stage-e-compare.css
+test -f public/wiki-stage-c-evidence.json
+node --check public/wiki-stage-e-compare.js
+node <<'NODE'
+const fs=require('node:fs'),p='public/wiki.html';
+let h=fs.readFileSync(p,'utf8');
+for(const file of ['wiki-stage-b-v2.js','wiki-stage-c-weapon.js','wiki-stage-d-v2.js','wiki_verified_data_v145.js']){
+ if(!h.includes(file))throw Error('Wiki E requires prior loader '+file);
+}
+if(h.includes("wiki-stage-e-compare.js"))throw Error('Wiki E script duplicated');
+h=h.replace('</body>','<script defer src="/wiki-stage-e-compare.js?v=1"></script>\n</body>');
+fs.writeFileSync(p,h);
+const v145=fs.readFileSync('public/wiki_verified_data_v145.js','utf8');
+if(!v145.includes('window.__TB_WIKI_E__?.selecting'))throw Error('Wiki E compare capture guard missing');
+if(fs.readFileSync('public/admin.html','utf8').includes('wiki-stage-e-compare.js'))throw Error('E leaked into Admin');
+NODE

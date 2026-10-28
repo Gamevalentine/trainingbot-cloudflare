@@ -112,23 +112,32 @@ try{
    assert(detail.weapon,"Existing v145 detailed weapon view must remain active");
    await page.keyboard.press("Escape");
    await page.waitForFunction(()=>!document.querySelector(".tb-v145.open"),undefined,{timeout:6000});
-   // The separate comparison overhaul belongs to Stage E. B preserves
-   // the legacy selector/modal but does not claim the pre-existing v145
-   // click-capture conflict (card detail vs selection) is fixed here.
+   // Preserve Stage B's entry point but validate the active implementation.
+   // Legacy B-only builds still use the original compare-mode selector;
+   // E+ builds use the fixed selection tray instead.
+   const stageE=await page.evaluate(()=>Boolean(window.__TB_WIKI_E__?.ready));
    await click(page,"#tbCompareBtn");
-   await page.waitForFunction(()=>document.querySelector(".tb-wiki-shell.compare-mode"),undefined,{timeout:5000});
-   assert((await page.locator("#tbCompareBtn").innerText()).length>0,"Legacy compare control disappeared");
-   await click(page,'#tbWikiGrid .tb-wiki-card:nth-child(1)');
-   await page.waitForTimeout(150);
-   const selection=await page.evaluate(()=>({
-     count:document.querySelectorAll("#tbWikiGrid .tb-wiki-card.selected").length,
-     detail:!!document.querySelector(".tb-v145.open, #tbWikiModal.open")
-   }));
-   assert(selection.count>0||selection.detail,"Neither compare selection nor legacy detail handled click");
-   await page.keyboard.press("Escape");
-   // Existing comparison mode has known capture-handler conflict; stage E
-   // will build the verified stat comparison without masking this issue.
-   if(!selection.count)await click(page,"#tbCompareBtn");
+   if(stageE){
+    await page.waitForFunction(()=>window.__TB_WIKI_E__?.selecting&&document.getElementById("tbETray")?.hidden===false,undefined,{timeout:6500});
+    assert((await page.locator("#tbCompareBtn").innerText()).length>0,"Compare entry point missing");
+    await click(page,'#tbWikiGrid .tb-wiki-card:nth-child(1)');
+    await page.waitForFunction(()=>window.__TB_WIKI_E__?.selected.length===1,undefined,{timeout:7000});
+    assert.equal(await page.locator(".tb-v145.open").count(),0,"Legacy detail intercepted E picker");
+    await click(page,"#tbETray .tb-e-exit");
+    await page.waitForFunction(()=>document.getElementById("tbETray")?.hidden===true,undefined,{timeout:7000});
+   }else{
+    await page.waitForFunction(()=>document.querySelector(".tb-wiki-shell.compare-mode"),undefined,{timeout:5000});
+    assert((await page.locator("#tbCompareBtn").innerText()).length>0,"Legacy compare control disappeared");
+    await click(page,'#tbWikiGrid .tb-wiki-card:nth-child(1)');
+    await page.waitForTimeout(150);
+    const selection=await page.evaluate(()=>({
+      count:document.querySelectorAll("#tbWikiGrid .tb-wiki-card.selected").length,
+      detail:!!document.querySelector(".tb-v145.open, #tbWikiModal.open")
+    }));
+    assert(selection.count>0||selection.detail,"Neither compare selection nor legacy detail handled click");
+    await page.keyboard.press("Escape");
+    if(!selection.count)await click(page,"#tbCompareBtn");
+   }
 
    if(width===390||width===1440){
     // Capture the polished default Wiki, not the modal overlay.
