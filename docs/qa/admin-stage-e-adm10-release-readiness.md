@@ -34,9 +34,9 @@
 
 | ID | Cổng bắt buộc | Tình trạng lúc chuẩn bị E |
 | --- | --- | --- |
-| E-01 | Source và build tái tạo đúng, không đổi packed runtime | Đã có PASS ở D; chờ PASS lại ở E |
-| E-02 | CI hồi quy A → D không lỗi; xác nhận tất cả 13 route, keyboard, mobile | Đã có PASS ở D; chờ PASS lại ở E |
-| E-03 | Cloudflare Preview **đúng commit E** có URL xác thực và trạng thái deploy thành công | **CHƯA XÁC NHẬN** |
+| E-01 | Source và build tái tạo đúng, không đổi packed runtime | **PASS** qua Stage E CI (22 kiểm tra build/source trên máy CI) |
+| E-02 | CI hồi quy A → D không lỗi; xác nhận tất cả 13 route, keyboard, mobile | **PASS** Stage E CI: regression A/C/D, Pages Functions D1/R2 giả |
+| E-03 | Cloudflare Preview **đúng commit E** có URL xác thực và trạng thái deploy thành công | **PASS giới hạn**: GitHub Cloudflare Pages check successful ở commit E CI đầu tiên; HTML Admin Preview trả về tiêu đề khi chưa đăng nhập. **Chưa** kiểm tra login/backend/bindings staging; kiểm tra lại theo SHA cuối |
 | E-04 | Staging D1, R2, Worker/proxy, Secrets, token thử được cách ly, không trỏ Production; không sửa backup bị dừng | **BLOCKER P0** |
 | E-05 | Login 401/403/200 trên môi trường staging, kiểm tra phân quyền và quyền thay đổi theo role | **BLOCKER P0** |
 | E-06 | Tạo/lưu nháp/xuất bản/sửa bài, Trang web/Studio/Beta trong staging với data giả; GET công khai phản ánh chính xác | **BLOCKER P0** |
@@ -88,6 +88,15 @@
 
 ## 8. Trạng thái hoàn thành của E
 
-**ADM-10 tài liệu + kiểm tra tái tạo:** thực hiện trong nhánh E; chỉ ghi DONE khi CI tương ứng PASS.
+**ADM-10 tài liệu + kiểm tra tái tạo:** **DONE (code + CI mock PASS)** theo bằng chứng Stage E #40616056210 trên commit `1239554d34ab489660d990b15fc85ba37ea48282`. Thay đổi tài liệu sau đó phải chạy lại CI theo SHA cuối.
 
 **E release readiness:** **HOLD**. P0 chưa được chứng thực. Nhiệm vụ tiếp theo không phải “deploy thử cho biết” mà là cách ly staging, nghiệm thu với dữ liệu có phép, xác nhận deploy Preview đúng commit và chủ website duyệt đích phát hành.
+
+## 9. Bằng chứng Preview không đăng nhập / cổng triển khai (28/10/2026)
+
+- GitHub Actions [Stage E #40616056210](https://github.com/Gamevalentine/trainingbot-cloudflare/actions/runs/40616056210): **SUCCESS**, gồm build đầy đủ, 22 check source, kiểm thử cổng phát hành chủ động từ chối, handlers D1/R2 giả, regression A/C/D và screenshot synthetic.
+- GitHub **Cloudflare Pages check** tại commit `1239554d34ab489660d990b15fc85ba37ea48282`: **SUCCESS**. Deployment ID: `8f8a4822-aa62-4333-9854-398d5df0895d`.
+- URL Preview theo GitHub check: `https://8f8a4822.trainingbot-cloudflare.pages.dev` (immutable deployment), URL branch: `https://aion-trainingbot-admin-stage-3rkh.trainingbot-cloudflare.pages.dev`. Các giá trị này là bằng chứng ở **commit 1239554**, không mặc định đúng với commit sau.
+- GET trang `/admin.html` **không đăng nhập, không submit** được một công cụ đọc trang xác nhận chuyển tới `/admin` và hiển thị tiêu đề `TrainingBot Admin Center V2`; đây chỉ là smoke test HTML, **không phải** kiểm tra runtime đăng nhập hoặc Worker/D1/R2 staging.
+- Không thể suy ra Cloudflare Pages Preview không nối Production từ check SUCCESS hoặc HTML GET. **E-04 → E-10 vẫn HOLD** tới khi có môi trường staging tách biệt, QA có phép và quyền phát hành riêng.
+- Kết quả tại phiên bản cuối trên PR cần được kiểm tra lại, gồm chính xác commit SHA, CI và Cloudflare Pages check. Không được lấy log ở commit trước làm PASS cho commit mới.
