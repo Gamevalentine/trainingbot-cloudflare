@@ -58,40 +58,40 @@ try{
    await page.waitForFunction(()=>window.__TB_WIKI_C__?.ready&&document.body.classList.contains("tb-wiki-stage-c")&&DATA.weapons.length===61,
     undefined,{timeout:24000});
    await click("M416");
-   await page.waitForFunction(()=>document.querySelector('.tb-wd.open .tb-c-sheet')?.dataset.tbCName==="M416",
+   await page.waitForFunction(()=>document.querySelector('.tb-v145.open .tb-c-sheet')?.dataset.tbCName==="M416",
     undefined,{timeout:16000});
-   assert.equal(await page.locator(".tb-wd.open .tb-c-source").count(),0,
+   assert.equal(await page.locator(".tb-v145.open .tb-c-source").count(),0,
     "M416 has no verified release evidence and must not invent a source");
-   assert((await page.locator(".tb-wd.open .tb-c-unverified").innerText()).includes("Chưa có thông số nâng cao"));
-   assert.equal(await page.locator(".tb-wd.open .tb-wd-stats").evaluate(el=>getComputedStyle(el).display),"none",
+   assert((await page.locator(".tb-v145.open .tb-c-unverified").innerText()).includes("Chưa có thông số nâng cao"));
+   assert.equal(await page.locator(".tb-v145.open .tb-v145-score-title").evaluate(el=>getComputedStyle(el).display),"none",
     "Generic v144 scores must not masquerade as actual damage/recoil");
-   assert((await page.locator(".tb-wd.open .tb-c-legacy-note").innerText()).includes("chưa có bằng chứng"));
-   await page.locator(".tb-wd-close").click();
+   assert((await page.locator(".tb-v145.open .tb-c-legacy-note").innerText()).includes("chưa có bằng chứng"));
+   await page.locator(".tb-v145-close").click();
    await click("QBZ");
-   await page.waitForFunction(()=>document.querySelector('.tb-wd.open .tb-c-sheet')?.dataset.tbCName==="QBZ",
+   await page.waitForFunction(()=>document.querySelector('.tb-v145.open .tb-c-sheet')?.dataset.tbCName==="QBZ",
      undefined,{timeout:13000});
-   assert.equal(await page.locator(".tb-wd.open .tb-c-source").count(),1);
-   assert((await page.locator(".tb-wd.open .tb-c-release").innerText()).includes("3.1 giây"),
+   assert.equal(await page.locator(".tb-v145.open .tb-c-source").count(),1);
+   assert((await page.locator(".tb-v145.open .tb-c-release").innerText()).includes("3.1 giây"),
      "QBZ official historical reload note absent");
-   assert((await page.locator(".tb-wd.open .tb-c-release").innerText()).includes("2023"),
+   assert((await page.locator(".tb-v145.open .tb-c-release").innerText()).includes("2023"),
      "Historical version release must be clearly dated");
-   assert((await page.locator(".tb-wd.open .tb-c-disclaimer").innerText()).includes("không xác nhận"));
-   const href=await page.locator(".tb-wd.open .tb-c-source").getAttribute("href");
+   assert((await page.locator(".tb-v145.open .tb-c-disclaimer").innerText()).includes("không xác nhận"));
+   const href=await page.locator(".tb-v145.open .tb-c-source").getAttribute("href");
    assert.equal(href,e.sources["pubg-official-2.4"].url);
    if(width===1440||width===390){
     fs.mkdirSync("wiki-stage-c-screenshots",{recursive:true});
     await page.screenshot({path:"wiki-stage-c-screenshots/weapon-qbz-"+width+".png",animations:"disabled"});
    }
-   const box=await page.locator(".tb-wd.open .tb-c-sheet").evaluate(el=>{
+   const box=await page.locator(".tb-v145.open .tb-c-sheet").evaluate(el=>{
     const b=el.getBoundingClientRect();return {left:b.left,right:b.right,inner:window.innerWidth};
    });
    assert(box.left>=-3&&box.right<=width+3,"C evidence panel horizontal overflow "+JSON.stringify(box));
    if(width===1440){
     for(const name of ["FAMAS","UZI","UMP45","PP-19 Bizon","Honey Badger","AKM"]){
-     await page.locator(".tb-wd-close").click();
+     await page.locator(".tb-v145-close").click();
      await click(name);
-     await page.waitForFunction(n=>document.querySelector('.tb-wd.open .tb-c-sheet')?.dataset.tbCName===n,name,{timeout:9000});
-     assert.equal(await page.locator(".tb-wd.open .tb-c-source").count(),name==="AKM"?0:1,"Incorrect evidence for "+name);
+     await page.waitForFunction(n=>document.querySelector('.tb-v145.open .tb-c-sheet')?.dataset.tbCName===n,name,{timeout:9000});
+     assert.equal(await page.locator(".tb-v145.open .tb-c-source").count(),name==="AKM"?0:1,"Incorrect evidence for "+name);
     }
    }
    assert.deepEqual(writes,[],"Unexpected API writes");
