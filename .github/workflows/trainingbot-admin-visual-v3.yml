@@ -1,0 +1,53 @@
+name: TrainingBot Admin V3 — Visual Regression
+on:
+  push:
+    branches:
+      - aion-trainingbot-admin-visual-v3-20261028
+permissions:
+  contents: read
+jobs:
+  admin-v3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Admin V3
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          npm run build
+          test -f public/admin-visual-v3.css
+          test -f public/admin-visual-v3.js
+          test -f public/admin.html
+          test ! -e public/admin-demo.html
+          test ! -e .github/workflows/trainingbot-d1-encrypted-backup.yml
+          ! grep -q 'admin-demo-runtime.js' public/admin.html
+          node --check public/admin-visual-v3.js
+          grep -q 'admin-visual-v3.js' public/admin.html
+
+      - name: Install browser test dependency
+        run: npm install --no-save --no-package-lock playwright
+
+      - name: Test V3 new design and safe navigation
+        run: node tools/admin/admin-visual-v3-qa.mjs
+
+      - name: Run existing A-E Admin regression
+        run: |
+          node tools/admin/adm01-state-qa.mjs
+          node tools/admin/adm04-06-browser-qa.mjs
+          node tools/admin/adm07-09-browser-qa.mjs
+
+      - name: Test public article and Preview isolation regressions
+        run: |
+          node tools/admin/adm06-draft-handler-qa.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
+          node tools/qa/p1-seo.mjs
+
+      - name: Save visual screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-admin-visual-v3-screenshots
+          path: admin-qa-screenshots/admin-visual-v3-*.png
+          if-no-files-found: ignore
+          retention-days: 7

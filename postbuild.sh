@@ -94,3 +94,21 @@ html=html.replace(marker,"h=h.replace('</body>','<script defer src=\"/admin-stag
 fs.writeFileSync(file,html);
 NODE
 grep -q 'admin-stage-d-ui.js' public/admin.html
+
+
+# VISUAL V3: a dedicated presentation layer after the fully initialized
+# Admin A–E runtime. Does not affect the public website or API handlers.
+test -f public/admin-visual-v3.js
+test -f public/admin-visual-v3.css
+node --check public/admin-visual-v3.js
+node <<'NODE'
+const fs=require('fs'),file='public/admin.html';
+let html=fs.readFileSync(file,'utf8');
+const marker='document.open();document.write(h);document.close()';
+if(!html.includes(marker)||!html.includes('admin-stage-d-ui.js'))throw Error('Visual V3 requires completed Admin A-E');
+if(html.includes('admin-visual-v3.js'))throw Error('Visual V3 script duplicated');
+const inject="h=h.replace('</body>','<script defer src=\"/admin-visual-v3.js?v=3\"><\\/script></body>');";
+html=html.replace(marker,inject+marker);
+fs.writeFileSync(file,html);
+NODE
+grep -q 'admin-visual-v3.js' public/admin.html
