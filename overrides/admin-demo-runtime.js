@@ -166,11 +166,18 @@
     blocked++;notify("Đường dẫn ngoài Demo đã được chặn; không chuyển đến trang thật.");
   },true);
   // Auto-login through the unchanged legacy form with a non-secret fake token.
+  var loginAttempts=0;
   function boot(){
     mount();
+    var app=document.getElementById("adminApp");
+    if(app && !app.classList.contains("hidden")){
+      notify("Đã vào Demo bằng token giả. Có thể thử lưu nháp và Beta.");
+      return;
+    }
     var input=document.getElementById("adminToken"),button=document.querySelector('#loginForm button[type="submit"]');
-    if(input && button){input.value=TOKEN;button.click();notify("Đã vào Demo bằng token giả. Có thể thử lưu nháp và Beta.");}
-    else notify("Không tìm thấy form Admin; hãy tải lại Demo.");
+    if(input && button){input.value=TOKEN;button.click();}
+    if(++loginAttempts<20)window.setTimeout(boot,350);
+    else notify("Demo chưa mở được Dashboard; vui lòng báo lỗi để kiểm tra khởi tạo.");
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
   Object.defineProperty(window,"__TRAININGBOT_DEMO__",{
