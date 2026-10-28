@@ -52,6 +52,7 @@ try{
    assert(before.documentWidth<=width+7,"Horizontal overflow "+width+" "+JSON.stringify(before));
    assert(before.cards>=8&&before.imagesPrepared>=0,"Wiki baseline not rendered");
    assert(before.fcp!==null&&before.fcp>=0,"First contentful paint missing");
+   assert(before.cls<=0.1,"H quality gate: lab CLS must be <=0.1 at "+width+"px, got "+before.cls);
    assert(before.domContentLoaded>=0&&before.load>=0);
    // H.3 keyboard/interaction sample is a scripted local response time, NOT INP.
    const t0=Date.now();
