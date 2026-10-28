@@ -67,3 +67,12 @@ if(process.argv.includes("--states")){
  });
  console.log("ADM-01 STATE ROUTINE MAP "+JSON.stringify(out,null,2));
 }
+
+if(process.argv.includes("--dashboard")){
+ const names=["async function refreshGlobalData","function applyUserStats","function applyInboxCounts","async function runHealthCheck","async function healthOne","function renderAnalytics","function renderActionCenter"];
+ const samples=names.map(name=>{
+  const i=decoded.indexOf(name);
+  return {name,found:i>=0,code:i>=0?decoded.slice(i,i+1800).replace(/Bearer [^"'\s<>]+/g,"Bearer [REDACTED]"):""};
+ });
+ console.log("ADM-01 DASHBOARD INSPECTION "+JSON.stringify(samples,null,2));
+}
