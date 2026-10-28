@@ -44,3 +44,12 @@
 - Những dữ liệu chưa có chứng cứ độc lập vẫn được coi là dữ liệu từ Wiki hiện có, **không khẳng định đã xác minh chính thức**.
 - Không triển khai hồ sơ chi tiết nâng cao của từng vũ khí (thuộc giai đoạn C).
 - Không đổi nguồn ảnh, không tạo số liệu giả, không sửa D1/R2.
+
+
+## B.6 — Ghi nhận nghiệm thu và tồn đọng
+
+- Browser QA trên build thật đã PASS ở **390, 768 và 1440px**, bao gồm kiểm tra đúng 61/51/26/8 mục, tìm không dấu, lọc, sắp xếp và mở lại hộp chi tiết vũ khí.
+- Có ảnh chụp desktop/mobile và kiểm thử không phát sinh request ghi dữ liệu ngoài telemetry cũ đã được giả lập.
+- **Tồn đọng tiền nhiệm:** thao tác chọn 2 vũ khí để so sánh trên cùng lưới có thể bị listener xem chi tiết `wiki_verified_data_v145.js` bắt trước (capture phase). B chỉ đảm bảo nút đổi sang chế độ So sánh và màn chi tiết không mất chức năng, **không nhận đã sửa quy trình chọn vũ khí**. Việc thay công cụ So sánh có nguồn thuộc giai đoạn E.
+- Đầu ra của A là schema/kiểm kê, và **54 vấn đề cần rà soát về dữ liệu/nguồn vẫn tồn tại**. Thẻ mới chỉ trình bày lại trường hiện có; không chuyển các số liệu chưa xác minh thành số liệu chính thức.
+- PR dành cho **Preview / nghiệm thu**, chưa merge và chưa ghi Production.
