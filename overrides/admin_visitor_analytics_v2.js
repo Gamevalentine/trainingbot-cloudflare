@@ -41,7 +41,7 @@
       <section class="tb-audience-panel">
         <div class="tb-audience-head"><h3>Khách mới và khách quay lại</h3><small>Phiên ghé thăm: ngắt 30 phút không hoạt động</small></div>
         <div class="tb-audience-filters">
-          <label>Loại khách<select id="tbAudType"><option value="all">Tất cả</option><option value="new">Khách mới</option><option value="returning">Khách quay lại</option><option value="unknown">Dữ liệu cũ chưa xác định</option></select></label>
+          <label>Loại khách<select id="tbAudType"><option value="all">Tất cả</option><option value="admin">Admin</option><option value="new">Khách mới</option><option value="returning">Khách quay lại</option><option value="unknown">Dữ liệu cũ chưa xác định</option></select></label>
           <label>Quốc gia<select id="tbAudCountry"><option value="ALL">Tất cả quốc gia</option></select></label>
         </div>
         <div class="tb-audience-meta" id="tbAudMeta">Đang tải thống kê…</div>
@@ -53,7 +53,7 @@
           </table>
         </div>
         <div class="tb-audience-pages"><button type="button" id="tbAudPrev">← Trước</button><span id="tbAudPage">Trang 1</span><button type="button" id="tbAudNext">Sau →</button></div>
-        <p class="tb-audience-note">“Khách” là mã ẩn danh trong một trình duyệt, không phải định danh người hoặc máy vật lý. Xóa dữ liệu trình duyệt, đổi trình duyệt hoặc chế độ ẩn danh có thể tạo mã khách mới. Lượt ghé chỉ được đo chính xác từ lúc bản thống kê mới hoạt động; dữ liệu cũ được giữ nhưng không tự suy đoán số lần quay lại.</p>
+        <p class="tb-audience-note">Trình duyệt đã được Admin xác minh được gắn nhãn Admin và không tính vào tổng khách công khai, quốc gia và thiết bị. “Khách” là mã ẩn danh trong một trình duyệt, không phải định danh người hoặc máy vật lý. Xóa dữ liệu trình duyệt, đổi trình duyệt hoặc chế độ ẩn danh có thể tạo mã khách mới. Lượt ghé chỉ được đo chính xác từ lúc bản thống kê mới hoạt động; dữ liệu cũ được giữ nhưng không tự suy đoán số lần quay lại.</p>
       </section>`;
     const style=document.createElement("style");
     style.textContent=`
@@ -78,6 +78,7 @@
       .tb-audience-table th,.tb-audience-table td{text-align:left;padding:10px 12px;font-size:11px;border-bottom:1px solid #202c43;vertical-align:top}
       .tb-audience-table th{background:#141d30;color:#a9b9ce;white-space:nowrap}
       .tb-audience-table td{color:#e3ebf6}.tb-audience-table code{color:#c5baff}
+      .tb-admin-tag{display:inline-block;margin:0 6px 0 0;padding:3px 6px;border:1px solid #48b8b1;border-radius:6px;color:#86fff0;font-size:10px;font-weight:800}
       .tb-audience-pages{display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:12px;font-size:12px;color:#a8b7cc}
       .tb-audience-pages button{background:#17243b;color:#eff4ff;border:1px solid #30405c;border-radius:9px;padding:8px 14px;cursor:pointer}
       .tb-audience-pages button:disabled{opacity:.4;cursor:default}
@@ -126,9 +127,9 @@
       const select=get("tbAudCountry"),selected=state.country;
       select.innerHTML='<option value="ALL">Tất cả quốc gia</option>'+(data.countries||[]).map(x=>`<option value="${escape(x.country)}">${escape(region(x.country))} (${format(x.total)})</option>`).join("");
       select.value=selected;
-      const names={new:"Mới",returning:"Quay lại",unknown:"Chưa xác định"};
+      const names={admin:"Admin",new:"Mới",returning:"Quay lại",unknown:"Chưa xác định"};
       get("tbAudRows").innerHTML=(data.visitors||[]).map(v=>`<tr>
-        <td><code>#${escape(String(v.visitor_id).slice(0,10).toUpperCase())}</code></td>
+        <td>${v.is_admin?'<span class="tb-admin-tag">ADMIN</span>':""}<code>#${escape(String(v.visitor_id).slice(0,10).toUpperCase())}</code></td>
         <td>${escape(names[v.visitor_type]||"Chưa xác định")}</td>
         <td>${escape(region(v.country))}</td>
         <td>${escape(v.device)} · ${escape(v.os)}</td>
@@ -138,7 +139,7 @@
         <td>${escape(date(v.last_seen_at))}</td>
         <td>${escape(v.current_path)}</td>
       </tr>`).join("")||'<tr><td colspan="9">Không có khách phù hợp bộ lọc.</td></tr>';
-      get("tbAudMeta").textContent=`Khớp bộ lọc: ${format(s.filtered_visitors)} khách · Mới: ${format(s.new_visitors)} · Quay lại: ${format(s.returning_visitors)} · Lịch sử chưa rõ: ${format(s.unknown_visitors)}`;
+      get("tbAudMeta").textContent=`Khớp bộ lọc: ${format(s.filtered_visitors)} hồ sơ · Admin: ${format(s.admin_visitors)} · Mới: ${format(s.new_visitors)} · Quay lại: ${format(s.returning_visitors)} · Lịch sử chưa rõ: ${format(s.unknown_visitors)}`;
       get("tbAudPage").textContent="Trang "+data.page;
       get("tbAudPrev").disabled=state.page===1;
       get("tbAudNext").disabled=!data.has_more;
