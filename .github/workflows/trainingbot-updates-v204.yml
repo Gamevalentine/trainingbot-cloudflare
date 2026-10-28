@@ -1,0 +1,42 @@
+name: TrainingBot Updates — Practical Content & Layout QA
+on:
+  push:
+    branches:
+      - aion-trainingbot-updates-content-v20261028
+
+permissions:
+  contents: read
+
+jobs:
+  public-update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build public TrainingBot without Production changes
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          npm run build
+          test -f public/ban-cap-nhat.html
+          test -f public/updates-content-v204.css
+          test ! -e .github/workflows/trainingbot-d1-encrypted-backup.yml
+          ! grep -q 'admin-demo-runtime.js' public/admin.html
+      - name: Install local browser QA
+        run: npm install --no-save --no-package-lock playwright
+      - name: Test guide, website changelog, real Beta statuses and responsive layout
+        run: node tools/qa/updates-content-v204.mjs
+      - name: Public regressions with mock backend
+        run: |
+          node tools/qa/p0-runtime.mjs
+          node tools/qa/p1-content.mjs
+          node tools/qa/p1-seo.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
+      - name: Upload screenshot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-updates-v204-captures
+          path: update-qa-screenshots/*.png
+          if-no-files-found: ignore
+          retention-days: 7
