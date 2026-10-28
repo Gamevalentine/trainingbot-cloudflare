@@ -96,6 +96,37 @@ try{
    assert.equal(await page.locator("#tb5GroupHome .tb6-section-heading h3").innerText(),"Công cụ quản lý");
    assert.equal(await page.locator("#tb5GroupHome .tb6-card-feature-label").innerText(),"BIÊN TẬP NỘI DUNG");
    assert.equal(await page.locator("#tb5GroupHome .tb6-card-footer").count(),5);
+   // Vietnamese typography: compare real computed styles, not merely a CSS
+   // file being present. All buttons/labels use the same known font stack.
+   await page.waitForFunction(()=>[...document.styleSheets].some(s=>s.href?.includes("admin-typography-v5.css")),undefined,{timeout:6000});
+   const fonts=await page.evaluate(()=>{
+    const targets={
+      app:"#adminApp",
+      headline:"#pageTitle",
+      sidebar:"#tb5Categories .tb5-category-label",
+      workspace:"#tb5GroupHome .tb5-hub-head h2",
+      content:"#tb5GroupHome .tb5-function-card strong",
+      desc:"#tb5GroupHome .tb5-card-description",
+      button:"#tb5GroupHome .tb5-function-card"
+    };
+    const computed={};
+    for(const [id,selector] of Object.entries(targets)){
+      const el=document.querySelector(selector);
+      if(!el)throw Error("Missing typography target "+selector);
+      const s=getComputedStyle(el);
+      computed[id]={family:s.fontFamily,weight:s.fontWeight,spacing:s.letterSpacing,text:el.textContent.trim().slice(0,38)};
+    }
+    return computed;
+   });
+   const family=fonts.app.family;
+   assert(family.includes("Segoe UI")&&family.includes("Noto Sans"),"Expected Vietnamese-safe system font stack "+JSON.stringify(fonts));
+   for(const [name,info] of Object.entries(fonts)){
+     assert.equal(info.family,family,"Mixed font family at "+name+" "+JSON.stringify(fonts));
+   }
+   assert.equal(fonts.content.weight,"700","Card heading should use normal 700 bold instead of synthetic ultra-heavy weights");
+   assert.equal(fonts.content.spacing,"normal","Card heading Vietnamese marks should not use negative letter spacing");
+   assert(fonts.content.text.includes("Bài viết"),"Vietnamese card label corrupted");
+   assert(fonts.workspace.text.includes("Nội dung"),"Vietnamese heading corrupted");
    const polished=await page.evaluate(()=>{
     const group=document.getElementById("tb5GroupHome");
     const banner=group.querySelector(".tb5-hub-head").getBoundingClientRect();
