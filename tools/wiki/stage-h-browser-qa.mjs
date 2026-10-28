@@ -54,12 +54,15 @@ try{
     const img=[...document.querySelectorAll("#tbWikiGrid .tb-wiki-card img")];
     return {selection:active?.getAttribute("aria-pressed"),searchLabel:label?.getAttribute("aria-label"),
       eager:img.filter(x=>x.loading==="eager").length,lazy:img.filter(x=>x.loading==="lazy").length,
+      hinted:img.filter(x=>x.dataset.tbHImage==="1").length,imagesNow:img.length,
       missingAlt:[...document.querySelectorAll("#tbFGuides img")].filter(x=>!x.hasAttribute("alt")).length};
    });
    assert.equal(f.selection,"true");
    assert(f.searchLabel&&f.missingAlt===0);
    assert(f.eager<=4,"More than four eager card images");
-   assert.equal(f.eager+f.lazy,before.imagesPrepared,"Image loading hints not applied");
+   assert.equal(f.eager+f.lazy,f.imagesNow,"Each current image must have a loading strategy");
+   assert.equal(f.hinted,f.imagesNow,"All current images must be processed by H");
+   assert(before.imagesPrepared>=f.imagesNow,"Cumulative image processing must cover current render");
    assert.deepEqual(failures,[],"Unexpected runtime errors");
    const row={width,...before,interactionResponseMs:responseMs,images:f,remoteAssetAttemptCount:attemptedRemote.length};
    report.viewports.push(row);
