@@ -118,7 +118,9 @@ NODE
 
 # Inject visitor tracking into Admin V2 without changing the Admin runtime core.
 test -f public/admin_visitor_tracking_v177.js
+test -f public/admin_visitor_analytics_v2.js
 node --check public/admin_visitor_tracking_v177.js >/dev/null
+node --check public/admin_visitor_analytics_v2.js >/dev/null
 node <<'NODE'
 const fs=require('fs');
 const file='public/admin.html';
@@ -126,7 +128,7 @@ let source=fs.readFileSync(file,'utf8');
 if(!source.includes('admin_visitor_tracking_v177.js')){
   const marker='document.open();document.write(h);document.close()';
   if(!source.includes(marker))throw new Error('Admin V2 loader marker not found for visitor tracking');
-  const patch=`h=h.replace('</body>','<script defer src="/admin_visitor_tracking_v177.js?v=180"><\\/script></body>');${marker}`;
+  const patch=`h=h.replace('</body>','<script defer src="/admin_visitor_tracking_v177.js?v=180"><\\/script><script defer src="/admin_visitor_analytics_v2.js?v=2"><\\/script></body>');${marker}`;
   source=source.replace(marker,patch);
   fs.writeFileSync(file,source);
 }
