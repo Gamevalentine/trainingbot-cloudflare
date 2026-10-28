@@ -46,6 +46,18 @@ jobs:
           node tools/wiki/stage-b-browser-qa.mjs
           node tools/qa/p1-seo.mjs
           node tools/qa/p3-1-d1-preview-isolation.mjs
+      - name: Production gate — G assets must not ship outside Preview
+        env:
+          CF_PAGES_BRANCH: main
+          TRAININGBOT_LOCAL_G_QA: ""
+        run: |
+          npm run build
+          ! grep -q admin-wiki-stage-g.js public/admin.html
+          ! grep -q wiki-stage-g-snapshot.js public/wiki.html
+          test ! -e public/admin-wiki-stage-g.js
+          test ! -e public/admin-wiki-stage-g.css
+          test ! -e public/wiki-stage-g-snapshot.js
+          test ! -e public/admin-demo.html
       - name: Upload QA screenshots
         if: always()
         uses: actions/upload-artifact@v4
