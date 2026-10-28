@@ -32,3 +32,12 @@ jobs:
           node tools/admin/adm01-real-handler-integration.mjs
       - name: Acceptance Stage B — grouped menu and responsive shell
         run: node tools/admin/adm02-03-ui-qa.mjs
+
+      - name: Upload synthetic Admin screenshots for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-stage-b-synthetic-desktop-mobile
+          path: admin-qa-screenshots/*.png
+          if-no-files-found: ignore
+          retention-days: 7
