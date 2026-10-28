@@ -34,6 +34,17 @@ jobs:
           node tools/admin/adm06-draft-handler-qa.mjs
           node tools/qa/p3-1-d1-preview-isolation.mjs
           node tools/qa/p1-seo.mjs
+      - name: Build synthetic Demo for isolated Preview
+        env:
+          TRAININGBOT_LOCAL_DEMO: "1"
+        run: |
+          npm run build
+          test -f public/admin-demo.html
+          test -f public/admin-demo-runtime.js
+          ! grep -q admin-demo-runtime.js public/admin.html
+          node --check tools/admin/admin-v5-demo-qa.mjs
+      - name: Test six-category Demo without real API traffic
+        run: node tools/admin/admin-v5-demo-qa.mjs
       - name: Save browser screenshots
         if: always()
         uses: actions/upload-artifact@v4
