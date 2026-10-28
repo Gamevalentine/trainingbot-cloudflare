@@ -76,3 +76,9 @@ if(process.argv.includes("--dashboard")){
  });
  console.log("ADM-01 DASHBOARD INSPECTION "+JSON.stringify(samples,null,2));
 }
+
+if(process.argv.includes("--auth")){
+ const terms=["id=\"loginForm\"","id=\"password\"","id=\"loginPassword\"","async function login","async function authenticate","async function request","function request","loginForm.addEventListener","function showApp"];
+ const snippets=terms.map(name=>{const i=decoded.indexOf(name);return {name,found:i>=0,snippet:i<0?"":decoded.slice(Math.max(0,i-80),i+1100).replace(/Bearer [^"'\s<>]+/g,"Bearer [REDACTED]")};});
+ console.log("ADM-01 AUTH FLOW MAP "+JSON.stringify(snippets,null,2));
+}
