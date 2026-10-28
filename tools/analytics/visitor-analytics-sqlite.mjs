@@ -3,8 +3,7 @@ import fs from "node:fs/promises";
 import {DatabaseSync} from "node:sqlite";
 
 async function moduleFrom(path){
-  const text=await fs.readFile(path,"utf8");
-  return import("data:text/javascript;charset=utf-8,"+encodeURIComponent(text));
+  return import(new URL("../../"+path,import.meta.url));
 }
 const ing=await moduleFrom("functions/api/visitor-events.js");
 const adm=await moduleFrom("functions/api/v72/admin/visitor-summary.js");
