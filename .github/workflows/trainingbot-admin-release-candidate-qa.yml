@@ -41,15 +41,15 @@ jobs:
             exit 1
           fi
 
+      - name: Browser QA installation
+        run: npm install --no-save --no-package-lock playwright
+
       - name: No real backend writes — Pages Functions against local fake DB and R2
         run: |
           node tools/admin/adm06-draft-handler-qa.mjs
           node tools/admin/adm07-real-secondary-handler-qa.mjs
           node tools/admin/adm01-real-handler-integration.mjs
           node tools/qa/p0-runtime.mjs
-
-      - name: Browser QA installation
-        run: npm install --no-save --no-package-lock playwright
 
       - name: Admin A-D regression and navigation
         run: |
