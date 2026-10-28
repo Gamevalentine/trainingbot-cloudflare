@@ -9,7 +9,7 @@ const COLUMNS={
  weapons:["name","category","ammo","fireMode"],
  attachments:["name","category","description"],
  vehicles:["name","category","seats","availability","description"],
- maps:["name","size","description","mode"]
+ maps:["name","size","playstyle","description"]
 };
 const args=process.argv.slice(2),ri=args.indexOf("--runtime"),oi=args.indexOf("--out");
 const runtimeFile=ri<0?null:args[ri+1],out=oi<0?"wiki-stage-a-artifacts":args[oi+1];
