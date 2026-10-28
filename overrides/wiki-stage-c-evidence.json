@@ -23,8 +23,8 @@
       "version": "4.6",
       "publishedAt": "2026-09-07",
       "checkedAt": "2026-10-29",
-      "isCurrent": true,
-      "applicability": "Version 4.6 (September 2026); no claims about Beta 4.7"
+      "isCurrent": false,
+      "applicability": "Ghi chú phát hành bản 4.6 (September 2026), không khẳng định tiếp tục áp dụng cho Beta 4.7."
     }
   },
   "weapons": {
