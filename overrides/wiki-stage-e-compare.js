@@ -346,7 +346,15 @@ function init(){
  new MutationObserver(schedule).observe(grid,{childList:true,subtree:false});
  new MutationObserver(schedule).observe(tabs,{childList:true,subtree:true});
  initializeShare();schedule();
- api.ready=true;
+ // Source evidence is intentionally fetched separately from the static DATA.
+ // Do not announce ready until the matching versioned evidence is available.
+ fetch("/wiki-stage-c-evidence.json",{credentials:"omit",cache:"no-store"})
+  .then(response=>{if(!response.ok)throw Error("Evidence HTTP "+response.status);return response.json()})
+  .then(data=>{
+   if(!data||!data.sources||!data.weapons||!data.schemaVersion?.startsWith("wiki-c"))throw Error("Unrecognized Wiki C evidence schema");
+   source=data;api.ready=true;api.sourceCount=Object.keys(data.weapons).length;announce("Đã nạp dữ liệu đối chiếu nguồn.");
+  })
+  .catch(err=>{api.error=err.message;api.ready=false;announce("Không tải được nguồn so sánh. Vui lòng thử lại.");});
  api.openComparison=openDialog;
  api.clear=stopPicker;
  api.shareUrl=()=>getShareLink(api.selected);
