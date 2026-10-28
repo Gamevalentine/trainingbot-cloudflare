@@ -26,6 +26,7 @@ jobs:
       - name: Isolated backend integration (A and C)
         run: |
           node tools/admin/adm06-draft-handler-qa.mjs
+          node tools/admin/adm07-real-secondary-handler-qa.mjs
 
       - name: Install browser test harness
         run: npm install --no-save --no-package-lock playwright
