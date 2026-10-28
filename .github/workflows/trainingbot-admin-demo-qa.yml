@@ -1,0 +1,57 @@
+name: TrainingBot Admin Demo — isolated Preview QA
+on:
+  push:
+    branches:
+      - aion-trainingbot-admin-demo-20261028
+
+permissions:
+  contents: read
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check a normal Production-style build excludes Demo
+        run: |
+          npm run build
+          test ! -e public/admin-demo.html
+          test ! -e public/admin-demo-runtime.js
+          test ! -e public/admin
+          grep -q 'admin-stage-d-ui.js' public/admin.html
+
+      - name: Build Preview Demo with explicit local QA switch
+        env:
+          TRAININGBOT_LOCAL_DEMO: "1"
+        run: |
+          npm run build
+          test -f public/admin-demo.html
+          test -f public/admin-demo-runtime.js
+          node --check public/admin-demo-runtime.js
+          node --check tools/admin/admin-demo-qa.mjs
+          node --check tools/admin/build-demo.mjs
+          test ! -f .github/workflows/trainingbot-d1-encrypted-backup.yml
+          test ! -f scripts/backup_d1_to_github.py
+          ! grep -q 'admin-demo-runtime.js' public/admin.html
+
+      - name: Install local test harness
+        run: npm install --no-save --no-package-lock playwright
+
+      - name: Test Demo real Admin UI without API/network traffic
+        run: node tools/admin/admin-demo-qa.mjs
+
+      - name: Regression real Admin (mock network, no Production)
+        run: |
+          node tools/admin/adm01-real-handler-integration.mjs
+          node tools/admin/adm04-06-browser-qa.mjs
+          node tools/admin/adm07-09-browser-qa.mjs
+
+      - name: Upload synthetic mobile/desktop screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-admin-demo-qa-synthetic
+          path: admin-qa-screenshots/*.png
+          if-no-files-found: ignore
+          retention-days: 7
