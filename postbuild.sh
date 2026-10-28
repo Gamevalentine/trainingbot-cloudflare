@@ -112,3 +112,14 @@ html=html.replace(marker,inject+marker);
 fs.writeFileSync(file,html);
 NODE
 grep -q 'admin-visual-v3.js' public/admin.html
+
+
+# Header 205: clone the approved Community header into the 6 main pages
+# after all Page transformations. No Admin, API, D1 or R2 modifications.
+node --check tools/public/unify-main-header.mjs
+node tools/public/unify-main-header.mjs
+test -f public/tb-community-header-v205.css
+for page in index ban-cap-nhat news wiki community contact; do
+  grep -q 'tb-community-header-v205.css' "public/$page.html"
+  grep -q 'tb-community-header-unified' "public/$page.html"
+done
