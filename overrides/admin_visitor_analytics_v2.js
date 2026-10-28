@@ -5,6 +5,13 @@
   const get=id=>document.getElementById(id);
   const escape=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const format=value=>Number(value||0).toLocaleString("vi-VN");
+  // Same 5-minute activity definition as the existing Admin online KPI.
+  // A timestamp cannot prove a live connection; it indicates recent activity.
+  const isRecentlyActive=value=>{
+    const timestamp=Date.parse(String(value||""));
+    const elapsed=Date.now()-timestamp;
+    return Number.isFinite(timestamp)&&elapsed>=-60000&&elapsed<=5*60*1000;
+  };
   const date=value=>{
     if(!value||Number.isNaN(Date.parse(value)))return "—";
     return new Intl.DateTimeFormat("vi-VN",{timeZone:"Asia/Ho_Chi_Minh",dateStyle:"short",timeStyle:"short"}).format(new Date(value));
@@ -44,12 +51,17 @@
           <label>Loại khách<select id="tbAudType"><option value="all">Tất cả</option><option value="admin">Admin</option><option value="new">Khách mới</option><option value="returning">Khách quay lại</option><option value="unknown">Dữ liệu cũ chưa xác định</option></select></label>
           <label>Quốc gia<select id="tbAudCountry"><option value="ALL">Tất cả quốc gia</option></select></label>
         </div>
+        <div class="tb-audience-presence-legend" aria-label="Chú giải trạng thái hoạt động">
+          <span class="tb-audience-presence is-online"><i aria-hidden="true"></i>Đang online</span>
+          <span class="tb-audience-presence is-offline"><i aria-hidden="true"></i>Offline</span>
+          <small>Online = có hoạt động trong 5 phút gần nhất · tự cập nhật mỗi 30 giây</small>
+        </div>
         <div class="tb-audience-meta" id="tbAudMeta">Đang tải thống kê…</div>
         <div id="tbAudError" role="status" aria-live="polite"></div>
         <div class="tb-audience-scroll">
           <table class="tb-audience-table">
-            <thead><tr><th>Khách ẩn danh</th><th>Phân loại</th><th>Quốc gia</th><th>Thiết bị</th><th>Lượt ghé đã đo</th><th>Lần xem trang</th><th>Lần đầu</th><th>Gần nhất</th><th>Trang cuối</th></tr></thead>
-            <tbody id="tbAudRows"><tr><td colspan="9">Đang tải…</td></tr></tbody>
+            <thead><tr><th>Khách ẩn danh</th><th>Trạng thái</th><th>Phân loại</th><th>Quốc gia</th><th>Thiết bị</th><th>Lượt ghé đã đo</th><th>Lần xem trang</th><th>Lần đầu</th><th>Gần nhất</th><th>Trang cuối</th></tr></thead>
+            <tbody id="tbAudRows"><tr><td colspan="10">Đang tải…</td></tr></tbody>
           </table>
         </div>
         <div class="tb-audience-pages"><button type="button" id="tbAudPrev">← Trước</button><span id="tbAudPage">Trang 1</span><button type="button" id="tbAudNext">Sau →</button></div>
@@ -79,6 +91,14 @@
       .tb-audience-table th{background:#141d30;color:#a9b9ce;white-space:nowrap}
       .tb-audience-table td{color:#e3ebf6}.tb-audience-table code{color:#c5baff}
       .tb-admin-tag{display:inline-block;margin:0 6px 0 0;padding:3px 6px;border:1px solid #48b8b1;border-radius:6px;color:#86fff0;font-size:10px;font-weight:800}
+      .tb-audience-presence-legend{display:flex;align-items:center;flex-wrap:wrap;gap:8px 17px;margin:8px 0 12px}
+      .tb-audience-presence-legend small{font-size:10px;color:#8ca1bb}
+      .tb-audience-presence{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:700;white-space:nowrap}
+      .tb-audience-presence i{display:inline-block;width:9px;height:9px;border-radius:50%;flex-shrink:0}
+      .tb-audience-presence.is-online{color:#72ebaa}
+      .tb-audience-presence.is-online i{background:#34d399;box-shadow:0 0 0 3px rgba(52,211,153,.13)}
+      .tb-audience-presence.is-offline{color:#8997ad}
+      .tb-audience-presence.is-offline i{background:#64748b}
       .tb-audience-pages{display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:12px;font-size:12px;color:#a8b7cc}
       .tb-audience-pages button{background:#17243b;color:#eff4ff;border:1px solid #30405c;border-radius:9px;padding:8px 14px;cursor:pointer}
       .tb-audience-pages button:disabled{opacity:.4;cursor:default}
@@ -128,8 +148,12 @@
       select.innerHTML='<option value="ALL">Tất cả quốc gia</option>'+(data.countries||[]).map(x=>`<option value="${escape(x.country)}">${escape(region(x.country))} (${format(x.total)})</option>`).join("");
       select.value=selected;
       const names={admin:"Admin",new:"Mới",returning:"Quay lại",unknown:"Chưa xác định"};
-      get("tbAudRows").innerHTML=(data.visitors||[]).map(v=>`<tr>
+      get("tbAudRows").innerHTML=(data.visitors||[]).map(v=>{
+        const active=isRecentlyActive(v.last_seen_at);
+        const status=active?"Đang online":"Offline";
+        return `<tr>
         <td>${v.is_admin?'<span class="tb-admin-tag">ADMIN</span>':""}<code>#${escape(String(v.visitor_id).slice(0,10).toUpperCase())}</code></td>
+        <td><span class="tb-audience-presence ${active?"is-online":"is-offline"}" title="${active?"Có hoạt động trong 5 phút gần nhất":"Không có hoạt động trong 5 phút gần nhất"}" aria-label="${status}"><i aria-hidden="true"></i>${status}</span></td>
         <td>${escape(names[v.visitor_type]||"Chưa xác định")}</td>
         <td>${escape(region(v.country))}</td>
         <td>${escape(v.device)} · ${escape(v.os)}</td>
@@ -138,7 +162,8 @@
         <td>${escape(date(v.first_seen_at))}</td>
         <td>${escape(date(v.last_seen_at))}</td>
         <td>${escape(v.current_path)}</td>
-      </tr>`).join("")||'<tr><td colspan="9">Không có khách phù hợp bộ lọc.</td></tr>';
+      </tr>`;
+      }).join("")||'<tr><td colspan="10">Không có khách phù hợp bộ lọc.</td></tr>';
       get("tbAudMeta").textContent=`Khớp bộ lọc: ${format(s.filtered_visitors)} hồ sơ · Admin: ${format(s.admin_visitors)} · Mới: ${format(s.new_visitors)} · Quay lại: ${format(s.returning_visitors)} · Lịch sử chưa rõ: ${format(s.unknown_visitors)}`;
       get("tbAudPage").textContent="Trang "+data.page;
       get("tbAudPrev").disabled=state.page===1;
