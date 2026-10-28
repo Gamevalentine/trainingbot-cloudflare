@@ -51,8 +51,11 @@ try{
    assert.equal(await page.locator("#tbWikiModal .tb-d-source").count(),0,"Attachment must not invent source");
    await page.locator("#tbWikiModalClose").click();
    await page.locator('#tbWikiTabs .tb-wiki-tab[data-tab="vehicles"]').evaluate(el=>el.click());
-   await page.waitForFunction(()=>!document.querySelector("#tbDSourceSummary")?.hidden&&document.querySelectorAll("#tbWikiGrid .tb-wiki-card").length===26,undefined,{timeout:7000});
-   assert((await page.locator("#tbDSourceSummary").innerText()).includes("Thuyền Cao Su"));
+   await page.waitForFunction(()=>{
+    const box=document.querySelector("#tbDSourceSummary");
+    return !box?.hidden&&document.querySelectorAll("#tbWikiGrid .tb-wiki-card").length===26&&box.textContent.includes("Thuyền Cao Su");
+   },undefined,{timeout:7000});
+   assert((await page.locator("#tbDSourceSummary").textContent()).includes("Thuyền Cao Su"));
    const name=await page.evaluate(()=>{
     const c=[...document.querySelectorAll("#tbWikiGrid .tb-wiki-card")].find(x=>x.querySelector("h3")?.textContent.includes("Tracked Amphicarrier"));
     return c?.querySelector("h3")?.textContent.trim()||null;
