@@ -305,3 +305,8 @@ NODE
 else
   rm -f public/wiki-stage-h-perf.js
 fi
+
+# SEO-08 — enrich three original thin editorial category pages after Wiki V2 build.
+# Preserve original route, canonical metadata, site header/footer and JS.
+node --check tools/seo/seo-category-enhance.mjs
+node tools/seo/seo-category-enhance.mjs

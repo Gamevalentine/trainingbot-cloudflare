@@ -28,8 +28,13 @@ jobs:
       - name: SEO brand, sitemap, preview index isolation and D1 write guards
         run: |
           node tools/seo/seo-recovery-qa.mjs
+          node tools/seo/seo-06-10-qa.mjs
           node tools/qa/p1-seo.mjs
           node tools/qa/p3-1-d1-preview-isolation.mjs
+      - name: Verify responsive SEO categories in Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright
+          node tools/seo/seo-category-browser.mjs
       - name: Preserve deployed Wiki V2 modules in all main builds
         run: |
           grep -q wiki-stage-f-guides.js public/wiki.html
@@ -41,6 +46,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: trainingbot-seo-hotfix-qa
-          path: seo-recovery-artifacts/
+          path: |
+            seo-recovery-artifacts/
+            seo-06-10-artifacts/
           retention-days: 14
           if-no-files-found: ignore
