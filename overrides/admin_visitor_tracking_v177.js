@@ -128,7 +128,7 @@
 
   function render(data){
     const s=data.summary||{};
-    const set=(id,value)=>{const el=$(id);if(el)el.textContent=Number(value||0).toLocaleString("vi-VN");};
+    const set=(id,value)=>{const el=$(id);if(!el)return;const n=Number(value);el.textContent=value===undefined||value===null||value===""||!Number.isFinite(n)||n<0?"—":n.toLocaleString("vi-VN");};
     set("tbVisitorTodayPeople",s.today_visitors);
     set("tbVisitorTodaySessions",s.today_sessions);
     set("tbVisitorOnline",s.online_visitors);
@@ -159,10 +159,16 @@
     }).join("");
   }
 
+  function resetUnknown(reason){
+    for(const id of ["tbVisitorTodayPeople","tbVisitorTodaySessions","tbVisitorOnline","tbVisitorRecent"]){const node=$(id);if(node)node.textContent="—";}
+    for(const id of ["tbVisitorDevices","tbVisitorOS"]){const node=$(id);if(node)node.replaceChildren();}
+    const rows=$("tbVisitorRows");if(rows)rows.innerHTML="<tr><td colspan=\"8\"><div class=\"tb-vis-empty\">"+reason+"</div></td></tr>";
+  }
   async function load(){
     if(loading)return;
     const auth=token();
-    if(!auth)return setStatus("Phiên quản trị không còn hợp lệ. Hãy đăng nhập lại.","error");
+    if(!auth){resetUnknown("Chưa đăng nhập nên chưa có dữ liệu đã xác thực.");return setStatus("Chưa đăng nhập quản trị. Hãy đăng nhập rồi thử lại.","error");}
+    resetUnknown("Đang tải dữ liệu truy cập…");
     loading=true;
     const refresh=$("tbVisitorRefresh");
     if(refresh)refresh.disabled=true;
@@ -170,10 +176,14 @@
     try{
       const response=await fetch("/api/v71/admin/visitor-events?limit=150",{headers:{Authorization:`Bearer ${auth}`},cache:"no-store"});
       const data=await response.json().catch(()=>({}));
-      if(!response.ok||!data.ok)throw new Error(data.message||`Không tải được dữ liệu (${response.status}).`);
+      if(response.status===401)throw new Error("Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Hãy đăng nhập lại.");
+      if(response.status===403)throw new Error("Tài khoản hiện tại không có quyền xem dữ liệu truy cập.");
+      if(!response.ok||data.ok!==true)throw new Error(data.message||`Không tải được dữ liệu (${response.status}).`);
+      if(!data.summary||!Array.isArray(data.sessions))throw new Error("API không trả dữ liệu truy cập hợp lệ.");
       render(data);
       setStatus(`Cập nhật lúc ${new Intl.DateTimeFormat("vi-VN",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).format(new Date())}.`,"ok");
     }catch(error){
+      resetUnknown("Không tải được danh sách. Đây không phải kết quả bằng 0.");
       setStatus(error.message||"Không tải được dữ liệu truy cập.","error");
     }finally{
       loading=false;
@@ -197,10 +207,10 @@
         <button id="tbVisitorRefresh" class="tb-vis-refresh" type="button">↻ Làm mới</button>
       </div>
       <div class="tb-vis-kpis">
-        <article class="tb-vis-kpi"><span>◎</span><div><small>KHÁCH HÔM NAY</small><strong id="tbVisitorTodayPeople">0</strong><em>Khách ẩn danh duy nhất</em></div></article>
-        <article class="tb-vis-kpi"><span>▱</span><div><small>PHIÊN HÔM NAY</small><strong id="tbVisitorTodaySessions">0</strong><em>Số phiên truy cập</em></div></article>
-        <article class="tb-vis-kpi online"><span>●</span><div><small>ĐANG ONLINE</small><strong id="tbVisitorOnline">0</strong><em>Có hoạt động trong 5 phút</em></div></article>
-        <article class="tb-vis-kpi"><span>↗</span><div><small>ĐANG HIỂN THỊ</small><strong id="tbVisitorRecent">0</strong><em>Phiên gần nhất</em></div></article>
+        <article class="tb-vis-kpi"><span>◎</span><div><small>KHÁCH HÔM NAY</small><strong id="tbVisitorTodayPeople">—</strong><em>Khách ẩn danh duy nhất</em></div></article>
+        <article class="tb-vis-kpi"><span>▱</span><div><small>PHIÊN HÔM NAY</small><strong id="tbVisitorTodaySessions">—</strong><em>Số phiên truy cập</em></div></article>
+        <article class="tb-vis-kpi online"><span>●</span><div><small>ĐANG ONLINE</small><strong id="tbVisitorOnline">—</strong><em>Có hoạt động trong 5 phút</em></div></article>
+        <article class="tb-vis-kpi"><span>↗</span><div><small>ĐANG HIỂN THỊ</small><strong id="tbVisitorRecent">—</strong><em>Phiên gần nhất</em></div></article>
       </div>
       <div class="tb-vis-grid">
         <section class="tb-vis-panel"><div class="tb-vis-panel-head"><div><span class="eyebrow">THIẾT BỊ</span><h3>Thiết bị truy cập</h3></div></div><div id="tbVisitorDevices" class="tb-vis-chips"></div></section>
@@ -208,7 +218,7 @@
       </div>
       <section class="tb-vis-table-panel">
         <div class="tb-vis-panel-head"><div><span class="eyebrow">PHIÊN GẦN NHẤT</span><h3>Lịch sử truy cập</h3></div><span>Tự làm mới mỗi 30 giây khi đang mở</span></div>
-        <div id="tbVisitorStatus" class="tb-vis-status"></div>
+        <div id="tbVisitorStatus" class="tb-vis-status" role="status" aria-live="polite"></div>
         <div class="tb-vis-table-wrap"><table class="tb-vis-table"><thead><tr><th>Thời gian</th><th>Khách</th><th>Thiết bị</th><th>Hệ điều hành</th><th>Trình duyệt</th><th>Vị trí</th><th>Giới tính</th><th>Hành trình</th></tr></thead><tbody id="tbVisitorRows"><tr><td colspan="8"><div class="tb-vis-empty">Mở mục này để tải dữ liệu truy cập.</div></td></tr></tbody></table></div>
       </section>`;
     host.appendChild(panel);

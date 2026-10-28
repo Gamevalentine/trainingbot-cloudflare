@@ -1,0 +1,28 @@
+name: TrainingBot Admin Stage A — state audit and mock QA
+on:
+  push:
+    branches:
+      - aion-trainingbot-admin-stage-a-20261028
+permissions:
+  contents: read
+jobs:
+  stage-a:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Admin Preview locally (no deployment by this job)
+        run: npm run build
+      - name: Inspect baseline state handling
+        run: node tools/admin/audit-runtime.mjs --states --dashboard --auth
+      - name: Check Admin Scripts
+        run: |
+          node --check public/admin_beta_versions_v175.js
+          node --check public/admin_posts_manual_v171.js
+          node --check public/admin_visitor_tracking_v177.js
+          node --check public/admin_posts_editor_v183.js
+      - name: Run Stage-A focused browser regression
+        run: |
+          npm install --no-save --no-package-lock playwright
+          node tools/admin/adm01-state-qa.mjs
+          node tools/admin/adm01-real-handler-integration.mjs

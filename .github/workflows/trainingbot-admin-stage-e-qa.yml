@@ -1,0 +1,68 @@
+name: TrainingBot Admin Stage E — release preflight (NO DEPLOY)
+on:
+  push:
+    branches:
+      - aion-trainingbot-admin-stage-e-20261028
+
+permissions:
+  contents: read
+
+jobs:
+  e-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Admin candidate and all public Pages (local only)
+        run: npm run build
+
+      - name: Read-only ADM-10 source + release gate audit
+        run: |
+          node --check tools/admin/adm10-release-preflight.mjs
+          node tools/admin/adm10-release-preflight.mjs
+          # Assert the explicit production gate still refuses a deployment.
+          if node tools/admin/adm10-release-preflight.mjs --require-production-ready; then
+            echo "ERROR: Stage E unexpectedly declared production ready" >&2
+            exit 1
+          fi
+
+      - name: Safety invariants — no backup/Production mutation scripts
+        run: |
+          test ! -e public/admin
+          test ! -f .github/workflows/trainingbot-d1-encrypted-backup.yml
+          test ! -f scripts/backup_d1_to_github.py
+          node --check public/admin-stage-b-ui.js
+          node --check public/admin-stage-c-ui.js
+          node --check public/admin-stage-d-ui.js
+          node --check tools/admin/adm07-real-secondary-handler-qa.mjs
+
+      - name: Real Pages Functions with disposable D1/R2 (NO external calls)
+        run: |
+          node tools/admin/adm06-draft-handler-qa.mjs
+          node tools/admin/adm07-real-secondary-handler-qa.mjs
+
+      - name: Browser QA dependencies for local mock-only tests
+        run: npm install --no-save --no-package-lock playwright
+
+      - name: Stage A regression — data states, real handler auth, login
+        run: |
+          node tools/admin/adm01-state-qa.mjs
+          node tools/admin/adm01-real-handler-integration.mjs
+
+      - name: Stage C regression — content editor and draft/publish UI
+        run: node tools/admin/adm04-06-browser-qa.mjs
+
+      - name: Stage D regression — 13 routes, history, focus and six panels
+        run: node tools/admin/adm07-09-browser-qa.mjs
+
+      - name: Publish safe local QA evidence (synthetic only)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-admin-stage-e-readiness-no-go
+          path: |
+            admin-qa-artifacts/adm10-preflight.json
+            admin-qa-screenshots/*.png
+          if-no-files-found: ignore
+          retention-days: 7
