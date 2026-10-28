@@ -89,6 +89,44 @@ try{
    await page.waitForFunction(()=>document.body.classList.contains("tb-admin-group-home")&&document.getElementById("tb5GroupHome")?.querySelectorAll(".tb5-function-card").length===5,undefined,{timeout:6500});
    assert.equal(await page.locator("#pageTitle").innerText(),"Nội dung");
    assert.equal(await page.locator("#tb5GroupHome .tb5-function-card").count(),5);
+   await page.waitForFunction(()=>[...document.styleSheets].some(s=>s.href?.includes("admin-workspace-polish-v5.css")),undefined,{timeout:6500});
+   assert.equal(await page.locator("#tb5GroupHome .tb6-function-card").count(),5);
+   assert.equal(await page.locator("#tb5GroupHome .tb6-function-card .tb5-function-icon svg").count(),5,"Distinct inline icons must render");
+   assert.equal(await page.locator("#tb5GroupHome .tb6-hub-glyph svg").count(),1);
+   assert.equal(await page.locator("#tb5GroupHome .tb6-section-heading h3").innerText(),"Công cụ quản lý");
+   assert.equal(await page.locator("#tb5GroupHome .tb6-card-feature-label").innerText(),"BIÊN TẬP NỘI DUNG");
+   assert.equal(await page.locator("#tb5GroupHome .tb6-card-footer").count(),5);
+   const polished=await page.evaluate(()=>{
+    const group=document.getElementById("tb5GroupHome");
+    const banner=group.querySelector(".tb5-hub-head").getBoundingClientRect();
+    const grid=group.querySelector(".tb5-function-grid");
+    const cards=[...grid.querySelectorAll(".tb6-function-card")];
+    const bounds=cards.map(n=>{const r=n.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height}});
+    const feature=cards[0];
+    return {
+     bannerHeight:banner.height,
+     count:group.querySelector(".tb6-count-number")?.textContent,
+     gridColumns:getComputedStyle(grid).gridTemplateColumns,
+     featureColumns:getComputedStyle(feature).gridColumnEnd,
+     distinctColors:[...new Set(cards.map(n=>getComputedStyle(n).getPropertyValue("--tb6-accent").trim()))].length,
+     cardHeight:bounds[0].h,
+     bounds,
+     cyber:!!document.getElementById("tb5CyberCardStyle"),
+     glitch:!!document.getElementById("tb5SidebarGlitchStyle")
+    };
+   });
+   assert(polished.bannerHeight<170,"Old oversized banner is still visible "+JSON.stringify(polished));
+   assert.equal(polished.count,"05");
+   assert.equal(polished.distinctColors,5,"All cards still share one accent color");
+   assert(!polished.cyber&&!polished.glitch,"Previously reverted Glitch/Cyber styles returned");
+   assert(polished.cardHeight<215,"Card height is too large");
+   if(width===1440){
+    assert(polished.featureColumns.includes("span 2"),"Feature card should span two columns on desktop "+JSON.stringify(polished));
+    assert(Math.abs(polished.bounds[1].y-polished.bounds[0].y)<3,"First row geometry incorrect");
+    assert(Math.abs(polished.bounds[2].y-polished.bounds[3].y)<3,"Second row geometry incorrect");
+    assert(Math.abs(polished.bounds[3].y-polished.bounds[4].y)<3,"Third card missing in second row");
+   }
+
    assert.equal(await page.locator("#tb5GroupHome").evaluate(x=>getComputedStyle(x).display)!=="none",true);
    assert.equal(await page.locator(".view.active").first().evaluate(x=>getComputedStyle(x).display),"none","Legacy panel still showing behind category hub");
    if(width===390||width===1440){
