@@ -1,6 +1,8 @@
 // Anonymous, GET-only health/profile reachability; no account data, cookies, tokens or response bodies.
 const urls=[
  'https://trainingbot.io.vn/account.html',
+ 'https://trainingbot.io.vn/api/v49/me',
+ 'https://trainingbot-cloud.ai-vn.workers.dev/api/v49/me',
  'https://trainingbot.io.vn/api/v49/profile',
  'https://trainingbot-cloud.ai-vn.workers.dev/',
  'https://trainingbot-cloud.ai-vn.workers.dev/healthz'

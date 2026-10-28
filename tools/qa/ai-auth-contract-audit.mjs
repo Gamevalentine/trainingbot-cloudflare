@@ -12,6 +12,8 @@ function context(text,needle){
 for(const file of files){
  if(!existsSync(file))continue;
  const data=readFileSync(file,'utf8');
+ const helper=file.endsWith('account.html')?context(data,'async function api('):null;
+ if(helper)console.log('BUILD_AUTH_FETCH_HELPER '+JSON.stringify({file,code:helper}));
  let summary={file,usesCookies:/document\.cookie|credentials\s*:\s*['"]include/i.test(data),
   usesLocalStorage:/localStorage/.test(data),usesSessionStorage:/sessionStorage/.test(data),
   setsAuthorizationHeader:/authorization\s*:|headers\.set\(\s*['"]authorization/i.test(data),
