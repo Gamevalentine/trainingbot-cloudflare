@@ -7,6 +7,7 @@ if(window.__TB_WIKI_E__)return;
 const api=window.__TB_WIKI_E__={ready:false,selecting:false,selected:[],open:false};
 let source=null,grid=null,tabs=null,compareBtn=null,tray=null,dialog=null,notice=null;
 let scheduled=false,lastFocus=null;
+const originalCardLabels=new WeakMap();
 const make=(tag,cls,text)=>{
  const el=document.createElement(tag);
  if(cls)el.className=cls;
@@ -62,11 +63,16 @@ function syncCards(){
   const chosen=api.selected.includes(name);
   card.classList.toggle("tb-e-selected",api.selecting&&chosen);
   if(api.selecting&&active()==="weapons"){
+   if(!originalCardLabels.has(card))originalCardLabels.set(card,card.getAttribute("aria-label"));
    card.setAttribute("aria-pressed",String(chosen));
    card.setAttribute("aria-label",(chosen?"Đã chọn ":"Chọn vũ khí ")+(name||""));
-  }else{
+  }else if(originalCardLabels.has(card)){
+   // B's existing accessible action label belongs to the card; restore it.
    card.removeAttribute("aria-pressed");
-   card.removeAttribute("aria-label");
+   const original=originalCardLabels.get(card);
+   if(original===null)card.removeAttribute("aria-label");
+   else card.setAttribute("aria-label",original);
+   originalCardLabels.delete(card);
   }
  }
 }
