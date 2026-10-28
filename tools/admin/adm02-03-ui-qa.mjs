@@ -27,7 +27,7 @@ async function viewportCheck(width){
  const page=await context.newPage();
  const bad=[],actions={apiReads:0,networkWrites:0,externalBlocked:0};
  page.on("pageerror",error=>bad.push(String(error).slice(0,280)));
- await page.route("**/*",route=>{
+ await context.route("**/*",route=>{
   const req=route.request(),url=new URL(req.url()),path=url.pathname;
   if(req.method()!=="GET"&&req.method()!=="HEAD"){
    actions.networkWrites++;return route.abort();
