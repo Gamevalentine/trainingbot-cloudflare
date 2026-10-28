@@ -1,0 +1,68 @@
+name: TrainingBot Wiki V2 — Production rollout acceptance
+on:
+  push:
+    branches:
+      - aion-trainingbot-wiki-v2-public-release-20261029
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions:
+  contents: read
+jobs:
+  wiki-prod-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build real Cloudflare main release with public Wiki and review-only Admin
+        env:
+          CF_PAGES_BRANCH: main
+          TRAININGBOT_LOCAL_G_QA: ""
+          TRAININGBOT_LOCAL_H_QA: ""
+          TRAININGBOT_LOCAL_I_QA: ""
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          npm run build
+          test -f public/wiki-stage-h-perf.js
+          test -f public/admin-wiki-stage-g.js
+          grep -q wiki-stage-h-perf.js public/wiki.html
+          grep -q admin-wiki-stage-g.js public/admin.html
+          grep -q wiki-stage-f-guides.js public/wiki.html
+          test ! -e public/admin-demo.html
+          node --check public/wiki-stage-h-perf.js
+          node --check public/admin-wiki-stage-g.js
+      - name: Canonical metadata, source integrity, SEO isolation and D1 safety
+        run: |
+          node tools/seo/seo-recovery-qa.mjs
+          node tools/qa/p1-seo.mjs
+          node tools/wiki/stage-h-link-audit.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
+          node tools/wiki/stage-i-release-audit.mjs
+          node -e "const d=require('./wiki-stage-i-artifacts/release-gate.json');if(d.releaseDecision!=='NO-GO')process.exit(2);console.log('Limited UI release only; authoritative data and server CMS publication remain blocked')"
+      - name: Install Chromium
+        run: npm install --no-save --no-package-lock playwright
+      - name: Regression Wiki H/G/F/E/D/C/B at 390 768 1440
+        run: |
+          node tools/wiki/stage-h-browser-qa.mjs
+          node tools/wiki/stage-g-browser-qa.mjs
+          node tools/wiki/stage-f-browser-qa.mjs
+          node tools/wiki/stage-e-browser-qa.mjs
+          node tools/wiki/stage-d-browser-qa.mjs
+          node tools/wiki/stage-c-browser-qa.mjs
+          node tools/wiki/stage-b-browser-qa.mjs
+      - name: Safeguard evidence artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-wiki-v2-production-release-qa
+          path: |
+            wiki-stage-i-artifacts/
+            wiki-stage-h-artifacts/
+            wiki-stage-g-screenshots/
+            wiki-stage-f-screenshots/
+            wiki-stage-e-screenshots/
+            seo-recovery-artifacts/
+          retention-days: 30
+          if-no-files-found: ignore
