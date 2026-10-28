@@ -24,13 +24,21 @@
 ## Điều kiện nghiệm thu kỹ thuật
 
 - [x] Mã F, CSS, JSON, build loader và workflow được đưa vào branch F.
-- [ ] Browser QA F ở 390px / 768px / 1440px có kết quả CI PASS.
-- [ ] Hồi quy E/D/C/B/SEO/D1 trên build tích hợp có kết quả CI PASS.
-- [ ] Lưu screenshot artifact và xác nhận không có API ghi ngoài telemetry mock.
-- [ ] Kiểm tra Cloudflare Pages Preview ứng với HEAD và nghiệm thu UI.
+- [x] Browser QA F ở 390px / 768px / 1440px có kết quả CI PASS.
+- [x] Hồi quy E/D/C/B/SEO/D1 trên build tích hợp có kết quả CI PASS.
+- [x] Lưu screenshot artifact và xác nhận không có API ghi ngoài telemetry mock.
+- [x] Cloudflare Pages đã thông báo Preview deploy SUCCESS cho HEAD ban đầu; [mở bản Wiki F](https://9c85ad3b.trainingbot-cloudflare.pages.dev/wiki). Kiểm tra độc lập UX trên host Pages vẫn là mục kiểm thử thủ công, chưa ghi PASS.
 - [ ] PR Draft, không merge hoặc thay đổi Production.
 
 **Giới hạn:** Đạt F về chức năng hướng dẫn không có nghĩa dữ liệu 61 súng, 51 phụ kiện, 26 xe, 8 bản đồ đã được kiểm chứng toàn bộ; quyền hình ảnh/hiệu năng game thực tế tiếp tục nằm trong backlog C/D/E.
+
+## Bằng chứng nghiệm thu tự động — 29/10/2026
+
+- [GitHub Actions #40775653524](https://github.com/Gamevalentine/trainingbot-cloudflare/actions/runs/40775653524) **SUCCESS** trên commit mã/biên bản `0ea59828932be60f6116404b600bbe19f07a2d33`.
+- Chromium ghi `WIKI F 390 PASS`, `WIKI F 768 PASS`, `WIKI F 1440 PASS`: đầy đủ 16 bài, 4 chủ đề, tìm kiếm không dấu, nguồn lịch sử, liên kết Wiki gốc, permalink, responsive và không có API writes.
+- Hồi quy E/D/C/B tại 390/768/1440, SEO và D1 Preview isolation đều **PASS**. Kiểm thử HTTP/Browser thực hiện bằng local Chromium và API mock, không xác nhận mọi dữ liệu PUBG MOBILE hiện tại.
+- Artifact `trainingbot-wiki-stage-f-qa`, ID `12854571950`, chứa ảnh QA; [xem GitHub Actions](https://github.com/Gamevalentine/trainingbot-cloudflare/actions/runs/40775653524).
+- [Cloudflare Pages bot thông báo Deploy successful](https://github.com/Gamevalentine/trainingbot-cloudflare/pull/27#issuecomment-6481613109) tại `9c85ad3b.trainingbot-cloudflare.pages.dev`. **Chưa có nghiệm thu UX độc lập trên địa chỉ Pages**; không coi triển khai Preview là Production.
 
 ## Kế hoạch tiếp theo — Giai đoạn G (Admin Wiki)
 
