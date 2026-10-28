@@ -52,6 +52,7 @@ const db={
         if(sql.startsWith("PRAGMA"))return {results:["city","region","country"].map(name=>({name}))};
         return {results:[]};
       },
+      async first(){return null;},
       async run(){return {success:true};}
     };
     return value;
