@@ -64,7 +64,7 @@ try{
    }
    await page.locator("#tbGKind").selectOption("all");
    await page.locator("#tbGSearch").fill("erangel");
-   assert.equal(await page.locator("#tbGList .tb-g-row").count(),1);
+   assert.equal(await page.locator("#tbGList .tb-g-row").count(),2,"Search should return Erangel map and related F guide");
    await page.locator("#tbGSearch").fill("");
    // G.3 approval must be flagged when URL/version/date and image license missing.
    await page.locator("#tbGKind").selectOption("weapons");
