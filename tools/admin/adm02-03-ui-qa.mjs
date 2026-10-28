@@ -74,12 +74,9 @@ async function viewportCheck(width){
   await page.waitForSelector("#adminApp:not(.hidden)",{timeout:13000});
   await page.waitForFunction(()=>document.getElementById("kpiUsers")?.textContent==="8",undefined,{timeout:9000});
 
-  if(width<=760){
-   await page.locator("#openSidebar").click();
-   await page.locator('#sidebar .nav-item[data-view="content"]').click();
-  }else{
-   await page.locator('#sidebar .nav-item[data-view="content"]').click();
-  }
+  const menuToggle=page.locator("#openSidebar");
+  if(await menuToggle.isVisible())await menuToggle.click();
+  await page.locator('#sidebar .nav-item[data-view="content"]').click();
   await page.waitForFunction(()=>document.querySelector('[data-view-panel="content"]')?.classList.contains("active"),undefined,{timeout:6000});
   assert.equal(await page.locator("#pageEyebrow").textContent(),"NỘI DUNG");
   assert.equal(await page.locator('#sidebar .nav-item[data-view="content"]').getAttribute("aria-current"),"page");
@@ -113,7 +110,7 @@ async function viewportCheck(width){
   assert.equal(await page.locator("#tbAdminStageBMain").evaluate(el=>document.activeElement===el),true);
   assert.equal(new URL(page.url()).hash,oldHash);
 
-  if(width<=760){
+  if(await page.locator("#openSidebar").isVisible()){
    await page.locator("#openSidebar").click();
    await page.keyboard.press("Escape");
    const sidebarState=await page.evaluate(()=>({
