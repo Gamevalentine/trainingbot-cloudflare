@@ -20,7 +20,8 @@ function openTab(path="/wiki"){
   const context={
     globalThis:null,Date:TestDate,localStorage,sessionStorage,
     crypto:{randomUUID:()=>String(counter++).padStart(32,"a").replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/,"$1-$2-$3-$4-$5")},
-    location:{pathname:path,origin:"https://trainingbot.io.vn",href:"https://trainingbot.io.vn"+path},
+    URLSearchParams,
+    location:{pathname:path,search:"",origin:"https://trainingbot.io.vn",href:"https://trainingbot.io.vn"+path},
     document:{referrer:"",visibilityState:"visible",addEventListener(){}},
     addEventListener(){},setInterval(){return 1},clearInterval(){},
     fetch:async (url,opts)=>{sent.push({url,payload:JSON.parse(opts.body)});return {ok:true};}
