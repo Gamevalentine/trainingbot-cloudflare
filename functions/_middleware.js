@@ -81,10 +81,15 @@ export async function onRequest(context){
    * Production/custom domain and the canonical pages.dev host are unaffected.
    */
   if(isTrainingBotPreview(url.hostname)){
+    // Three exact B.1 exceptions; all other Preview mutations remain forbidden.
+    // Each BFF handler is independently Preview-only and has NO Production binding.
     const safeAiStatus = url.pathname === "/api/ai-preview/status" && request.method === "GET";
+    const safeAiVisitorPost = request.method === "POST" &&
+      (url.pathname === "/api/ai-preview/session" || url.pathname === "/api/ai-preview/chat");
     const apiPath=url.pathname.startsWith("/api/");
-    if(!["GET","HEAD"].includes(request.method) ||
-       (apiPath&&(request.method!=="GET"||(!PUBLIC_READ_PATHS.has(url.pathname)&&!safeAiStatus)))){
+    if((!["GET","HEAD"].includes(request.method)&&!safeAiVisitorPost) ||
+       (apiPath&&(!safeAiStatus&&!safeAiVisitorPost&&
+          (request.method!=="GET"||!PUBLIC_READ_PATHS.has(url.pathname))))){
       return new Response(JSON.stringify({
         ok:false,message:"Bản Preview chỉ cho phép đọc dữ liệu công khai."
       }),{
@@ -97,7 +102,10 @@ export async function onRequest(context){
       });
     }
   }
-  if(isTrainingBotPreview(url.hostname) && url.pathname === "/api/ai-preview/status" && request.method === "GET")
+  if(isTrainingBotPreview(url.hostname) && (
+    (url.pathname === "/api/ai-preview/status" && request.method === "GET") ||
+    (request.method === "POST" &&
+      (url.pathname === "/api/ai-preview/session" || url.pathname === "/api/ai-preview/chat"))))
     return context.next();
   // Preview has no D1: an explicit download opens the canonical public endpoint.
   // No credentials are forwarded, and no background count is created.
