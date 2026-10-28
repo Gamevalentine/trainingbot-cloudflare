@@ -84,7 +84,7 @@ try{
    await page.locator("#tbECompareModal .tb-e-close").click();
    await page.locator("#tbETray .tb-e-exit").click();
    assert.equal(await page.evaluate(()=>window.__TB_WIKI_E__.selecting),false);
-   assert.equal(await page.locator("#tbETray:visible").count(),0);
+   await page.waitForFunction(()=>document.getElementById("tbETray")?.hidden===true,undefined,{timeout:8000});
    await clickWeapon(page,"M416");
    await page.waitForFunction(()=>document.querySelector(".tb-v145.open")?.querySelector("h2")?.textContent==="M416",undefined,{timeout:9000});
    await page.locator(".tb-v145-close").click();
@@ -100,7 +100,7 @@ try{
    }
    await page.locator('#tbWikiTabs .tb-wiki-tab[data-tab="attachments"]').evaluate(el=>el.click());
    await page.waitForFunction(()=>document.querySelector("#tbWikiTabs .tb-wiki-tab.active")?.dataset.tab==="attachments"&&!window.__TB_WIKI_E__.selecting,undefined,{timeout:9000});
-   assert.equal(await page.locator("#tbETray:visible").count(),0);
+   await page.waitForFunction(()=>document.getElementById("tbETray")?.hidden===true,undefined,{timeout:8000});
    assert.deepEqual(writes,[],"Unexpected API writes");
    assert.deepEqual(errors,[],"JS errors "+errors.join("; "));
    console.log("WIKI E "+width+" PASS: 2/3 selection, v145 guard, no fake scores, 2.4 chart, share/restore, navigation");
