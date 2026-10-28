@@ -1,0 +1,117 @@
+// Admin V5 visual/function acceptance on the genuine A–E Admin with mock APIs.
+// All URLs outside local server are blocked. No Cloudflare or real credentials.
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import {spawn} from "node:child_process";
+import {chromium} from "playwright";
+const ROOT="http://127.0.0.1:18995",TOKEN="V5_SAFE_FAKE_LOGIN";
+const groups=["dashboard","content","library","community","analytics","settings"];
+const routes=["dashboard","posts","content","wiki","studio","beta","media","users","inbox","analytics","visitor-tracking","security","system"];
+const panelGroups={dashboard:["dashboard"],content:["posts","content","wiki","studio","beta"],library:["media"],community:["users","inbox"],analytics:["analytics","visitor-tracking"],settings:["security","system"]};
+assert(fs.readFileSync("public/admin.html","utf8").includes("admin-six-groups-v5.js"));
+assert(fs.existsSync("public/admin-six-groups-v5.css"));
+assert(!fs.existsSync("public/admin-demo.html"));
+const server=spawn("python3",["-m","http.server","18995","--bind","127.0.0.1","--directory","public"],{stdio:"ignore"});
+const delay=ms=>new Promise(r=>setTimeout(r,ms));
+let browser;
+try{
+ await delay(750);
+ browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_BIN||"/usr/bin/google-chrome",args:["--no-sandbox"]});
+ for(const width of [390,768,1440]){
+  const ctx=await browser.newContext({viewport:{width,height:900},reducedMotion:"reduce"});
+  const writes=[],outside=[],errors=[];
+  await ctx.route("**/*",r=>{
+   const req=r.request(),url=new URL(req.url()),path=url.pathname;
+   const json=data=>r.fulfill({status:200,contentType:"application/json",body:JSON.stringify(data)});
+   if(path.startsWith("/api/")){
+    if(!["GET","HEAD"].includes(req.method()))writes.push(req.method()+" "+path);
+    if(path==="/api/v49/admin/users")return json({ok:true,users:[],stats:{total:2,active_24h:1,active_7d:2,new_today:0}});
+    if(path.endsWith("/admin-contacts"))return json({ok:true,messages:[],counts:{total:0,unread:0,read:0,replied:0}});
+    if(path.includes("/posts"))return json({ok:true,posts:[]});
+    if(path.includes("beta-versions"))return json({ok:true,versions:[]});
+    if(path.includes("visitor-events"))return json({ok:true,summary:{today_visitors:0,today_sessions:0,online_visitors:0,online_sessions:0},sessions:[]});
+    return json({ok:true,page:"/index.html",changes:[]});
+   }
+   if(url.origin===ROOT)return r.continue();
+   outside.push(req.url());return r.abort();
+  });
+  const page=await ctx.newPage();
+  page.on("pageerror",e=>errors.push(e.message));
+  const click=selector=>page.evaluate(s=>{
+   const el=document.querySelector(s);
+   if(!el)throw Error("V5 button missing "+s);
+   el.click();
+  },selector);
+  try{
+   await page.goto(ROOT+"/admin.html",{waitUntil:"domcontentloaded",timeout:23000});
+   await page.waitForFunction(()=>document.body.classList.contains("tb-admin-six-groups")&&!!document.getElementById("tb5Categories"),undefined,{timeout:22000});
+   assert.equal(await page.locator("#adminApp.hidden").count(),1,"Admin must require login");
+   await page.locator("#adminToken").fill(TOKEN);
+   await click('#loginForm button[type="submit"]');
+   await page.waitForFunction(()=>!!document.getElementById("adminApp")&&!document.getElementById("adminApp").classList.contains("hidden"),undefined,{timeout:16000});
+   await page.waitForFunction(()=>document.querySelectorAll("#sidebar .nav-item").length===13,undefined,{timeout:13000});
+   const keys=await page.evaluate(()=>[...document.querySelectorAll("#sidebar .nav-item")].map(n=>n.id==="tbVisitorNav"?"visitor-tracking":n.dataset.view));
+   assert.deepEqual(keys,routes,"Legacy route handlers missing");
+   assert.equal(await page.locator("#tb5Categories .tb5-category").count(),6);
+   assert.deepEqual(await page.locator("#tb5Categories .tb5-category").evaluateAll(xs=>xs.map(x=>x.dataset.tb5Group)),groups);
+   assert.equal(await page.locator("#sidebar .side-nav").evaluate(el=>getComputedStyle(el).display),"none","Old long sidebar must be hidden");
+   const categorySizes=await page.locator("#tb5Categories").evaluate(el=>({
+    css:getComputedStyle(el).display,height:el.getBoundingClientRect().height,
+    sheet:[...document.styleSheets].some(s=>s.href?.includes("admin-six-groups-v5.css"))
+   }));
+   assert(categorySizes.sheet&&categorySizes.css==="flex");
+   assert(categorySizes.height<650,"Six category buttons should not create a long sidebar");
+
+   // Clicking sidebar category MUST NOT open a legacy panel directly.
+   await click('#tb5Categories button[data-tb5-group="content"]');
+   await page.waitForFunction(()=>document.body.classList.contains("tb-admin-group-home")&&document.getElementById("tb5GroupHome")?.querySelectorAll(".tb5-function-card").length===5,undefined,{timeout:6500});
+   assert.equal(await page.locator("#pageTitle").innerText(),"Nội dung");
+   assert.equal(await page.locator("#tb5GroupHome .tb5-function-card").count(),5);
+   assert.equal(await page.locator("#tb5GroupHome").evaluate(x=>getComputedStyle(x).display)!=="none",true);
+   assert.equal(await page.locator(".view.active").first().evaluate(x=>getComputedStyle(x).display),"none","Legacy panel still showing behind category hub");
+   if(width===390||width===1440){
+    fs.mkdirSync("admin-qa-screenshots",{recursive:true});
+    await page.screenshot({path:"admin-qa-screenshots/admin-v5-content-"+width+".png",animations:"disabled"});
+   }
+   await click('#tb5GroupHome button[data-tb5-route="posts"]');
+   await page.waitForFunction(()=>document.querySelector('[data-view-panel="posts"]')?.classList.contains("active")&&!document.body.classList.contains("tb-admin-group-home"),undefined,{timeout:7000});
+   assert.equal(await page.locator("#tb5Breadcrumb").evaluate(x=>getComputedStyle(x).display)!=="none",true);
+   assert.equal(await page.locator("#tb5CrumbPage").innerText(),"Bài viết");
+   // Return to category from inside original function, keeping its handlers.
+   await click(".tb5-crumb-back");
+   await page.waitForFunction(()=>document.body.classList.contains("tb-admin-group-home")&&document.getElementById("tb5GroupHome")?.querySelectorAll(".tb5-function-card").length===5,undefined,{timeout:7000});
+   await click('#tb5GroupHome button[data-tb5-route="beta"]');
+   await page.waitForFunction(()=>document.querySelector('[data-view-panel="beta"]')?.classList.contains("active")&&!document.body.classList.contains("tb-admin-group-home"),undefined,{timeout:7000});
+   assert.equal(await page.locator('#tb5Categories button[data-tb5-group="content"].active').count(),1);
+
+   for(const [group,children] of Object.entries(panelGroups)){
+    if(group==="dashboard"){
+     await click('#tb5Categories button[data-tb5-group="dashboard"]');
+     await page.waitForFunction(()=>document.querySelector('[data-view-panel="dashboard"]')?.classList.contains("active")&&!document.body.classList.contains("tb-admin-group-home"),undefined,{timeout:7000});
+     continue;
+    }
+    await click('#tb5Categories button[data-tb5-group="'+group+'"]');
+    await page.waitForFunction(n=>document.getElementById("tb5GroupHome")?.querySelectorAll(".tb5-function-card").length===n&&document.body.classList.contains("tb-admin-group-home"),children.length,{timeout:7000});
+    const items=await page.locator("#tb5GroupHome [data-tb5-route]").evaluateAll(xs=>xs.map(x=>x.dataset.tb5Route));
+    assert.deepEqual(items,children,"Missing function card for "+group);
+    // All original function destinations remain reachable from hub.
+    for(const id of children){
+     await click('#tb5GroupHome [data-tb5-route="'+id+'"]');
+     await page.waitForFunction(key=>document.querySelector('[data-view-panel="'+key+'"]')?.classList.contains("active")&&!document.body.classList.contains("tb-admin-group-home"),id,{timeout:7500});
+     if(id!==children[children.length-1]){
+      await click('#tb5Categories button[data-tb5-group="'+group+'"]');
+      await page.waitForFunction(()=>document.body.classList.contains("tb-admin-group-home"),undefined,{timeout:5000});
+     }
+    }
+   }
+   await click('#tb5Categories button[data-tb5-group="content"]');
+   assert.equal((await page.locator("#tb5GroupHome .tb5-function-card").count()),5);
+   const scroll=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,w:document.documentElement.clientWidth}));
+   assert(scroll.doc<=width+7,"V5 caused horizontal overflow "+JSON.stringify(scroll));
+   assert.deepEqual(writes,[],"Unexpected Admin write during navigation");
+   assert(outside.every(s=>s.startsWith("https://fonts.googleapis.com/")),"Unexpected external network "+JSON.stringify(outside));
+   assert.deepEqual(errors,[],"Uncaught JS errors");
+   console.log("Admin V5 "+width+"px PASS — exactly 6 sidebar groups, 13 reachable original routes, main-area cards, breadcrumbs, no API writes");
+  }finally{await ctx.close();}
+ }
+}finally{if(browser)await browser.close();server.kill("SIGTERM");}
