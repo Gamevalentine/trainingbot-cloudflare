@@ -1,0 +1,22 @@
+name: TrainingBot A.1 - historical auth source discovery
+on:
+  push:
+    branches: [preview/ai-identity-bridge]
+    paths: [.github/workflows/trainingbot-a1-auth-history.yml, tools/qa/a1-auth-history-audit.mjs]
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch reachable repository branches and deleted file paths
+        run: git fetch --no-tags origin '+refs/heads/*:refs/remotes/origin/*'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Inspect historical worker and login file paths only
+        run: node tools/qa/a1-auth-history-audit.mjs
