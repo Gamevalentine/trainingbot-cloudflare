@@ -1,0 +1,80 @@
+{
+  "schemaVersion": "wiki-d1",
+  "reviewedAt": "2026-10-29",
+  "sources": {
+    "pubg-vi-4.6": {
+      "title": "Thông Báo Cập Nhật Phiên Bản 4.6 — PUBG MOBILE Việt Nam",
+      "url": "https://pubgm.vnggames.com/tin-tuc/thong-bao-cap-nhat/thong-bao-cap-nhat-phien-ban-4-6.html",
+      "version": "4.6",
+      "publishedAt": "2026-09-07",
+      "verifiedAs": "release_specific",
+      "currentGameStatus": "not_asserted"
+    }
+  },
+  "coverage": {
+    "attachments": {
+      "total": 51,
+      "verifiedCompatibility": 0,
+      "verifiedImageRights": 0
+    },
+    "vehicles": {
+      "total": 26,
+      "verifiedSpecificationsAll": 0,
+      "unlistedOfficialItems": 1
+    },
+    "maps": {
+      "total": 8,
+      "officialModeSpecificNotes": 3
+    }
+  },
+  "attachments": {
+    "all": {
+      "note": "Tên/nhóm/công dụng đang lấy từ DATA Wiki; tính tương thích từng vũ khí và quyền dùng ảnh chưa được xác minh theo phiên bản.",
+      "status": "not_verified"
+    }
+  },
+  "vehicles": {
+    "Tracked Amphicarrier": {
+      "sourceId": "pubg-vi-4.6",
+      "note": "Ghi chú 4.6 nêu BRDM-2 có thể xuất hiện tại Nhà Xe Tự Chọn; Wiki đang hiển thị tên Tracked Amphicarrier. Hai nhãn cần được rà soát khi chuẩn hóa.",
+      "status": "name_mapping_review",
+      "release": "4.6"
+    },
+    "BRDM-2": {
+      "sourceId": "pubg-vi-4.6",
+      "note": "Nguồn 4.6 ghi BRDM-2 có thể xuất hiện tại Nhà Xe Tự Chọn và sử dụng Xu Cửa Hàng để kích hoạt.",
+      "status": "source_specific",
+      "release": "4.6"
+    }
+  },
+  "unlisted": {
+    "Thuyền Cao Su": {
+      "category": "vehicles",
+      "sourceId": "pubg-vi-4.6",
+      "status": "official_not_in_legacy_catalog",
+      "seats": 4,
+      "note": "Phương tiện có thể nhặt, triển khai và thu hồi. Người ở ghế phụ có thể chèo; nhiều người chèo giúp thuyền đi nhanh hơn.",
+      "release": "4.6"
+    }
+  },
+  "maps": {
+    "Erangel": {
+      "sourceId": "pubg-vi-4.6",
+      "release": "4.6",
+      "status": "mode_specific",
+      "note": "Bản đồ hỗ trợ chế độ chủ đề Thợ Săn Huyết Dạ trong bản 4.6. Không chứng minh mọi vật phẩm xuất hiện tại mọi chế độ."
+    },
+    "Livik": {
+      "sourceId": "pubg-vi-4.6",
+      "release": "4.6",
+      "status": "mode_specific",
+      "note": "Bản đồ hỗ trợ chế độ chủ đề Thợ Săn Huyết Dạ trong bản 4.6."
+    },
+    "Sanhok": {
+      "sourceId": "pubg-vi-4.6",
+      "release": "4.6",
+      "status": "mode_specific",
+      "note": "Bản đồ hỗ trợ chế độ chủ đề Thợ Săn Huyết Dạ trong bản 4.6."
+    }
+  }
+}
