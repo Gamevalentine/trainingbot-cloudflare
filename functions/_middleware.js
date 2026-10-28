@@ -67,7 +67,7 @@ async function previewPublicReadOnly({request},url){
   }
 }
 
-export async function onRequest(context){
+async function handleRequest(context){
   const {request,env}=context;
   const url=new URL(request.url);
 
@@ -137,4 +137,17 @@ export async function onRequest(context){
     console.error("site image override",error);
     return context.next();
   }
+}
+
+/* SEO-R: all branch previews must be non-indexable, including static HTML.
+ * This wrapper does not modify Production responses or change the Preview
+ * read-only API policy. Page HTML canonical remains the branded domain.
+ */
+export async function onRequest(context){
+  const response=await handleRequest(context);
+  const host=new URL(context.request.url).hostname;
+  if(!isTrainingBotPreview(host))return response;
+  const headers=new Headers(response.headers);
+  headers.set("x-robots-tag","noindex, nofollow");
+  return new Response(response.body,{status:response.status,statusText:response.statusText,headers});
 }
