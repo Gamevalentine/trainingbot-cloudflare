@@ -52,7 +52,6 @@ try{
   mode[type]=next;
   const prior=counts[type];
   await page.locator("#"+id).evaluate(el=>el.click());
-  await page.waitForFunction(({k,n})=>window.__dummy===true||false,{k:type,n:prior},{timeout:20}).catch(()=>{});
   for(let i=0;i<80&&counts[type]===prior;i++)await sleep(30);
   assert(counts[type]>prior,"No mocked request from "+type+" "+next);
   await sleep(100);
@@ -99,9 +98,6 @@ try{
 
  await page.waitForSelector("#tbPostManager",{state:"attached",timeout:15000});
  const pbtn="#tbPostManager .tb-post-refresh";
- await requestOn("tbPostManagerRefresh","posts","empty",async()=>{}).catch(async err=>{
-  if(!String(err).includes("No mocked request"))throw err;
- });
  // Exact manager button may not have an ID in the legacy script.
  async function postsLoad(next,assertion){
   mode.posts=next;const n=counts.posts;
@@ -126,6 +122,7 @@ try{
  console.log("ADM-01 posts 0/data/401/403/503/offline/malformed: PASS");
 
  await page.locator("#tbVisitorNav").waitFor({state:"attached",timeout:10000});
+ mode.visitor="offline";
  await page.locator("#tbVisitorNav").evaluate(el=>el.click());
  await page.waitForSelector("#tbVisitorPanel",{state:"attached",timeout:7000});
  const ids=["tbVisitorTodayPeople","tbVisitorTodaySessions","tbVisitorOnline","tbVisitorRecent"];
