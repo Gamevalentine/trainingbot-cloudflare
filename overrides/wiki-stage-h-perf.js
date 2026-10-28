@@ -40,8 +40,14 @@ function prepare(){
  }
  return true;
 }
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",prepare,{once:true});
-else prepare();
+let attempts=0;
+function boot(){
+ if(prepare())return;
+ if(++attempts<=200)setTimeout(boot,75);
+ else state.error="Wiki grid unavailable after boot";
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});
+else boot();
 state.capture=()=>({metrics:{...metrics},imagesPrepared:state.imagesPrepared,
  navigation:performance.getEntriesByType("navigation").map(e=>({domContentLoaded:Math.round(e.domContentLoadedEventEnd),loadEvent:Math.round(e.loadEventEnd),transferSize:e.transferSize})),
  resources:performance.getEntriesByType("resource").length});
