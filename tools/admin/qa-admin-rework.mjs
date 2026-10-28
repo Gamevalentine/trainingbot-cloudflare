@@ -37,7 +37,7 @@ try{
   assert.equal(await page.locator('[data-view-panel="studio"]').count(),1,"Studio legacy editor route must remain intact");
   assert.equal(await page.locator(".command-hero").count()>0,true,"Legacy source unexpectedly changed");
   assert.equal(await page.locator(".tb-admin-beta-panel").count(),1);
-  await page.waitForSelector(".tb-admin-beta-panel #tbBetaForm",{timeout:12000});
+  await page.waitForSelector(".tb-admin-beta-panel #tbBetaForm",{state:"attached",timeout:12000});
   assert.equal(await page.locator('[data-view-panel="content"] #tbBetaForm').count(),0,"Beta form still on page content");
   assert.equal(await page.locator(".tb-admin-beta-editor:not([open])").count(),1,"Beta editor should start collapsed");
   const betaStatus=await page.locator("#tbBetaStatus").innerText();
