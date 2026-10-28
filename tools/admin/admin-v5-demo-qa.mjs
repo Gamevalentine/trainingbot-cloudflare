@@ -22,7 +22,7 @@ try{
    }
    return route.continue();
   });
-  const page=await ctx.newPage();page.on("pageerror",e=>errors.push(e.message));
+  const page=await ctx.newPage();page.on("pageerror",e=>errors.push(e.stack||e.message));
   try{
    await page.goto(root+"/admin-demo.html",{waitUntil:"domcontentloaded",timeout:27000});
    try{
