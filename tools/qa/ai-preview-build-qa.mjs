@@ -7,6 +7,7 @@ for(const path of ['public/ai-preview.html','public/ai-admin-preview.html',
 for(const path of ['public/ai-preview.html','public/ai-admin-preview.html']){
  const html=readFileSync(path,'utf8');
  assert.match(html,/noindex,nofollow/);
+ assert.doesNotMatch(html,/footer_v135\.js|visitor_tracking_v177\.js|header_search_v152\.js/);
  assert.match(html,/ai-preview\.js/);
  assert.doesNotMatch(html,/API_TOKEN|TRAININGBOT_AI_SESSION_HMAC_KEY/);
 }
