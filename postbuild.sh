@@ -112,3 +112,21 @@ html=html.replace(marker,inject+marker);
 fs.writeFileSync(file,html);
 NODE
 grep -q 'admin-visual-v3.js' public/admin.html
+
+
+# ADMIN LAYOUT V4 — after A–E + V3. Recompose Dashboard using preserved
+# legacy nodes and handlers; public website and API routing untouched.
+test -f public/admin-layout-v4.js
+test -f public/admin-layout-v4.css
+node --check public/admin-layout-v4.js
+node <<'NODE'
+const fs=require("fs"),p="public/admin.html";
+let html=fs.readFileSync(p,"utf8");
+const marker="document.open();document.write(h);document.close()";
+if(!html.includes(marker)||!html.includes("admin-visual-v3.js"))throw Error("V4 requires unchanged Admin A-E/V3 loader");
+if(html.includes("admin-layout-v4.js"))throw Error("V4 injected twice");
+html=html.replace(marker,
+  "h=h.replace('</body>','<script defer src=\"/admin-layout-v4.js?v=1\"><\\/script></body>');"+marker);
+fs.writeFileSync(p,html);
+NODE
+grep -q 'admin-layout-v4.js' public/admin.html
