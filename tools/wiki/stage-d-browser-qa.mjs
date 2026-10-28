@@ -64,8 +64,11 @@ try{
     await page.locator("#tbWikiModalClose").click();
    }
    await page.locator('#tbWikiTabs .tb-wiki-tab[data-tab="maps"]').evaluate(el=>el.click());
-   await page.waitForFunction(()=>!document.querySelector("#tbDSourceSummary")?.hidden&&document.querySelectorAll("#tbWikiGrid .tb-wiki-card").length===8,undefined,{timeout:7000});
-   assert((await page.locator("#tbDSourceSummary").innerText()).includes("3 ghi chú"));
+   await page.waitForFunction(()=>{
+    const box=document.querySelector("#tbDSourceSummary");
+    return !box?.hidden&&document.querySelectorAll("#tbWikiGrid .tb-wiki-card").length===8&&box.textContent.includes("3 ghi chú");
+   },undefined,{timeout:7000});
+   assert((await page.locator("#tbDSourceSummary").textContent()).includes("3 ghi chú"));
    await clickCard(page,"Erangel");
    await page.waitForFunction(()=>!!document.querySelector("#tbWikiModal.open .tb-d-release"),undefined,{timeout:7000});
    const section=await page.locator("#tbWikiModal .tb-d-release").innerText();
