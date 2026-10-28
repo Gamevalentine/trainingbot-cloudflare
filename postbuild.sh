@@ -40,3 +40,6 @@ done
 if ! grep -q 'site_featured_posts_v173\.js' public/news.html; then
   sed -i 's#</body>#  <script defer src="/site_featured_posts_v173.js?v=174"></script>\n</body>#' public/news.html
 fi
+
+# ADM-01: guarded readable state corrections to generated Admin HTML only.
+node tools/admin/adm01-runtime-transform.mjs
