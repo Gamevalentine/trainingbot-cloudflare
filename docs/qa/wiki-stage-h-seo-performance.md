@@ -22,11 +22,22 @@
 ## Tiêu chí nghiệm thu
 
 - [x] Tệp mã H, QA và workflow được thêm trên nhánh riêng; không chỉnh Worker/D1/R2/Production.
-- [ ] H.1/H.4 static SEO và source-link audit PASS.
-- [ ] H.2/H.3 Chromium chạy PASS đủ 390/768/1440 và có file số đo **thực** trong artifact.
-- [ ] H.5 hồi quy G/F/E/D/C/B + SEO/D1 và Production exclusion PASS.
-- [ ] Cloudflare Pages Preview đúng HEAD cuối `Deploy successful` và có địa chỉ nghiệm thu.
+- [x] H.1/H.4 static SEO và source-link audit PASS, 16 guide links và 11 registry evidence references.
+- [x] H.2/H.3 Chromium PASS 390/768/1440, CLS <= 0.1, có FCP/LCP/CLS và screenshots trong artifact; no-JS HTML hiển thị.
+- [x] H.5 hồi quy G/F/E/D/C/B + SEO/D1 và Production exclusion PASS trên commit mã f5e92db.
+- [x] Cloudflare Pages thông báo Deploy successful cho commit f5e92db: https://d98f0bff.trainingbot-cloudflare.pages.dev/wiki. Sau commit biên bản này cần đối chiếu Preview mới.
 - [ ] Nghiệm thu UX trực tiếp trên Cloudflare Pages bằng thiết bị thật: cần kiểm tra thêm nếu chưa có thử nghiệm độc lập.
+
+## Biên bản kết quả đã xác nhận (mã f5e92db)
+
+- [CI #40780345758](https://github.com/Gamevalentine/trainingbot-cloudflare/actions/runs/40780345758): **SUCCESS**, lint/build, H.1/H.4, Chromium H ở 3 viewport, no-JS, G/F/E/D/C/B 3 viewport, P1 SEO, P3.1 D1 isolation, Production exclusion.
+- [Artifact đo H](https://github.com/Gamevalentine/trainingbot-cloudflare/actions/runs/40780345758/artifacts/12857455760) `trainingbot-wiki-stage-h-qa`: `lab-metrics.json`, `link-audit.json`, `seo-build.json`, ảnh 3 màn hình.
+- **390px**: FCP 444 ms, LCP 1.132 ms, CLS 0,0006.
+- **768px**: FCP 200 ms, LCP 628 ms, CLS 0.
+- **1440px**: FCP 208 ms, LCP 692 ms, CLS 0.
+- Đã giảm CLS bằng trạng thái chờ bố cục có giới hạn và fallback 3,2 giây; không ẩn trang khi JS bị tắt. Bộ QA có ngưỡng bắt buộc CLS <= 0,1.
+- Cloudflare [Preview #d98f0bff](https://d98f0bff.trainingbot-cloudflare.pages.dev/wiki) được bot thông báo deploy thành công. **Chưa có kiểm tra độc lập UX/người dùng thật ở host Pages**.
+- Không đo field INP/CrUX, chưa đo Lighthouse thực địa hoặc Core Web Vitals ngoài CI. Chưa xác minh live tất cả URL nguồn ngoài và quyền ảnh. H không tự phát hành Production.
 
 ## Kế hoạch tiếp theo — Giai đoạn I: chuẩn bị phát hành Wiki V2
 
