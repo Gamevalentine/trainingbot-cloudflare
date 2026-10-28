@@ -41,6 +41,12 @@ const eyebrow=document.getElementById("pageEyebrow");
 const style=document.createElement("link");
 style.id="tb5CategoryStyle";style.rel="stylesheet";style.href="/admin-six-groups-v5.css?v=1";
 document.head.append(style);
+// Quiet, professional UI polish. Loaded after V5 CSS so it can rebalance
+// hierarchy without replacing the six-category interaction model.
+const polish=document.createElement("link");
+polish.id="tb5WorkspacePolishStyle";polish.rel="stylesheet";
+polish.href="/admin-workspace-polish-v5.css?v=1";
+document.head.append(polish);
 document.body.classList.add("tb-admin-six-groups");
 sidebar.querySelector(".tb3-sidebar-version")?.remove();
 // Hidden legacy menu retains all listeners but is excluded from tab and screen reader.
@@ -92,31 +98,95 @@ function selectSide(groupId){
   if(active)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");
  }
 }
+// Small original outline pictograms. All icons are inline vector data: no
+// third-party resources, emoji/font fallback, tracking or network requests.
+const vectorPaths={
+ dashboard:"M4 4h7v7H4z M13 4h7v7h-7z M4 13h7v7H4z M13 13h7v7h-7z",
+ content:"M4 5h16v14H4z M4 10h16 M10 10v9",
+ library:"M4 4h16v16H4z M7 16l4-5 3 3 2-2 4 4 M8 8h.01",
+ community:"M15 19v-2c0-2-2-3-4-3H7c-2 0-4 1-4 3v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M17 11c2 0 4 1 4 3v5 M17 3a4 4 0 0 1 0 8",
+ analytics:"M4 20V13 M10 20V8 M16 20V4 M22 20V11",
+ settings:"M12 3l2 2 3-.2 1 3 2 2-1 2 1 3-2 2-1 3-3-.2-2 2-2-2-3 .2-1-3-2-2 1-3-1-2 2-2 1-3 3 .2z M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6",
+ posts:"M7 3h8l4 4v14H5V3h2 M14 3v5h5 M8 12h8 M8 16h8",
+ wiki:"M12 6c-3-2-6-2-9-1v14c3-1 6-1 9 1 3-2 6-2 9-1V5c-3-1-6-1-9 1z M12 6v14",
+ studio:"M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8z M19 18l.7 1.3L21 20l-1.3.7L19 22l-.7-1.3L17 20l1.3-.7z",
+ beta:"M12 3v12 M7 10l5 5 5-5 M5 20h14",
+ media:"M4 5h16v14H4z M4 15l5-5 4 4 3-3 4 4 M8 8h.01",
+ users:"M16 20v-2c0-2.3-1.8-4-4-4H8c-2.2 0-4 1.7-4 4v2 M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M18 8a3 3 0 0 1 0 6 M20 20v-2a4 4 0 0 0-2-3.3",
+ inbox:"M3 6h18v12H3z M3 7l9 7 9-7",
+ "visitor-tracking":"M2 12c4-7 16-7 20 0-4 7-16 7-20 0z M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6",
+ security:"M12 3l8 4v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7z M9 12l2 2 4-4",
+ system:"M12 3l2 2 3-.2 1 3 2 2-1 2 1 3-2 2-1 3-3-.2-2 2-2-2-3 .2-1-3-2-2 1-3-1-2 2-2 1-3 3 .2z M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6"
+};
+function vectorIcon(id){
+ const ns="http://www.w3.org/2000/svg";
+ const svg=document.createElementNS(ns,"svg");
+ svg.setAttribute("viewBox","0 0 24 24");
+ svg.setAttribute("aria-hidden","true");
+ svg.setAttribute("focusable","false");
+ const path=document.createElementNS(ns,"path");
+ path.setAttribute("d",vectorPaths[id]||vectorPaths.content);
+ path.setAttribute("fill","none");
+ path.setAttribute("stroke","currentColor");
+ path.setAttribute("stroke-width","1.75");
+ path.setAttribute("stroke-linejoin","round");
+ path.setAttribute("stroke-linecap","round");
+ svg.append(path);
+ return svg;
+}
 function renderHub(group){
  hub.replaceChildren();
- const top=document.createElement("div");top.className="tb5-hub-head";
+ hub.dataset.tb5Group=group.id;
+ const top=document.createElement("div");
+ top.className="tb5-hub-head";
+ const left=document.createElement("div");left.className="tb6-hub-left";
+ const symbol=document.createElement("span");symbol.className="tb6-hub-glyph";
+ symbol.append(vectorIcon(group.id));
+ const copy=document.createElement("div");copy.className="tb6-hub-copy";
  const kicker=document.createElement("span");kicker.className="tb5-hub-kicker";
- kicker.textContent="TRAININGBOT / ADMIN CENTER";
+ kicker.textContent="TRAININGBOT  /  KHÔNG GIAN QUẢN TRỊ";
  const title=document.createElement("h2");title.textContent=group.label;
  const subtitle=document.createElement("p");subtitle.textContent=group.description;
- const summary=document.createElement("div");summary.className="tb5-hub-total";
- summary.textContent=group.items.length+" chức năng";
- top.append(kicker,title,subtitle,summary);
+ copy.append(kicker,title,subtitle);left.append(symbol,copy);
+ const total=document.createElement("div");total.className="tb5-hub-total";
+ const n=document.createElement("strong");n.className="tb6-count-number";
+ n.textContent=String(group.items.length).padStart(2,"0");
+ const caption=document.createElement("span");caption.className="tb6-count-caption";
+ caption.textContent="chức năng";
+ total.append(n,caption);
+ top.append(left,total);
+ const section=document.createElement("div");section.className="tb6-section-heading";
+ const subhead=document.createElement("h3");subhead.textContent="Công cụ quản lý";
+ const sublabel=document.createElement("p");
+ sublabel.textContent="Chọn công cụ để mở khu vực làm việc";
+ section.append(subhead,sublabel);
  const cards=document.createElement("div");cards.className="tb5-function-grid";
- for(const [id,label,detail,icon] of group.items){
-  const b=document.createElement("button");b.className="tb5-function-card";b.type="button";
-  b.dataset.tb5Route=id;
+ cards.dataset.tb6Count=String(group.items.length);
+ for(const [id,label,detail] of group.items){
+  const b=document.createElement("button");
+  b.className="tb5-function-card tb6-function-card";
+  b.type="button";b.dataset.tb5Route=id;
+  if(group.id==="content"&&id==="posts")b.classList.add("tb6-feature");
   const head=document.createElement("span");head.className="tb5-card-heading";
-  const glyph=document.createElement("span");glyph.className="tb5-function-icon";glyph.setAttribute("aria-hidden","true");glyph.textContent=icon;
-  const arrow=document.createElement("span");arrow.className="tb5-function-arrow";arrow.setAttribute("aria-hidden","true");arrow.textContent="↗";
+  const glyph=document.createElement("span");glyph.className="tb5-function-icon";
+  glyph.setAttribute("aria-hidden","true");glyph.append(vectorIcon(id));
+  const arrow=document.createElement("span");arrow.className="tb5-function-arrow";
+  arrow.setAttribute("aria-hidden","true");arrow.textContent="↗";
   head.append(glyph,arrow);
   const name=document.createElement("strong");name.textContent=label;
   const p=document.createElement("span");p.className="tb5-card-description";p.textContent=detail;
-  b.append(head,name,p);
+  const footer=document.createElement("span");footer.className="tb6-card-footer";
+  footer.textContent="Mở công cụ";
+  if(group.id==="content"&&id==="posts"){
+   const feature=document.createElement("span");feature.className="tb6-card-feature-label";
+   feature.textContent="BIÊN TẬP NỘI DUNG";
+   b.append(feature);
+  }
+  b.append(head,name,p,footer);
   b.addEventListener("click",()=>navigate(id));
   cards.append(b);
  }
- hub.append(top,cards);
+ hub.append(top,section,cards);
 }
 // Existing admin view management remains the only engine that opens a function.
 function navigate(id){
