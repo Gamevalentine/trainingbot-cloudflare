@@ -32,11 +32,11 @@ Ngày: 2026-10-28. Loại: Preview-only, phát triển trên nhánh tách riêng
 - Trong bài test các lượt gọi giả cho Beta/bài viết/khách: 23 đọc, **0 ghi**; các bài test Dashboard riêng cũng **0 ghi**.
 - Không có test xóa, gửi tin, phát hành bài viết hoặc sửa bất kỳ dữ liệu Production nào.
 
-## A.4 — Giới hạn nghiệm thu
+## A.4 — Phạm vi nghiệm thu và giới hạn Production
 
-- **Đã nghiệm thu:** bản build riêng, phản ứng UI với tình huống chuẩn và lỗi, phân biệt trạng thái dữ liệu bằng API giả, không nới xác thực.
+- **Đã nghiệm thu:** build riêng, các trạng thái chuẩn và lỗi, dữ liệu đã xác thực, 5 Pages Functions gốc (mã handler Production) được thực thi với `ADMIN_TOKEN` giả và D1 cách ly, kèm đăng nhập Admin gốc từ trình duyệt. Đây là kiểm thử tích hợp API thật nhưng môi trường/database mô phỏng, không phải xác minh tài khoản Production.
 - **Chưa xác nhận:** đăng nhập bằng tài khoản quản trị thật trong môi trường có đủ quyền, Worker cũ ở production và phép lưu/đăng bài bằng dữ liệu thử được cho phép. Chưa thể lấy kết quả thực tế này thay cho việc thử bằng mock.
-- Vì chưa có nghiệm thu có tài khoản thật, trạng thái chính xác là **đã hoàn thiện Stage A ở mức mã nguồn/CI, còn cổng nghiệm thu thực địa trước khi phát hành**; không tự đánh dấu sản phẩm đã phát hành.
+- **Kết luận giai đoạn A: HOÀN TẤT (mã nguồn + build + tích hợp kiểm thử cách ly, QA PASS)**. Không chia tiếp ADM-00/ADM-01. Việc kiểm tra Production bằng tài khoản thật thuộc cổng phát hành toàn dự án, không được suy diễn từ kết quả kiểm thử này; chưa có phê duyệt merge/deploy.
 - Giai đoạn B (ADM-02/03) chưa bắt đầu trong **nhánh A**. Những thay đổi sớm ở PR #8 vẫn Draft riêng, không merge/copy vào A. Không chuyển B tự động.
 
 ## A.5 — Phạm vi an toàn / Quay lui
@@ -44,3 +44,19 @@ Ngày: 2026-10-28. Loại: Preview-only, phát triển trên nhánh tách riêng
 - Chỉ thay đổi `overrides/admin_beta_versions_v175.js`, `admin_posts_manual_v171.js`, `admin_visitor_tracking_v177.js`, `postbuild.sh`, `tools/admin/`, workflow QA và tài liệu. Không thêm công cụ sao lưu.
 - Để hủy các thay đổi Admin Stage A, không merge PR hoặc revert commit giao diện trên branch; không can thiệp hoặc phục hồi database. Không cần làm thay đổi dữ liệu.
 - Chỉ phát hành Production khi người dùng duyệt rõ bản Preview, và QA có bằng chứng đăng nhập/chức năng thật phù hợp với quyền dữ liệu.
+
+
+## A.6 — Kiểm thử tích hợp API THẬT trong môi trường cách ly (hoàn thành 2026-10-28)
+
+- `tools/admin/adm01-real-handler-integration.mjs` import trực tiếp **mã nguồn Pages Functions thật** và chạy các endpoint `users`, `beta-versions`, `posts`, `visitor-events`, `studio/content` với token thử và D1 giả nằm trong bộ nhớ; không tải server Production và không có biến môi trường bí mật.
+- Với **cả 5 handler**, không có token hoặc token sai cho HTTP 401 **trước khi đọc/ghi DB**, đúng token thử trả HTTP 200 và cấu trúc JSON hợp lệ: **PASS**.
+- Đã chạy **form đăng nhập từ runtime Admin gốc** trong Playwright, thử token sai (không vào được Admin) rồi token hợp lệ (vào được và tải được Dashboard + Beta từ handler thực): **PASS**.
+- Nguồn bên ngoài được chặn trước khi gửi request, và mọi POST/PATCH/DELETE từ trình duyệt đều bị chặn: **0 thao tác HTTP ghi**, **0 kết nối ngoài**. Một yêu cầu tải tài nguyên bên ngoài bị intercept/abort.
+- Phát hiện quan trọng khi kiểm tra: một số GET handler thật chạy `CREATE TABLE IF NOT EXISTS`/schema initialization. Trong test này, các lệnh đó chỉ được gọi vào **D1 giả trong RAM**; không gọi D1 Production. Đây là lý do **không thực hiện thử API GET Admin trực tiếp trên Production** khi chưa có quyền tác động dữ liệu thật.
+- Lần QA cuối cho mã tích hợp: [GitHub Actions #40609818732](https://github.com/Gamevalentine/trainingbot-cloudflare/actions/runs/40609818732) — **SUCCESS**. Kết quả này bổ sung, không thay thế các test UI và Dashboard thành công trước đó.
+
+## A.7 — Quyết định chốt chặng
+
+**ADM-00 + ADM-01: ĐÃ XONG về triển khai và QA tích hợp trong môi trường cách ly.**
+
+Giai đoạn A không còn công việc lập trình/kiểm thử mô phỏng treo lại. PR #9 vẫn Draft vì đó là **cổng phát hành Production riêng**, không phải yêu cầu tiếp tục tách giai đoạn A. Giai đoạn B/PR #8 không được đưa lẫn vào PR #9. Không dùng token thật, không sửa DB, không làm sao lưu.
