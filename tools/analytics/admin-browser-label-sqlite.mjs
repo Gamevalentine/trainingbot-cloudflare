@@ -68,7 +68,7 @@ const unauthorized=await label.onRequestPost({request:new Request(origin+"/api/v
 assert.equal(unauthorized.status,401);
 assert.equal((await mark(adminId,"POST",{Origin:"https://attacker.invalid"})).status,403);
 assert.equal((await mark(adminId,"POST",{"Sec-Fetch-Site":"cross-site"})).status,403);
-assert.equal((await mark("not-valid")).status,400);
+assert.equal((await mark("bad!")).status,400);
 assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE name='tb_admin_browsers_v1'").get().n,0,"denials must not create admin table");
 
 assert.equal((await mark(adminId)).status,200);
