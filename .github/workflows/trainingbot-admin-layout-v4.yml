@@ -37,11 +37,25 @@ jobs:
         run: |
           node tools/qa/p3-1-d1-preview-isolation.mjs
           node tools/qa/p1-seo.mjs
+      - name: Build safe V4 Demo only with local Preview switch
+        env:
+          TRAININGBOT_LOCAL_DEMO: "1"
+        run: |
+          npm run build
+          test -f public/admin-demo.html
+          test -f public/admin-demo-runtime.js
+          ! grep -q 'admin-demo-runtime.js' public/admin.html
+          node --check public/admin-demo-runtime.js
+          node --check tools/admin/admin-layout-v4-demo-qa.mjs
+      - name: Safe V4 Preview Demo interactions and API isolation
+        run: node tools/admin/admin-layout-v4-demo-qa.mjs
       - name: Save mobile and desktop QA captures
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: admin-layout-v4-qa-captures
-          path: admin-qa-screenshots/admin-layout-v4-*.png
+          path: |
+            admin-qa-screenshots/admin-layout-v4-*.png
+            admin-qa-screenshots/admin-demo-*.png
           if-no-files-found: ignore
           retention-days: 7
