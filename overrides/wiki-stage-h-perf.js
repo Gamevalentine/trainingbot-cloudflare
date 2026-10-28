@@ -33,7 +33,7 @@ function prepare(){
   let queued=false;
   const observer=new MutationObserver(()=>{
    if(queued)return;queued=true;
-   requestAnimationFrame(()=>{queued=false;prepare()});
+   queueMicrotask(()=>{queued=false;prepare()});
   });
   observer.observe(grid,{childList:true,subtree:true});
   state.ready=true;
