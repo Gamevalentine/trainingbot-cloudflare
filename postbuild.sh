@@ -94,3 +94,19 @@ html=html.replace(marker,"h=h.replace('</body>','<script defer src=\"/admin-stag
 fs.writeFileSync(file,html);
 NODE
 grep -q 'admin-stage-d-ui.js' public/admin.html
+
+# DEMO-01: publish in-memory Admin Demo ONLY on its dedicated Preview branch.
+# The optional local switch is for CI tests and must not be enabled in Production.
+if [[ "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-admin-demo-20261028" || "${TRAININGBOT_LOCAL_DEMO:-}" == "1" ]]; then
+  test -f public/admin-demo-runtime.js
+  node --check public/admin-demo-runtime.js
+  node tools/admin/build-demo.mjs
+  test -f public/admin-demo.html
+  test -f public/admin.html
+  if grep -q 'admin-demo-runtime.js' public/admin.html; then
+    echo "Demo runtime leaked into real Admin" >&2
+    exit 1
+  fi
+else
+  rm -f public/admin-demo-runtime.js public/admin-demo.html
+fi
