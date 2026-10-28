@@ -52,6 +52,17 @@
   }
 
   const currentPath=()=>location.pathname||"/";
+  // Read only explicit campaign parameters; never send arbitrary query strings,
+  // which may contain private tokens or user-entered content.
+  const campaign=(()=>{
+    const params=new URLSearchParams(location.search||"");
+    const take=name=>String(params.get(name)||"").slice(0,80);
+    return {
+      utmSource:take("utm_source"),utmMedium:take("utm_medium"),
+      utmCampaign:take("utm_campaign"),utmTerm:take("utm_term"),
+      utmContent:take("utm_content")
+    };
+  })();
 
   function send(type,extra={}){
     const payload={
@@ -60,6 +71,7 @@
       type,
       path:currentPath(),
       referrer:document.referrer||"",
+      ...campaign,
       ...extra
     };
     fetch("/api/visitor-events",{
