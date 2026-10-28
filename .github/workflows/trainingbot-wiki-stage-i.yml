@@ -1,0 +1,71 @@
+name: TrainingBot Wiki V2 Stage I — release gates and acceptance
+on:
+  push:
+    branches:
+      - aion-trainingbot-wiki-stage-i-20261029
+  pull_request:
+    branches:
+      - aion-trainingbot-wiki-stage-h-20261029
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions:
+  contents: read
+jobs:
+  wiki-i:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the cumulative Preview safely
+        env:
+          TRAININGBOT_LOCAL_I_QA: "1"
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          npm run build
+          node --check tools/wiki/stage-i-release-audit.mjs
+          grep -q wiki-stage-h-perf.js public/wiki.html
+          grep -q admin-wiki-stage-g.js public/admin.html
+      - name: I.1-I.5 release Go-No-Go report
+        run: |
+          node tools/wiki/stage-i-release-audit.mjs
+          node -e "const d=require('./wiki-stage-i-artifacts/release-gate.json');if(d.releaseDecision!=='NO-GO'||d.blockers.length<4)process.exit(2)"
+          node tools/wiki/stage-h-link-audit.mjs
+          node tools/qa/p1-seo.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
+      - name: Install headless test runner
+        run: npm install --no-save --no-package-lock playwright
+      - name: I.4 H performance and Admin G/F/E/D/C/B regressions
+        run: |
+          node tools/wiki/stage-h-browser-qa.mjs
+          node tools/wiki/stage-g-browser-qa.mjs
+          node tools/wiki/stage-f-browser-qa.mjs
+          node tools/wiki/stage-e-browser-qa.mjs
+          node tools/wiki/stage-d-browser-qa.mjs
+          node tools/wiki/stage-c-browser-qa.mjs
+          node tools/wiki/stage-b-browser-qa.mjs
+      - name: I.5 refuse to ship G-H admin/perf in regular Production build
+        env:
+          CF_PAGES_BRANCH: main
+          TRAININGBOT_LOCAL_G_QA: ""
+          TRAININGBOT_LOCAL_H_QA: ""
+          TRAININGBOT_LOCAL_I_QA: ""
+        run: |
+          npm run build
+          ! grep -q admin-wiki-stage-g.js public/admin.html
+          ! grep -q wiki-stage-h-perf.js public/wiki.html
+          test ! -f public/admin-wiki-stage-g.js
+          test ! -f public/wiki-stage-h-perf.js
+          test ! -f public/wiki-stage-g-snapshot.js
+      - name: I acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-wiki-stage-i-qa
+          path: |
+            wiki-stage-i-artifacts/
+            wiki-stage-h-artifacts/
+            wiki-stage-g-screenshots/
+            wiki-stage-f-screenshots/
+            wiki-stage-e-screenshots/
+          if-no-files-found: ignore
+          retention-days: 14

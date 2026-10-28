@@ -261,7 +261,7 @@ NODE
 
 # Wiki V2 G — isolated Admin review workbench, gated to G Preview or local QA.
 # No release path: Production/Admin remain unchanged until separate approval.
-if [[ "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-wiki-stage-g-20261029" || "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-wiki-stage-h-20261029" || "${TRAININGBOT_LOCAL_G_QA:-}" == "1" || "${TRAININGBOT_LOCAL_H_QA:-}" == "1" ]]; then
+if [[ "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-wiki-stage-g-20261029" || "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-wiki-stage-h-20261029" || "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-wiki-stage-i-20261029" || "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-seo-recovery-20261029" || "${TRAININGBOT_LOCAL_G_QA:-}" == "1" || "${TRAININGBOT_LOCAL_H_QA:-}" == "1" || "${TRAININGBOT_LOCAL_I_QA:-}" == "1" ]]; then
   for asset in wiki-stage-g-snapshot.js admin-wiki-stage-g.js admin-wiki-stage-g.css wiki-stage-f-guides.json; do
     test -f "public/$asset"
   done
@@ -288,7 +288,7 @@ else
 fi
 
 # Wiki V2 H — only H branch or explicit QA flag; no Worker/D1/R2 writes.
-if [[ "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-wiki-stage-h-20261029" || "${TRAININGBOT_LOCAL_H_QA:-}" == "1" ]]; then
+if [[ "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-wiki-stage-h-20261029" || "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-wiki-stage-i-20261029" || "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-seo-recovery-20261029" || "${TRAININGBOT_LOCAL_H_QA:-}" == "1" || "${TRAININGBOT_LOCAL_I_QA:-}" == "1" ]]; then
   test -f public/wiki-stage-h-perf.js
   node --check public/wiki-stage-h-perf.js
   node --check tools/wiki/stage-h-build.mjs
