@@ -50,3 +50,10 @@ Ngày: 28/10/2026. Nhánh phát triển: `aion-trainingbot-admin-stage-d-2026102
 **GIAI ĐOẠN D: ĐỦ ĐIỀU KIỆN CHUYỂN SANG NGHIỆM THU PHÁT HÀNH (E), NHƯNG CHƯA ĐỦ ĐIỀU KIỆN TUYÊN BỐ PRODUCTION PASS.**
 
 Không có công việc giai đoạn D nào đang chạy nền. Không merge/deploy trong bước này.
+
+## 6. BỔ SUNG NGHIỆM THU HANDLER THẬT TRÊN BACKEND GIẢ
+
+- Commit sau nghiệm thu ban đầu thêm `tools/admin/adm07-real-secondary-handler-qa.mjs` để nạp trực tiếp **Pages Functions thật** (`contact-messages.js`, `image-replace.js`, `image-restore.js`) với DB in-memory và R2 giả trong cùng tiến trình.
+- Kiểm tra thiếu/sai token → **401 trước DB/R2**; Inbox GET với token giả → **200**, đồng thời phát hiện `CREATE TABLE IF NOT EXISTS` ngay ở GET (chỉ chạy trên DB giả). Đường dẫn media không hợp lệ → **400**; ảnh hợp lệ và phục hồi R2 giả → **200**, 1 lần put và 1 lần delete trên R2 giả, **0** thao tác lên R2 thật.
+- CI mới nhất: [GitHub Actions #40615225490](https://github.com/Gamevalentine/trainingbot-cloudflare/actions/runs/40615225490) trên commit `d8beead8628fb806727d43106fb6ed27fb31b373` — **SUCCESS**, mọi bước (kể cả handler QA mới và browser regression) đều xanh.
+- Các run #40615141645 và #40615143487 từng lỗi cú pháp bộ test mới, đã được sửa trong commit `d8beead`. Không lấy kết quả lỗi cũ làm nghiệm thu, và không khẳng định các handler đã được chạy với D1/R2 thật.
