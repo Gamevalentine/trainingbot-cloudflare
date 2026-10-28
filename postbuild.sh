@@ -201,3 +201,20 @@ grep -q wiki-stage-c-weapon.js public/wiki.html
 if grep -q wiki-stage-c-weapon.js public/admin.html; then
  echo 'Wiki C leaked into Admin' >&2; exit 2
 fi
+
+# Wiki V2 Stage D: read-only source panels for attachments, vehicles and maps.
+test -f public/wiki-stage-d-v2.js
+test -f public/wiki-stage-d-v2.css
+test -f public/wiki-stage-d-evidence.json
+node --check public/wiki-stage-d-v2.js
+node -e "const e=require('./public/wiki-stage-d-evidence.json');if(e.schemaVersion!=='wiki-d1'||e.coverage.attachments.total!==51||e.coverage.vehicles.total!==26||e.coverage.maps.total!==8)process.exit(2)"
+node <<'NODE'
+const fs=require('node:fs'),p='public/wiki.html';
+let h=fs.readFileSync(p,'utf8');
+if(!h.includes("wiki-stage-c-weapon.js")||!h.includes("wiki-stage-b-v2.js"))throw Error('Wiki D requires B and C');
+if(h.includes("wiki-stage-d-v2.js"))throw Error('Wiki D script duplicated');
+h=h.replace('</body>','<script defer src="/wiki-stage-d-v2.js?v=1"></script>\n</body>');
+fs.writeFileSync(p,h);
+NODE
+grep -q wiki-stage-d-v2.js public/wiki.html
+if grep -q wiki-stage-d-v2.js public/admin.html; then echo 'Wiki D leaked into Admin' >&2; exit 2; fi
