@@ -237,3 +237,24 @@ const v145=fs.readFileSync('public/wiki_verified_data_v145.js','utf8');
 if(!v145.includes('window.__TB_WIKI_E__?.selecting'))throw Error('Wiki E compare capture guard missing');
 if(fs.readFileSync('public/admin.html','utf8').includes('wiki-stage-e-compare.js'))throw Error('E leaked into Admin');
 NODE
+
+
+# Wiki V2 Stage F — searchable editorial practice guides with read-only C/D sources.
+# Stage F is an isolated presentation layer installed *after* Wiki E.
+for asset in wiki-stage-f-guides.js wiki-stage-f-guides.css wiki-stage-f-guides.json; do
+  test -f "public/$asset"
+done
+node --check public/wiki-stage-f-guides.js
+node -e "const d=require('./public/wiki-stage-f-guides.json'); if(d.schemaVersion!=='wiki-f1'||d.guides.length!==16||new Set(d.guides.map(x=>x.id)).size!==16)process.exit(2)"
+node <<'NODE'
+const fs=require('node:fs'),p='public/wiki.html';
+let h=fs.readFileSync(p,'utf8');
+for(const prior of ['wiki-stage-b-v2.js','wiki-stage-c-weapon.js','wiki-stage-d-v2.js','wiki-stage-e-compare.js']){
+ if(!h.includes(prior))throw Error('Wiki F requires '+prior);
+}
+if(h.includes('wiki-stage-f-guides.js')||h.includes('wiki-stage-f-guides.css'))throw Error('Wiki F duplicate');
+h=h.replace('</head>','<link rel="stylesheet" href="/wiki-stage-f-guides.css?v=1">\n</head>');
+h=h.replace('</body>','<script defer src="/wiki-stage-f-guides.js?v=1"></script>\n</body>');
+fs.writeFileSync(p,h);
+if(fs.readFileSync('public/admin.html','utf8').includes('wiki-stage-f-guides.js'))throw Error('Wiki F must not load in Admin');
+NODE
