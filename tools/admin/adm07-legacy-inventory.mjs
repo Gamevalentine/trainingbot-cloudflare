@@ -16,7 +16,7 @@ function panel(name){
 }
 const functionHints=["loadMedia","renderMedia","loadUsers","loadInbox","renderUsers","renderInbox","renderAnalytics","loadAnalytics","runHealthCheck","checkService","loadSecurity","loadSystem","refreshGlobalData"];
 const functions=functionHints.map(name=>{
- const matches=[...raw.matchAll(new RegExp("(?:async )?function "+name+"\\s*\\(","g))];
+ const matches=[...raw.matchAll(new RegExp("(?:async )?function "+name+"\\s*\\(","g"))];
  return {name,count:matches.length,
   preview:matches[0]?raw.slice(matches[0].index,Math.min(matches[0].index+720,raw.length)).replace(/\s+/g," ").replace(/Bearer\s+[^\s"']+/gi,"Bearer [REDACTED]"):""};
 });
