@@ -91,6 +91,18 @@ try{
    await page.screenshot({path:"wiki-stage-h-artifacts/wiki-"+width+".png",animations:"disabled"});
   }finally{await context.close()}
  }
+ // H.1: a crawler or browser with JS disabled must still see the static Wiki main.
+ const noJS=await browser.newContext({javaScriptEnabled:false,viewport:{width:390,height:800}});
+ try{
+  await noJS.route("**/*",r=>new URL(r.request().url()).origin===root?r.continue():r.abort());
+  const pg=await noJS.newPage();
+  await pg.goto(root+"/wiki.html",{waitUntil:"domcontentloaded",timeout:17000});
+  const plain=await pg.evaluate(()=>({visibility:getComputedStyle(document.querySelector("main")).visibility,
+    h1:document.querySelector("main h1")?.textContent,enabled:document.documentElement.classList.contains("tb-h-js")}));
+  assert.equal(plain.visibility,"visible","No-JavaScript Wiki main must remain visible for crawlers/readers");
+  assert(!plain.enabled&&plain.h1,"No-JavaScript fallback must expose static heading");
+  console.log("WIKI H no-JS PASS: static main and heading remain visible");
+ }finally{await noJS.close()}
 }finally{
  if(browser)await browser.close();
  server.kill("SIGTERM");
