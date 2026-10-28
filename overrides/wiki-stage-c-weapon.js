@@ -50,9 +50,9 @@ function buildSheet(row){
  }else{
   for(const record of history){
    const src=sourceFor(record.sourceId);
-   if(!src||src.isCurrent!==false||src.version!=="2.4")continue;
+   if(!src||src.isCurrent!==false||!["2.4","4.6"].includes(src.version))continue;
    const wrap=make("div","tb-c-release");
-   const tag=make("span","tb-c-tag","LỊCH SỬ · PHIÊN BẢN "+src.version+" · "+src.publishedAt);
+   const tag=make("span","tb-c-tag","THÔNG TIN THEO PHIÊN BẢN "+src.version+" · "+src.publishedAt);
    wrap.append(tag,make("p","",record.summary));
    wrap.append(make("div","tb-c-grid tb-c-history-grid"));
    const container=wrap.querySelector(".tb-c-history-grid");
@@ -65,7 +65,7 @@ function buildSheet(row){
    }
    const cite=make("a","tb-c-source","Đọc ghi chú chính thức · "+src.title);
    cite.href=src.url;cite.target="_blank";cite.rel="noopener noreferrer external";
-   wrap.append(cite,make("p","tb-c-disclaimer","Đây là dữ liệu lịch sử của bản 2.4 (2023), không xác nhận các giá trị còn hiệu lực ở phiên bản 4.x."));
+   wrap.append(cite,make("p","tb-c-disclaimer","Nguồn xác nhận thông tin tại bản "+src.version+" ("+src.publishedAt+"); không tự suy rộng sang Beta 4.7 hoặc các bản phát hành khác."));
    sheet.append(wrap);
   }
  }
