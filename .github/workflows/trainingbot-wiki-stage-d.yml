@@ -1,0 +1,42 @@
+name: TrainingBot Wiki V2 Stage D — attachments, vehicles, maps
+on:
+  push:
+    branches:
+      - aion-trainingbot-wiki-stage-d-20261029
+permissions:
+  contents: read
+jobs:
+  wiki-d:
+    runs-on: ubuntu-latest
+    timeout-minutes: 27
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build real Wiki after source layers A/B/C/D
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          npm run build
+          for file in wiki-stage-d-v2.js wiki-stage-d-v2.css wiki-stage-d-evidence.json; do test -f "public/$file"; done
+          node --check tools/wiki/stage-d-browser-qa.mjs
+          node --check public/wiki-stage-d-v2.js
+          test ! -f public/admin-demo.html
+      - name: Install browser runner
+        run: npm install --no-save --no-package-lock playwright
+      - name: D1–D4 full browser acceptance / source citations / responsive
+        run: node tools/wiki/stage-d-browser-qa.mjs
+      - name: Preserve Stage C and B UI behavior plus SEO and database isolation
+        run: |
+          node tools/wiki/stage-c-browser-qa.mjs
+          node tools/wiki/stage-b-browser-qa.mjs
+          node tools/qa/p1-seo.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
+      - name: Evidence screenshot and C source ledger
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-wiki-stage-d-qa
+          path: |
+            wiki-stage-d-screenshots/
+            wiki-stage-c-screenshots/
+          if-no-files-found: warn
+          retention-days: 14
