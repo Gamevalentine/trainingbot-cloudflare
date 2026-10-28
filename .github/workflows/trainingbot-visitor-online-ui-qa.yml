@@ -1,0 +1,39 @@
+name: TrainingBot — Restore online status in Admin visitor table
+on:
+  push:
+    branches:
+      - fix-admin-visitor-online-status-20261029
+  pull_request:
+    paths:
+      - overrides/admin_visitor_analytics_v2.js
+      - build.sh
+      - tools/analytics/visitor-online-ui-qa.mjs
+permissions:
+  contents: read
+jobs:
+  visitor-online-status:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate source
+        run: |
+          bash -n build.sh postbuild.sh
+          node --check overrides/admin_visitor_analytics_v2.js
+          node --check tools/analytics/visitor-online-ui-qa.mjs
+      - name: Production-equivalent build without deployment
+        run: npm run build
+      - name: Verify five-minute online states, accessible markers, Admin and bundle
+        run: node tools/analytics/visitor-online-ui-qa.mjs
+      - name: Run visitor analytics D1 regression
+        run: |
+          node tools/analytics/visitor-analytics-qa.mjs
+          node --disable-warning=ExperimentalWarning tools/analytics/visitor-analytics-sqlite.mjs
+          node --disable-warning=ExperimentalWarning tools/analytics/admin-browser-label-sqlite.mjs
+      - name: Verify SEO and preview isolation
+        run: |
+          node tools/qa/p1-seo.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
