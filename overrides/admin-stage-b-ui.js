@@ -154,11 +154,12 @@ document.addEventListener("keydown",event=>{
  }
 });
 if(!document.getElementById("tbAdminStageBSkip")){
- const skip=document.createElement("a");
+ const skip=document.createElement("button");
+ skip.type="button";
  skip.id="tbAdminStageBSkip";skip.className="tb-admin-b-skip";
- skip.href="#tbAdminStageBMain";skip.textContent="Chuyển tới nội dung";
+ skip.textContent="Chuyển tới nội dung";
  const main=app.querySelector(".content-area");
- if(main){main.id="tbAdminStageBMain";main.tabIndex=-1;app.prepend(skip);}
+ if(main){main.id="tbAdminStageBMain";main.tabIndex=-1;skip.addEventListener("click",()=>main.focus());app.prepend(skip);}
 }
 // Sync active section even when the legacy runtime toggles the active class.
 const activeObserver=new MutationObserver(()=>requestAnimationFrame(updateSection));
