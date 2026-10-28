@@ -37,3 +37,7 @@
 
 ## B.1 acceptance
 **Source + real independent Staging Worker protocol PASS. Live first-party Preview-to-Staging binding NOT VERIFIED / BLOCKED BY PAGES PERMISSION.** Do not claim B.1 end-to-end completion until Preview binds are installed and live Pages session/chat passes.
+
+## Follow-up
+
+The Preview connection settings were added in Cloudflare; verify with an updated Preview deployment before accepting B.1.
