@@ -1,0 +1,427 @@
+{
+  "schemaVersion": "wiki-f1",
+  "reviewedAt": "2026-10-29",
+  "sourcePolicy": "Các bài tập là gợi ý biên tập, không phải thông số PUBG MOBILE đã được nhà phát hành xác minh. Chỉ ghi chú phiên bản dẫn từ registry C/D mới có thể gắn nguồn chính thức; thông số cũ không được suy rộng.",
+  "categories": [
+    {
+      "id": "all",
+      "title": "Tất cả"
+    },
+    {
+      "id": "weapons",
+      "title": "Vũ khí"
+    },
+    {
+      "id": "attachments",
+      "title": "Phụ kiện"
+    },
+    {
+      "id": "maps",
+      "title": "Bản đồ"
+    },
+    {
+      "id": "mobility",
+      "title": "Phương tiện"
+    }
+  ],
+  "guides": [
+    {
+      "id": "w-qbz",
+      "category": "weapons",
+      "title": "QBZ — luyện nhịp bắn có kiểm soát",
+      "level": "Cơ bản",
+      "summary": "Dành cho bài tập giữ tâm ngắm và theo dõi độ lệch khi bắn.",
+      "steps": [
+        "Chọn cùng khoảng cách và mục tiêu tập để so sánh từng loạt ngắn.",
+        "Ghi nhận cảm giác kiểm soát ở tư thế đứng và ngồi, không suy ra thông số giật chính thức.",
+        "Đối chiếu ghi chú bản 2.4 trước khi áp dụng cho phiên bản đang chơi."
+      ],
+      "caution": "Đây là bài luyện tập; thông số trong ghi chú 2.4 không chứng minh hiệu quả hiện hành.",
+      "related": [
+        {
+          "kind": "weapons",
+          "name": "QBZ"
+        }
+      ],
+      "evidence": [
+        {
+          "registry": "c",
+          "entity": "QBZ",
+          "sourceId": "pubg-official-2.4"
+        }
+      ],
+      "contentType": "editorial_training"
+    },
+    {
+      "id": "w-ace32",
+      "category": "weapons",
+      "title": "ACE32 — kiểm tra thay đổi qua phiên bản",
+      "level": "Trung cấp",
+      "summary": "Bài tập tự so sánh độ ổn định khi luyện ngắm.",
+      "steps": [
+        "Thử bắn lặp lại theo cùng mục tiêu để tự ghi nhận kết quả.",
+        "Quan sát mức độ ổn định qua từng loạt; không gán chỉ số độ giật không có nguồn.",
+        "Ghi rõ bản trò chơi khi chia sẻ kết quả luyện tập."
+      ],
+      "caution": "Thông báo 4.6 mô tả điều chỉnh, không xác minh thông số hiện tại.",
+      "related": [
+        {
+          "kind": "weapons",
+          "name": "ACE32"
+        }
+      ],
+      "evidence": [
+        {
+          "registry": "c",
+          "entity": "ACE32",
+          "sourceId": "pubg-official-4.6-vng"
+        }
+      ],
+      "contentType": "editorial_training"
+    },
+    {
+      "id": "w-bizon",
+      "category": "weapons",
+      "title": "PP-19 Bizon — luyện di chuyển và ngắm",
+      "level": "Cơ bản",
+      "summary": "Bài luyện phối hợp quan sát và ngắm trong giao tranh giả lập.",
+      "steps": [
+        "Luyện tìm mục tiêu khi di chuyển theo hai hướng.",
+        "Thử đổi giữa dừng và di chuyển rồi ghi nhận độ chính xác của chính bạn.",
+        "Không dùng dữ liệu bản 2.4 để xếp hạng sức mạnh hiện hành."
+      ],
+      "caution": "Ghi chú 2.4 là dữ liệu lịch sử, không phải kết quả đo độc lập.",
+      "related": [
+        {
+          "kind": "weapons",
+          "name": "PP-19 Bizon"
+        }
+      ],
+      "evidence": [
+        {
+          "registry": "c",
+          "entity": "PP-19 Bizon",
+          "sourceId": "pubg-official-2.4"
+        }
+      ],
+      "contentType": "editorial_training"
+    },
+    {
+      "id": "w-ump45",
+      "category": "weapons",
+      "title": "UMP45 — bài tập xử lý góc hẹp",
+      "level": "Cơ bản",
+      "summary": "Luyện quan sát, lấy tâm và đổi vũ khí trong môi trường tập.",
+      "steps": [
+        "Đánh dấu các góc cần kiểm tra trước khi di chuyển.",
+        "Luyện chuyển vũ khí theo tình huống giả lập và tự đo thời gian thao tác.",
+        "Tự đánh giá sự ổn định của thao tác; không suy ra tốc độ bắn hoặc sát thương."
+      ],
+      "caution": "Chỉ ghi chú thay đổi của PUBG MOBILE 2.4 đã được dẫn nguồn.",
+      "related": [
+        {
+          "kind": "weapons",
+          "name": "UMP45"
+        }
+      ],
+      "evidence": [
+        {
+          "registry": "c",
+          "entity": "UMP45",
+          "sourceId": "pubg-official-2.4"
+        }
+      ],
+      "contentType": "editorial_training"
+    },
+    {
+      "id": "w-honey",
+      "category": "weapons",
+      "title": "Honey Badger — đọc thông báo trước khi chọn súng",
+      "level": "Trung cấp",
+      "summary": "Ví dụ về cách đọc dữ liệu qua nhiều bản phát hành.",
+      "steps": [
+        "Mở hồ sơ Honey Badger và xem riêng ghi chú 2.4 với 4.6.",
+        "Kiểm tra những điều nguồn phát hành có nói và những điều chưa có số liệu.",
+        "Chỉ đưa ra nhận xét luyện tập sau khi đã phân biệt từng phiên bản."
+      ],
+      "caution": "Không tổng hợp hai phiên bản thành một chỉ số hiệu năng hiện tại.",
+      "related": [
+        {
+          "kind": "weapons",
+          "name": "Honey Badger"
+        }
+      ],
+      "evidence": [
+        {
+          "registry": "c",
+          "entity": "Honey Badger",
+          "sourceId": "pubg-official-2.4"
+        },
+        {
+          "registry": "c",
+          "entity": "Honey Badger",
+          "sourceId": "pubg-official-4.6-vng"
+        }
+      ],
+      "contentType": "editorial_training"
+    },
+    {
+      "id": "w-method",
+      "category": "weapons",
+      "title": "Quy trình tự thử một khẩu súng",
+      "level": "Cơ bản",
+      "summary": "Mẫu 3 bước để tự chọn vũ khí mà không cần điểm sức mạnh bịa.",
+      "steps": [
+        "Giữ cố định mục tiêu và khoảng cách thử.",
+        "Lặp lại vài lượt với cùng loại thao tác; ghi nhận mức độ dễ kiểm soát chủ quan.",
+        "Xác nhận phiên bản trước khi so sánh, không coi cảm nhận là số liệu của game."
+      ],
+      "caution": "Gợi ý biên tập, không phải chỉ số hoặc kết luận chính thức.",
+      "related": [
+        {
+          "kind": "weapons",
+          "name": "M416"
+        }
+      ],
+      "evidence": [],
+      "contentType": "editorial_training"
+    },
+    {
+      "id": "a-role",
+      "category": "attachments",
+      "title": "Chọn phụ kiện theo mục đích luyện tập",
+      "level": "Cơ bản",
+      "summary": "Khung quyết định phụ kiện khi dữ liệu tương thích còn thiếu.",
+      "steps": [
+        "Đầu tiên xác định mục tiêu luyện: quan sát, kiểm soát hay thao tác.",
+        "Chỉ thử tổ hợp thực tế được trò chơi cho phép gắn.",
+        "Ghi lại kết quả của phiên bản đang chơi thay vì xem bảng Wiki cũ là chuẩn."
+      ],
+      "caution": "Chưa có bảng chứng minh 51 phụ kiện tương thích với 61 súng theo từng phiên bản.",
+      "related": [
+        {
+          "kind": "attachments"
+        }
+      ],
+      "evidence": [],
+      "contentType": "editorial_training"
+    },
+    {
+      "id": "a-validation",
+      "category": "attachments",
+      "title": "Kiểm chứng phụ kiện trước khi khuyến nghị",
+      "level": "Trung cấp",
+      "summary": "Một bảng kiểm giúp tránh gợi ý cấu hình thiếu nguồn.",
+      "steps": [
+        "Đối chiếu giao diện gắn phụ kiện ngay trong phiên bản trò chơi.",
+        "Phân biệt hiệu ứng được mô tả với số liệu thay đổi được công bố.",
+        "Chỉ gắn nhãn đã xác minh nếu có URL, ngày và phiên bản rõ ràng."
+      ],
+      "caution": "Dữ liệu D hiện không có bảng tương thích chính thức đầy đủ.",
+      "related": [
+        {
+          "kind": "attachments"
+        }
+      ],
+      "evidence": [],
+      "contentType": "editorial_training"
+    },
+    {
+      "id": "a-team",
+      "category": "attachments",
+      "title": "Lập danh sách trang bị để trao đổi cùng đội",
+      "level": "Cơ bản",
+      "summary": "Chia sẻ tiêu chí lựa chọn thay vì khẳng định một bộ phụ kiện mạnh nhất.",
+      "steps": [
+        "Liệt kê vai trò mỗi người trong đội và nhu cầu luyện tập.",
+        "Thử thay đổi một thành phần mỗi lượt để tránh nhầm nguyên nhân.",
+        "Ghi lại phiên bản và những mục chưa đủ chứng cứ."
+      ],
+      "caution": "Không có cấu hình tối ưu chính thức áp dụng cho mọi tình huống.",
+      "related": [
+        {
+          "kind": "attachments"
+        },
+        {
+          "kind": "weapons"
+        }
+      ],
+      "evidence": [],
+      "contentType": "editorial_training"
+    },
+    {
+      "id": "m-erangel",
+      "category": "maps",
+      "title": "Erangel — luyện lập kế hoạch di chuyển",
+      "level": "Cơ bản",
+      "summary": "Bài tập đọc tuyến đường và điểm hẹn đội.",
+      "steps": [
+        "Xác định mục tiêu di chuyển và phương án dự phòng trước khi xuất phát.",
+        "Thống nhất tín hiệu thông báo điểm hẹn và điểm đổi tuyến.",
+        "Không suy luận vị trí vật phẩm Classic từ ghi chú chế độ chủ đề 4.6."
+      ],
+      "caution": "Nguồn 4.6 chỉ xác nhận Erangel trong chế độ chủ đề được nêu ở thông báo.",
+      "related": [
+        {
+          "kind": "maps",
+          "name": "Erangel"
+        }
+      ],
+      "evidence": [
+        {
+          "registry": "d",
+          "entity": "Erangel",
+          "sourceId": "pubg-vi-4.6"
+        }
+      ],
+      "contentType": "editorial_training"
+    },
+    {
+      "id": "m-livik",
+      "category": "maps",
+      "title": "Livik — luyện phối hợp thông tin",
+      "level": "Cơ bản",
+      "summary": "Bài tập giữ liên lạc, phân công quan sát và điểm tập kết.",
+      "steps": [
+        "Chia rõ người quan sát hướng tiến và người kiểm tra phía sau.",
+        "Đặt điểm tập kết có thể nhận diện trước khi cả đội di chuyển.",
+        "Dùng danh mục bản đồ để tra cứu, không giả định chế độ nào cũng như nhau."
+      ],
+      "caution": "Ghi chú 4.6 liên quan chế độ Thợ Săn Huyết Dạ, không bao quát Classic.",
+      "related": [
+        {
+          "kind": "maps",
+          "name": "Livik"
+        }
+      ],
+      "evidence": [
+        {
+          "registry": "d",
+          "entity": "Livik",
+          "sourceId": "pubg-vi-4.6"
+        }
+      ],
+      "contentType": "editorial_training"
+    },
+    {
+      "id": "m-sanhok",
+      "category": "maps",
+      "title": "Sanhok — luyện điều hướng theo nhóm",
+      "level": "Trung cấp",
+      "summary": "Bài tập ra quyết định khi nhiều đường đi khả thi.",
+      "steps": [
+        "Nhóm thống nhất một hướng chính và điểm chuyển kế hoạch.",
+        "Khi mất liên lạc, dùng lại điểm hẹn đã thống nhất thay vì đoán vị trí.",
+        "Phân biệt bài luyện chiến thuật với thông tin loot chưa được xác minh."
+      ],
+      "caution": "Không suy rộng nội dung chế độ chủ đề 4.6 sang tất cả chế độ chơi.",
+      "related": [
+        {
+          "kind": "maps",
+          "name": "Sanhok"
+        }
+      ],
+      "evidence": [
+        {
+          "registry": "d",
+          "entity": "Sanhok",
+          "sourceId": "pubg-vi-4.6"
+        }
+      ],
+      "contentType": "editorial_training"
+    },
+    {
+      "id": "m-review",
+      "category": "maps",
+      "title": "Đọc bản đồ theo phiên bản và chế độ",
+      "level": "Trung cấp",
+      "summary": "Cách kiểm tra một mẹo bản đồ có còn đúng không.",
+      "steps": [
+        "Ghi rõ tên bản đồ, chế độ và phiên bản người hướng dẫn sử dụng.",
+        "Kiểm tra thông báo chính thức trước khi nêu địa điểm/vật phẩm.",
+        "Đánh dấu chưa xác minh đối với dữ liệu bị thiếu chứng cứ."
+      ],
+      "caution": "Đây là quy trình kiểm tra thông tin, không phải danh sách vị trí loot.",
+      "related": [
+        {
+          "kind": "maps"
+        }
+      ],
+      "evidence": [],
+      "contentType": "editorial_training"
+    },
+    {
+      "id": "v-plan",
+      "category": "mobility",
+      "title": "Phối hợp di chuyển bằng phương tiện",
+      "level": "Cơ bản",
+      "summary": "Gợi ý tổ chức liên lạc khi đội dùng phương tiện.",
+      "steps": [
+        "Thống nhất điểm đón, điểm dừng và người theo dõi hướng đi.",
+        "Trước khi đổi xe, kiểm tra trên trò chơi hiện hành số chỗ và tình trạng sử dụng.",
+        "Không dùng số tốc độ, độ bền hoặc vị trí xuất hiện từ Wiki chưa kiểm chứng."
+      ],
+      "caution": "Thông số phương tiện trong kho cũ vẫn cần kiểm chứng theo phiên bản.",
+      "related": [
+        {
+          "kind": "vehicles"
+        }
+      ],
+      "evidence": [],
+      "contentType": "editorial_training"
+    },
+    {
+      "id": "v-brdm",
+      "category": "mobility",
+      "title": "BRDM-2 — phân biệt tên và bối cảnh phát hành",
+      "level": "Trung cấp",
+      "summary": "Ví dụ điển hình khi nhãn Wiki và thông báo có thể khác nhau.",
+      "steps": [
+        "Đọc ghi chú 4.6 về BRDM-2 ở hồ sơ nguồn phương tiện.",
+        "Không tự kết luận Tracked Amphicarrier là tên thay thế chính thức.",
+        "Tách thông báo nơi xuất hiện thuộc chế độ khỏi tuyến đi phổ quát."
+      ],
+      "caution": "Đối chiếu tên BRDM-2/Tracked Amphicarrier còn cần rà soát.",
+      "related": [
+        {
+          "kind": "vehicles",
+          "name": "Tracked Amphicarrier"
+        }
+      ],
+      "evidence": [
+        {
+          "registry": "d",
+          "entity": "BRDM-2",
+          "sourceId": "pubg-vi-4.6"
+        }
+      ],
+      "contentType": "editorial_training"
+    },
+    {
+      "id": "v-boat",
+      "category": "mobility",
+      "title": "Thuyền Cao Su — kiểm tra phạm vi chế độ",
+      "level": "Cơ bản",
+      "summary": "Ví dụ về vật phẩm mới chưa được bổ sung vào danh mục xe cũ.",
+      "steps": [
+        "Xem thông báo 4.6 để biết thông tin ra mắt Thuyền Cao Su.",
+        "Kiểm tra hiện diện trong chế độ đang chơi thay vì coi mọi bản đồ đều có.",
+        "Không tạo hồ sơ vật phẩm giả trong 26 phương tiện cũ."
+      ],
+      "caution": "Mục này có nguồn 4.6 nhưng chưa có thẻ riêng trong kho 26 phương tiện.",
+      "related": [
+        {
+          "kind": "vehicles"
+        }
+      ],
+      "evidence": [
+        {
+          "registry": "d",
+          "entity": "Thuyền Cao Su",
+          "sourceId": "pubg-vi-4.6"
+        }
+      ],
+      "contentType": "editorial_training"
+    }
+  ]
+}
