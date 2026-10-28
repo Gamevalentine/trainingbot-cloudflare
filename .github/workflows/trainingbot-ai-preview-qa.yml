@@ -25,4 +25,5 @@ jobs:
       - run: node tools/qa/ai-preview-build-qa.mjs
       - run: node tools/qa/ai-auth-surface-audit.mjs
       - run: node tools/qa/ai-auth-contract-audit.mjs
+      - run: node tools/qa/a1-admin-auth-inventory.mjs
       - run: node tools/qa/ai-identity-public-probe.mjs
