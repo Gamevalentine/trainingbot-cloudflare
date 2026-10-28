@@ -9,7 +9,7 @@ const restore=(await load("functions/api/v71/admin/image-restore.js")).onRequest
 const TOKEN="LOCAL_D_TEST_TOKEN";
 let dbReads=0,dbWrites=0,r2Writes=0,r2Deletes=0;
 const env={ADMIN_TOKEN:TOKEN,
- DB:{prepare(sql){return {async run(){dbWrites++;return {success:true}},async all(){dbReads++;return {results:[{id:"fake-contact",name:"Thử nghiệm",email:"user@example.invalid",subject:"Test",message:"Local only",received_at:"2026-10-28T00:00:00Z"}]}}}},
+ DB:{prepare(sql){return {async run(){dbWrites++;return {success:true}},async all(){dbReads++;return {results:[{id:"fake-contact",name:"Thử nghiệm",email:"user@example.invalid",subject:"Test",message:"Local only",received_at:"2026-10-28T00:00:00Z"}]}}}}},
  VIDEO_BUCKET:{async put(key,data){r2Writes++;assert(key.includes("qa-test.png"));assert(data);},async delete(key){r2Deletes++;assert(key.includes("qa-test.png"));}}
 };
 const request=(method,path,token,body,headers={})=>new Request("http://local.test"+path,{
