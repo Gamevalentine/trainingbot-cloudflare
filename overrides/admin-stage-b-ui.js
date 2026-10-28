@@ -147,6 +147,13 @@ document.addEventListener("click",event=>{
 },true);
 window.addEventListener("popstate",onHistory);
 window.addEventListener("hashchange",onHistory);
+// When a protected direct link is opened before login, the original runtime
+// may initially select Dashboard while a dynamic view is still loading.
+// Restore the requested hash only AFTER Admin becomes authorized and visible.
+const loginObserver=new MutationObserver(()=>{
+ if(isActive())requestAnimationFrame(routeFromHistory);
+});
+loginObserver.observe(app,{attributes:true,attributeFilter:["class"]});
 document.addEventListener("keydown",event=>{
  if(event.key!=="Escape"||!isActive())return;
  const sidebar=document.getElementById("sidebar");
