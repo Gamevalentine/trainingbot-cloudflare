@@ -1,0 +1,45 @@
+name: TrainingBot Wiki V2 Stage E — source-backed weapon comparison
+on:
+  push:
+    branches:
+      - aion-trainingbot-wiki-stage-e-20261029
+permissions:
+  contents: read
+jobs:
+  wiki-e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build true integrated Wiki A/B/C/D/E
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          npm run build
+          for file in wiki-stage-e-compare.js wiki-stage-e-compare.css wiki-stage-c-evidence.json; do test -f "public/$file"; done
+          node --check public/wiki-stage-e-compare.js
+          node --check tools/wiki/stage-e-browser-qa.mjs
+          test ! -e public/admin-demo.html
+          ! grep -q wiki-stage-e-compare.js public/admin.html
+      - name: Install local browser runner
+        run: npm install --no-save --no-package-lock playwright
+      - name: E1–E6 browser acceptance, source-checked metrics and share restoration
+        run: node tools/wiki/stage-e-browser-qa.mjs
+      - name: Regression Stage D/C/B and SEO / D1 Preview isolation
+        run: |
+          node tools/wiki/stage-d-browser-qa.mjs
+          node tools/wiki/stage-c-browser-qa.mjs
+          node tools/wiki/stage-b-browser-qa.mjs
+          node tools/qa/p1-seo.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
+      - name: Publish QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-wiki-stage-e-qa
+          path: |
+            wiki-stage-e-screenshots/
+            wiki-stage-d-screenshots/
+            wiki-stage-c-screenshots/
+          if-no-files-found: ignore
+          retention-days: 14
