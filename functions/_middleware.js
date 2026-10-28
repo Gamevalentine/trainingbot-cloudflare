@@ -81,9 +81,10 @@ export async function onRequest(context){
    * Production/custom domain and the canonical pages.dev host are unaffected.
    */
   if(isTrainingBotPreview(url.hostname)){
+    const safeAiStatus = url.pathname === "/api/ai-preview/status" && request.method === "GET";
     const apiPath=url.pathname.startsWith("/api/");
     if(!["GET","HEAD"].includes(request.method) ||
-       (apiPath&&(request.method!=="GET"||!PUBLIC_READ_PATHS.has(url.pathname)))){
+       (apiPath&&(request.method!=="GET"||(!PUBLIC_READ_PATHS.has(url.pathname)&&!safeAiStatus)))){
       return new Response(JSON.stringify({
         ok:false,message:"Bản Preview chỉ cho phép đọc dữ liệu công khai."
       }),{
@@ -96,6 +97,8 @@ export async function onRequest(context){
       });
     }
   }
+  if(isTrainingBotPreview(url.hostname) && url.pathname === "/api/ai-preview/status" && request.method === "GET")
+    return context.next();
   // Preview has no D1: an explicit download opens the canonical public endpoint.
   // No credentials are forwarded, and no background count is created.
   if(isTrainingBotPreview(url.hostname)&&["GET","HEAD"].includes(request.method)&&
