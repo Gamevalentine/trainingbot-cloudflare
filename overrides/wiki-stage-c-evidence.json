@@ -3,7 +3,8 @@
   "checkedAt": "2026-10-29",
   "notices": {
     "historical": "Chỉ phản ánh ghi chú cập nhật PUBG MOBILE 2.4 năm 2023, không xác nhận thông số hiện tại.",
-    "legacy": "Thông tin tổng hợp từ mã Wiki cũ, chưa được kiểm chứng riêng cho bản PUBG MOBILE hiện hành."
+    "legacy": "Thông tin tổng hợp từ mã Wiki cũ, chưa được kiểm chứng riêng cho bản PUBG MOBILE hiện hành.",
+    "current": "Dữ liệu nguồn chính thức phiên bản 4.6 (09/2026), không áp dụng cho bản thử nghiệm 4.7."
   },
   "sources": {
     "pubg-official-2.4": {
@@ -14,6 +15,16 @@
       "publishedAt": "2023-01-04",
       "checkedAt": "2026-10-29",
       "isCurrent": false
+    },
+    "pubg-official-4.6-vng": {
+      "sourceId": "pubg-official-4.6-vng",
+      "title": "Thông Báo Cập Nhật Phiên Bản 4.6 — PUBG MOBILE VN",
+      "url": "https://pubgm.vnggames.com/tin-tuc/thong-bao-cap-nhat/thong-bao-cap-nhat-phien-ban-4-6.html",
+      "version": "4.6",
+      "publishedAt": "2026-09-07",
+      "checkedAt": "2026-10-29",
+      "isCurrent": true,
+      "applicability": "Version 4.6 (September 2026); no claims about Beta 4.7"
     }
   },
   "weapons": {
@@ -152,6 +163,62 @@
             "Sanhok",
             "Livik"
           ]
+        },
+        {
+          "sourceId": "pubg-official-4.6-vng",
+          "summary": "Bản 4.6 nêu Honey Badger trong nhóm 7.62mm được cải thiện trải nghiệm ổn định khi bắn; không công bố giá trị độ giật mới.",
+          "facts": []
+        }
+      ]
+    },
+    "ACE32": {
+      "history": [
+        {
+          "sourceId": "pubg-official-4.6-vng",
+          "summary": "Bản 4.6 tăng sát thương cơ bản ACE32 từ 46 lên 47 và giảm độ giật ngang/dọc.",
+          "facts": [
+            {
+              "label": "Sát thương cơ bản sau điều chỉnh 4.6",
+              "value": 47,
+              "unit": "điểm"
+            }
+          ]
+        }
+      ]
+    },
+    "AKM": {
+      "history": [
+        {
+          "sourceId": "pubg-official-4.6-vng",
+          "summary": "Bản 4.6 giảm rung camera và cải thiện độ ổn định khi bắn các súng trường 7.62mm; không công bố giá trị độ giật mới.",
+          "facts": []
+        }
+      ]
+    },
+    "M762": {
+      "history": [
+        {
+          "sourceId": "pubg-official-4.6-vng",
+          "summary": "Bản 4.6 giảm rung camera và cải thiện độ ổn định khi bắn các súng trường 7.62mm; không công bố giá trị độ giật mới.",
+          "facts": []
+        }
+      ]
+    },
+    "Mk47 Mutant": {
+      "history": [
+        {
+          "sourceId": "pubg-official-4.6-vng",
+          "summary": "Bản 4.6 nêu Mk47 trong nhóm 7.62mm được cải thiện trải nghiệm ổn định khi bắn; không công bố giá trị độ giật mới.",
+          "facts": []
+        }
+      ]
+    },
+    "GROZA": {
+      "history": [
+        {
+          "sourceId": "pubg-official-4.6-vng",
+          "summary": "Bản 4.6 nêu GROZA trong nhóm 7.62mm được cải thiện trải nghiệm ổn định khi bắn; không công bố giá trị độ giật mới.",
+          "facts": []
         }
       ]
     }
