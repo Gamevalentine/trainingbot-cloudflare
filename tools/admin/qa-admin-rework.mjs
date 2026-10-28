@@ -43,7 +43,7 @@ try{
   await page.waitForFunction(()=>document.getElementById("tbBetaStatus")?.textContent?.length>0,undefined,{timeout:5000}).catch(()=>{});
   const betaStatus=await page.locator("#tbBetaStatus").textContent();
   console.log("ADM-01 initial status (no credentials):",JSON.stringify(betaStatus));
-  assert(betaStatus.includes("Chưa đăng nhập"),"Missing session should not be described as expired");
+  assert(betaStatus.toLowerCase().includes("chưa đăng nhập"),"Missing session should not be described as expired");
   await page.evaluate(()=>{
    document.getElementById("adminApp")?.classList.remove("hidden");
    document.getElementById("loginScreen")?.classList.add("hidden");
