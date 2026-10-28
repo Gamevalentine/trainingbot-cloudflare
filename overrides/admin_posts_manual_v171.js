@@ -102,6 +102,7 @@
       if(!response.ok||data.ok!==true)throw new Error(data.message||"Không tải được danh sách bài.");
       if(!Array.isArray(data.posts))throw new Error("API không trả danh sách bài viết hợp lệ.");
       postsCache=data.posts;hasPosts=true;renderPosts(postsCache);
+      document.dispatchEvent(new CustomEvent("tb:posts-loaded",{detail:{count:postsCache.length}}));
       managerStatus(`${data.posts.length} bài đã tải thành công.`,data.posts.length?"ok":"");
     }catch(error){
       if(list){list.replaceChildren();list.append(make("div","tb-post-empty","Không tải được danh sách. Không thể kết luận có 0 bài viết."));}
