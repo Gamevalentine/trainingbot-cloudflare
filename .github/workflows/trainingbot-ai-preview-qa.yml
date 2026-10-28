@@ -21,6 +21,7 @@ jobs:
         with:
           node-version: '22'
       - run: node tools/qa/ai-preview-qa.mjs
+      - run: node tools/qa/b1-preview-bff-qa.mjs
       - run: npm run build
       - run: node tools/qa/ai-preview-build-qa.mjs
       - run: node tools/qa/ai-auth-surface-audit.mjs

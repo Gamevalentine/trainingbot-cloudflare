@@ -11,10 +11,10 @@ const run=async(path,method="GET")=>onRequest({
 });
 const ok=await run("/api/ai-preview/status");
 assert.equal(ok.status,209);assert.equal(nextCalls,1,"Status GET must reach its Preview function");
-for(const [path,method] of [["/api/ai-preview/chat","POST"],["/api/admin/users","GET"],["/api/ai-preview/status","POST"]]){
+for(const [path,method] of [["/api/admin/users","GET"],["/api/ai-preview/status","POST"],["/api/ai-preview/chat","DELETE"]]){
  const denied=await run(path,method);assert.equal(denied.status,403,"Preview must block "+method+" "+path);
 }
-const live=await onRequestGet({request:new Request(url+"/api/ai-preview/status")});
+const live=await onRequestGet({request:new Request(url+"/api/ai-preview/status"),env:{}});
 assert.equal(live.status,200);
 const status=await live.json();
 assert.equal(status.ready,false);assert.equal(status.identityVerified,false);
@@ -30,7 +30,7 @@ const js=readFileSync("overrides/ai-preview.js","utf8");
 assert.doesNotMatch(js,/localStorage|sessionStorage|innerHTML|trainingbot-ai-staging\.ai-vn\.workers\.dev/);
 assert.match(js,/surface === "visitor" \? status\?\.anonymousVisitorReady === true : status\?\.identityVerified === true/);
 assert.match(js,/status\?\.surfaces\?\.\[surface\] === true/);
-console.log("Preview identity/chat isolation PASS: disabled until verified per-person server auth; Production untouched.");
+console.log("Preview BFF isolation PASS: only exact Visitor BFF routes pass Preview guard; Production untouched.");
 
 const visitorHtml=readFileSync("overrides/ai-preview.html","utf8");
 assert.match(visitorHtml,/Không cần đăng nhập|không cần đăng nhập/);
