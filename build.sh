@@ -270,7 +270,7 @@ const logoUrl = origin + '/favicon.svg';
 const coreSeo = {
   'index.html': {
     title: 'TrainingBot – Tin tức, Wiki & Cập nhật PUBG Mobile',
-    description: 'TrainingBot cập nhật tin tức PUBG Mobile, phiên bản mới, Wiki vũ khí, hướng dẫn và nội dung cộng đồng game thủ.'
+    description: 'TrainingBot là website tiếng Việt về PUBG Mobile: tin tức, bản Beta, Wiki vũ khí, phụ kiện, bản đồ và nội dung cộng đồng game thủ.'
   },
   'news.html': {
     title: 'Tin tức PUBG Mobile mới nhất – TrainingBot',
