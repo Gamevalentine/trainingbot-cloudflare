@@ -115,6 +115,12 @@ try{
    await page.waitForFunction(()=>document.querySelectorAll("#tbETray .tb-e-chip").length===2,undefined,{timeout:9000});
    assert.equal(await page.locator("#tbECompareModal[open]").count(),0);
    if(width===1440){
+    // H preflight keeps main hidden until the layered Wiki layout is stable.
+    // Confirm keyboard accessibility after the actual UI becomes visible.
+    await page.waitForFunction(()=>{
+     const main=document.querySelector("main");
+     return !main||getComputedStyle(main).visibility==="visible";
+    },undefined,{timeout:9000});
     const button=page.locator("#tbWikiGrid .tb-wiki-card").filter({has:page.locator("h3",{hasText:"M416"})}).first();
     await button.focus();await page.keyboard.press("Enter");
     assert.equal(await page.evaluate(()=>window.__TB_WIKI_E__.selected.length),3,"Keyboard selection failed");

@@ -40,9 +40,11 @@ try{
   const page=await context.newPage();page.on("pageerror",err=>errors.push(err.message));
   try{
    await page.goto(root+"/wiki.html",{waitUntil:"domcontentloaded",timeout:24000});
+   // H preflight: assert visible UI state before reading computed text or keyboard focus.
+   await page.waitForFunction(()=>{const main=document.querySelector("main");return !!main&&getComputedStyle(main).visibility==="visible";},undefined,{timeout:9500});
    await page.waitForFunction(()=>window.__TB_WIKI_D__?.ready&&DATA.attachments.length===51&&DATA.vehicles.length===26&&DATA.maps.length===8,undefined,{timeout:17000});
    await page.locator('#tbWikiTabs .tb-wiki-tab[data-tab="attachments"]').evaluate(el=>el.click());
-   await page.waitForFunction(()=>!document.querySelector("#tbDSourceSummary")?.hidden&&document.querySelectorAll("#tbWikiGrid .tb-wiki-card").length===51,undefined,{timeout:9000});
+   await page.waitForFunction(()=>{const box=document.querySelector("#tbDSourceSummary");return !!box&&!box.hidden&&box.textContent.includes("51 phụ kiện")&&document.querySelectorAll("#tbWikiGrid .tb-wiki-card").length===51},undefined,{timeout:9000});
    assert((await page.locator("#tbDSourceSummary").innerText()).includes("51 phụ kiện"));
    const first=await page.locator("#tbWikiGrid .tb-wiki-card h3").first().textContent();
    await clickCard(page,first.trim());

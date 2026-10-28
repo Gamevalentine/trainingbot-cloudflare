@@ -187,7 +187,7 @@ let attempts=0;
 function boot(){
  if(!document.querySelector(".tb-wiki-shell")||typeof DATA==="undefined"||!window.__TB_WIKI_E__){if(++attempts<200)setTimeout(boot,90);return}
  Promise.all(["/wiki-stage-f-guides.json","/wiki-stage-c-evidence.json","/wiki-stage-d-evidence.json"].map(path=>
-  fetch(path,{credentials:"omit",cache:"no-store"}).then(r=>{if(!r.ok)throw Error(path+" HTTP "+r.status);return r.json()})
+  fetch(path,{credentials:"omit",cache:"default"}).then(r=>{if(!r.ok)throw Error(path+" HTTP "+r.status);return r.json()})
  )).then(([data,c,d])=>mount(data,c,d))
  .catch(err=>{api.error=err.message;console.error("Wiki F failed:",err.message)});
 }

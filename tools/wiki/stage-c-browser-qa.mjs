@@ -55,6 +55,8 @@ try{
   },name);
   try{
    await page.goto(root+"/wiki.html",{waitUntil:"domcontentloaded",timeout:25000});
+   // H preflight: assert visible UI state before reading computed text or keyboard focus.
+   await page.waitForFunction(()=>{const main=document.querySelector("main");return !!main&&getComputedStyle(main).visibility==="visible";},undefined,{timeout:9500});
    await page.waitForFunction(()=>window.__TB_WIKI_C__?.ready&&document.body.classList.contains("tb-wiki-stage-c")&&DATA.weapons.length===61,
     undefined,{timeout:24000});
    await click("M416");
