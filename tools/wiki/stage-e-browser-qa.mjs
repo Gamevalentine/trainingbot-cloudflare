@@ -46,7 +46,7 @@ try{
    await page.waitForFunction(()=>window.__TB_WIKI_E__.selected.length===2,undefined,{timeout:9000});
    assert.equal(await page.locator(".tb-v145.open").count(),0,"Legacy v145 intercepted compare selections");
    assert.equal(await page.locator("#tbWikiModal.open").count(),0,"Legacy dialog opened in picker mode");
-   assert.equal(await page.locator("#tbETray .tb-e-chip").count(),2);
+   await page.waitForFunction(()=>document.querySelectorAll("#tbETray .tb-e-chip").length===2&&!document.querySelector("#tbETray .tb-e-open")?.disabled,undefined,{timeout:8000});
    await page.locator("#tbETray .tb-e-open").click();
    await page.waitForFunction(()=>window.__TB_WIKI_E__.open&&document.querySelector("#tbECompareModal")?.open,undefined,{timeout:8500});
    assert.equal(await page.locator("#tbECompareModal .tb-e-weapon-head").count(),2);
@@ -67,6 +67,7 @@ try{
    await page.waitForFunction(()=>window.__TB_WIKI_E__.selected.length===1&&document.querySelector("#tbETray .tb-e-open")?.disabled,undefined,{timeout:9000});
    assert((await page.locator("#tbETray .tb-e-open").isDisabled()),"Compare allowed one weapon");
    await clickWeapon(page,"PP-19 Bizon");
+   await page.waitForFunction(()=>document.querySelectorAll("#tbETray .tb-e-chip").length===2&&!document.querySelector("#tbETray .tb-e-open")?.disabled,undefined,{timeout:8000});
    await page.locator("#tbETray .tb-e-open").click();
    await page.waitForFunction(()=>window.__TB_WIKI_E__.open&&document.querySelector("#tbECompareModal")?.open,undefined,{timeout:9000});
    assert.equal(await page.locator("#tbECompareModal .tb-e-weapon-head").count(),2);
@@ -91,7 +92,7 @@ try{
    // Restore link without third-party storage, safely and without auto-popup.
    await page.goto(root+"/wiki.html?compare=QBZ%2CPP-19+Bizon",{waitUntil:"domcontentloaded",timeout:25000});
    await page.waitForFunction(()=>window.__TB_WIKI_E__?.ready&&window.__TB_WIKI_E__.selected.length===2,undefined,{timeout:18000});
-   assert.equal(await page.locator("#tbETray .tb-e-chip").count(),2);
+   await page.waitForFunction(()=>document.querySelectorAll("#tbETray .tb-e-chip").length===2,undefined,{timeout:9000});
    assert.equal(await page.locator("#tbECompareModal[open]").count(),0);
    if(width===1440){
     const button=page.locator("#tbWikiGrid .tb-wiki-card").filter({has:page.locator("h3",{hasText:"M416"})}).first();
