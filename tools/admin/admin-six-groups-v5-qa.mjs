@@ -121,7 +121,7 @@ try{
    assert(!polished.cyber&&!polished.glitch,"Previously reverted Glitch/Cyber styles returned");
    assert(polished.cardHeight<215,"Card height is too large");
    if(width===1440){
-    assert(polished.featureColumns.includes("span 2"),"Feature card should span two columns on desktop "+JSON.stringify(polished));
+    assert(polished.bounds[0].w>polished.bounds[1].w*1.85,"Feature card is not actually two columns wide "+JSON.stringify(polished));
     assert(Math.abs(polished.bounds[1].y-polished.bounds[0].y)<3,"First row geometry incorrect");
     assert(Math.abs(polished.bounds[2].y-polished.bounds[3].y)<3,"Second row geometry incorrect");
     assert(Math.abs(polished.bounds[3].y-polished.bounds[4].y)<3,"Third card missing in second row");
