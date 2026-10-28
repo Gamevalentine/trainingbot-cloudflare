@@ -86,6 +86,20 @@ try{
       fs.mkdirSync("header-qa-screenshots",{recursive:true});
       await p.screenshot({path:"header-qa-screenshots/header-"+(url==="/"? "home":url.replace(/[/.]/g,"-"))+"-"+width+".png",animations:"disabled"});
     }
+    if(width<=900){
+      const menu=p.locator("header.site-header .header-actions .menu-button");
+      await menu.click();
+      await p.waitForTimeout(150);
+      const state=await p.evaluate(()=>{
+        const nav=document.querySelector("header.site-header .mobile-nav");
+        const menu=document.querySelector("header.site-header .menu-button");
+        return {css:getComputedStyle(nav).display,links:nav.querySelectorAll("a").length,height:nav.getBoundingClientRect().height,
+          classes:nav.className,expanded:menu?.getAttribute("aria-expanded")};
+      });
+      assert(state.links===6&&state.css!=="none"&&state.height>0,
+        width+"px "+url+" mobile navigation failed to open "+JSON.stringify(state));
+      await menu.click();
+    }
     if(url==="/community.html"||url==="/news.html"){
       if(width>900){
        await p.locator('header.site-header .icon-button').click();
