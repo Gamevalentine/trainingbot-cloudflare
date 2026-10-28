@@ -36,7 +36,7 @@ export async function onRequestGet({request,env}){
     const where=` WHERE (?='all' OR source_key=?) AND (?='ALL' OR country=?)
       AND (?='all' OR visitor_page_views<=1)`;
     const args=[source,source,country,country,activity];
-    const [sources,rows,count,legacy,legacyReferrers]=await Promise.all([
+    const [sources,rows,count,legacy,legacyReferrers,countries]=await Promise.all([
       env.DB.prepare(cte+` SELECT source_key,source_label,source_channel,source_evidence,
          COUNT(*) AS visits,COUNT(DISTINCT visitor_id) AS visitors
          FROM attributed GROUP BY source_key,source_label,source_channel,source_evidence
@@ -48,12 +48,14 @@ export async function onRequestGet({request,env}){
       env.DB.prepare(`SELECT s.referrer,COUNT(DISTINCT s.visitor_id) AS visitors
          FROM tb_visitor_sessions_v1 s
          WHERE s.referrer LIKE 'http%' ${admin.results?.length?"AND NOT EXISTS (SELECT 1 FROM tb_admin_browsers_v1 a WHERE a.visitor_id=s.visitor_id)":""}
-         GROUP BY s.referrer ORDER BY visitors DESC LIMIT 20`).all()
+         GROUP BY s.referrer ORDER BY visitors DESC LIMIT 20`).all(),
+      env.DB.prepare(cte+` SELECT country,COUNT(*) AS visits FROM attributed
+        GROUP BY country ORDER BY visits DESC,country LIMIT 100`).all()
     ]);
     return reply({
       ok:true,ready:true,generated_at:new Date().toISOString(),
       note:"Nguồn UTM là thông tin do URL khai báo; referrer có thể bị trình duyệt ẩn. Không rõ nguồn không đồng nghĩa truy cập trực tiếp.",
-      sources:sources.results||[],visits:rows.results||[],legacy_referrers:legacyReferrers.results||[],
+      sources:sources.results||[],visits:rows.results||[],countries:countries.results||[],legacy_referrers:legacyReferrers.results||[],
       legacy_visit_count:Number(legacy?.total||0),
       total:Number(count?.total||0),page,has_more:page*limit<Number(count?.total||0)
     });
