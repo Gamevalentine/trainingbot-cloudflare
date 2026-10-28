@@ -52,6 +52,11 @@
  content.insertAdjacentElement("afterend",beta);
  let booted=false,reloading=false;
  const betaNav=()=>nav.querySelector('.nav-item[data-view="beta"]');
+ if(!betaNav()){
+  const button=document.createElement("button");button.type="button";button.className="nav-item";button.dataset.view="beta";
+  button.innerHTML="<span>↓</span><b>Phiên bản Beta</b>";button.setAttribute("aria-label","Phiên bản Beta");
+  nav.append(button); // Stage B automatically regroups the new entry under Nội dung.
+ }
  function show(){
   if(app.classList.contains("hidden"))return;
   app.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v===beta));
