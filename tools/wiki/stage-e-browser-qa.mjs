@@ -64,7 +64,7 @@ try{
    assert.deepEqual(await page.evaluate(()=>window.__TB_WIKI_E__.selected),["M416","AKM","QBZ"],"Maximum three weapons exceeded");
    await page.locator("#tbETray .tb-e-chip").filter({hasText:"M416"}).click();
    await page.locator("#tbETray .tb-e-chip").filter({hasText:"AKM"}).click();
-   await page.waitForFunction(()=>window.__TB_WIKI_E__.selected.length===1,undefined,{timeout:9000});
+   await page.waitForFunction(()=>window.__TB_WIKI_E__.selected.length===1&&document.querySelector("#tbETray .tb-e-open")?.disabled,undefined,{timeout:9000});
    assert((await page.locator("#tbETray .tb-e-open").isDisabled()),"Compare allowed one weapon");
    await clickWeapon(page,"PP-19 Bizon");
    await page.locator("#tbETray .tb-e-open").click();
