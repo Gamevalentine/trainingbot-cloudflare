@@ -144,3 +144,16 @@ html=html.replace(marker,marker+attach);
 fs.writeFileSync(file,html);
 NODE
 grep -q 'admin-six-groups-v5.js' public/admin.html
+
+# Admin V5 isolated fake-data Preview; NEVER emit Demo from main/Production.
+if [[ "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-admin-six-groups-20261029" || "${TRAININGBOT_LOCAL_DEMO:-}" == "1" ]]; then
+  test -f public/admin-demo-runtime.js
+  node --check public/admin-demo-runtime.js
+  node tools/admin/build-demo.mjs
+  test -f public/admin-demo.html
+  if grep -q 'admin-demo-runtime.js' public/admin.html; then
+    echo "Demo runtime leaked into real Admin" >&2; exit 1
+  fi
+else
+  rm -f public/admin-demo-runtime.js public/admin-demo.html
+fi
