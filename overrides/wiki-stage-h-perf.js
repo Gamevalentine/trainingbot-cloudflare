@@ -24,10 +24,10 @@ function prepare(){
   const img=images[i];
   // First row stays eager so the visible first card is not delayed.
   const desired=i<4?"eager":"lazy";
-  if(img.dataset.tbHImage==="1")continue;
-  img.loading=desired;img.decoding="async";
-  if(i>=4)img.fetchPriority="low";
-  img.dataset.tbHImage="1";state.imagesPrepared++;
+  if(img.dataset.tbHImage!=="1"){img.dataset.tbHImage="1";state.imagesPrepared++;}
+  if(img.loading!==desired)img.loading=desired;
+  img.decoding="async";
+  img.fetchPriority=i>=4?"low":"auto";
  }
  if(!state.ready){
   let queued=false;
