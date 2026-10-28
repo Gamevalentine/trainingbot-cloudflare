@@ -71,6 +71,14 @@
    }
   }
   const title=byId("pageTitle"),eyebrow=byId("pageEyebrow");
+  // Original packed router assigns "Admin Center" to any new route. Keep its
+  // protected route handling, but synchronize the Beta title after it updates.
+  if(title){
+   const observer=new MutationObserver(()=>{
+    if(location.hash==="#beta"&&title.textContent!=="Phiên bản Beta")title.textContent="Phiên bản Beta";
+   });
+   observer.observe(title,{childList:true,subtree:true,characterData:true});
+  }
   function showBeta(){
    app.querySelectorAll(".view").forEach(view=>view.classList.toggle("active",view===betaPanel));
    nav.querySelectorAll(".nav-item").forEach(button=>button.classList.toggle("active",button===betaButton));
