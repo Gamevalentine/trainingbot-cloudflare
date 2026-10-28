@@ -79,6 +79,20 @@ async function setup(db){
       target TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL
     )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS tb_visitor_visits_v2 (
+      visitor_id TEXT NOT NULL,
+      visit_id TEXT NOT NULL,
+      first_seen_at TEXT NOT NULL,
+      last_seen_at TEXT NOT NULL,
+      entry_path TEXT NOT NULL,
+      current_path TEXT NOT NULL,
+      country TEXT NOT NULL DEFAULT '',
+      device TEXT NOT NULL DEFAULT 'Khác',
+      os TEXT NOT NULL DEFAULT 'Khác',
+      browser TEXT NOT NULL DEFAULT 'Khác',
+      PRIMARY KEY(visitor_id, visit_id)
+    )`),
+    db.prepare("CREATE INDEX IF NOT EXISTS idx_tb_visitor_visits_last_seen ON tb_visitor_visits_v2(last_seen_at DESC)"),
     db.prepare("CREATE INDEX IF NOT EXISTS idx_tb_visitor_sessions_last_seen ON tb_visitor_sessions_v1(last_seen_at DESC)"),
     db.prepare("CREATE INDEX IF NOT EXISTS idx_tb_visitor_sessions_visitor ON tb_visitor_sessions_v1(visitor_id)"),
     db.prepare("CREATE INDEX IF NOT EXISTS idx_tb_visitor_events_session ON tb_visitor_events_v1(session_id,created_at)"),
@@ -149,7 +163,16 @@ export async function onRequestPost({request,env}){
           city=CASE WHEN excluded.city<>'' THEN excluded.city ELSE city END,
           region=CASE WHEN excluded.region<>'' THEN excluded.region ELSE region END,
           country=CASE WHEN excluded.country<>'' THEN excluded.country ELSE country END`)
-        .bind(sessionId,visitorId,now,now,path,path,referrer,client.device,client.os,client.browser,geo.city,geo.region,geo.country)
+        .bind(sessionId,visitorId,now,now,path,path,referrer,client.device,client.os,client.browser,geo.city,geo.region,geo.country),
+      env.DB.prepare(`INSERT INTO tb_visitor_visits_v2
+        (visitor_id,visit_id,first_seen_at,last_seen_at,entry_path,current_path,country,device,os,browser)
+        VALUES(?,?,?,?,?,?,?,?,?,?)
+        ON CONFLICT(visitor_id,visit_id) DO UPDATE SET
+          last_seen_at=excluded.last_seen_at,
+          current_path=excluded.current_path,
+          country=CASE WHEN excluded.country<>'' THEN excluded.country ELSE country END,
+          device=excluded.device,os=excluded.os,browser=excluded.browser`)
+        .bind(visitorId,sessionId,now,now,path,path,geo.country,client.device,client.os,client.browser)
     ];
     if(eventType!=="heartbeat"){
       statements.push(
