@@ -40,3 +40,21 @@ done
 if ! grep -q 'site_featured_posts_v173\.js' public/news.html; then
   sed -i 's#</body>#  <script defer src="/site_featured_posts_v173.js?v=174"></script>\n</body>#' public/news.html
 fi
+
+# ADM-02–05: attach readable Admin UI enhancement after the original runtime.
+# This only changes the generated Admin loader, never writes the packed runtime.
+test -f public/admin-rework-v1.js
+node --check public/admin-rework-v1.js >/dev/null
+node <<'NODE'
+const fs=require('fs');
+const file='public/admin.html';
+let source=fs.readFileSync(file,'utf8');
+if(!source.includes('admin-rework-v1.js')){
+  const marker='document.open();document.write(h);document.close()';
+  if(!source.includes(marker))throw new Error('Admin loader injection marker missing');
+  const patch="h=h.replace('</body>','<script defer src=\"/admin-rework-v1.js?v=1\"><\\/script></body>');"+marker;
+  source=source.replace(marker,patch);
+  fs.writeFileSync(file,source);
+}
+NODE
+grep -q 'admin-rework-v1.js' public/admin.html
