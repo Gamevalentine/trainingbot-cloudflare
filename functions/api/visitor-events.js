@@ -93,10 +93,12 @@ async function setup(db){
       PRIMARY KEY(visitor_id, visit_id)
     )`),
     db.prepare("CREATE INDEX IF NOT EXISTS idx_tb_visitor_visits_last_seen ON tb_visitor_visits_v2(last_seen_at DESC)"),
+    db.prepare("CREATE INDEX IF NOT EXISTS idx_tb_visitor_visits_visitor_recent ON tb_visitor_visits_v2(visitor_id,last_seen_at DESC)"),
     db.prepare("CREATE INDEX IF NOT EXISTS idx_tb_visitor_sessions_last_seen ON tb_visitor_sessions_v1(last_seen_at DESC)"),
     db.prepare("CREATE INDEX IF NOT EXISTS idx_tb_visitor_sessions_visitor ON tb_visitor_sessions_v1(visitor_id)"),
     db.prepare("CREATE INDEX IF NOT EXISTS idx_tb_visitor_events_session ON tb_visitor_events_v1(session_id,created_at)"),
-    db.prepare("CREATE INDEX IF NOT EXISTS idx_tb_visitor_events_created ON tb_visitor_events_v1(created_at DESC)")
+    db.prepare("CREATE INDEX IF NOT EXISTS idx_tb_visitor_events_created ON tb_visitor_events_v1(created_at DESC)"),
+    db.prepare("CREATE INDEX IF NOT EXISTS idx_tb_visitor_events_visitor_type ON tb_visitor_events_v1(visitor_id,event_type)")
   ]);
 
   const columns=await db.prepare("PRAGMA table_info(tb_visitor_sessions_v1)").all();
@@ -150,6 +152,13 @@ export async function onRequestPost({request,env}){
 
   try{
     await setup(env.DB);
+    // Server-side coalescing covers tab startup races and stale client visit IDs.
+    const recent=await env.DB.prepare(`SELECT visit_id,last_seen_at
+      FROM tb_visitor_visits_v2 WHERE visitor_id=?
+      ORDER BY last_seen_at DESC LIMIT 1`).bind(visitorId).first();
+    const gap=Date.now()-Date.parse(recent?.last_seen_at||"");
+    const canonicalVisitId=recent&&Number.isFinite(gap)&&gap>=-60000&&gap<=30*60*1000
+      ?recent.visit_id:sessionId;
     const statements=[
       env.DB.prepare(`INSERT INTO tb_visitor_sessions_v1
         (session_id,visitor_id,first_seen_at,last_seen_at,entry_path,current_path,referrer,device,os,browser,gender,city,region,country)
@@ -172,7 +181,7 @@ export async function onRequestPost({request,env}){
           current_path=excluded.current_path,
           country=CASE WHEN excluded.country<>'' THEN excluded.country ELSE country END,
           device=excluded.device,os=excluded.os,browser=excluded.browser`)
-        .bind(visitorId,sessionId,now,now,path,path,geo.country,client.device,client.os,client.browser)
+        .bind(visitorId,canonicalVisitId,now,now,path,path,geo.country,client.device,client.os,client.browser)
     ];
     if(eventType!=="heartbeat"){
       statements.push(
