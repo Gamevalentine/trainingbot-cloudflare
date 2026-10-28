@@ -1,0 +1,47 @@
+name: TrainingBot Admin V4 — Layout Architecture QA
+on:
+  push:
+    branches:
+      - aion-trainingbot-admin-layout-v4-20261028
+permissions:
+  contents: read
+jobs:
+  layout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 23
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build V4 from original Admin A-E
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          npm run build
+          test -f public/admin-layout-v4.js
+          test -f public/admin-layout-v4.css
+          test -f public/admin.html
+          test ! -e public/admin-demo.html
+          test ! -e .github/workflows/trainingbot-d1-encrypted-backup.yml
+          node --check public/admin-layout-v4.js
+          grep -q 'admin-layout-v4.js' public/admin.html
+      - name: Install Playwright
+        run: npm install --no-save --no-package-lock playwright
+      - name: Test structural reorganization, group routing and search
+        run: node tools/admin/admin-layout-v4-qa.mjs
+      - name: Original Admin state, writing and security regression
+        run: |
+          node tools/admin/adm01-state-qa.mjs
+          node tools/admin/adm04-06-browser-qa.mjs
+          node tools/admin/adm07-09-browser-qa.mjs
+          node tools/admin/adm06-draft-handler-qa.mjs
+      - name: Public data and Preview isolation
+        run: |
+          node tools/qa/p3-1-d1-preview-isolation.mjs
+          node tools/qa/p1-seo.mjs
+      - name: Save mobile and desktop QA captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-layout-v4-qa-captures
+          path: admin-qa-screenshots/admin-layout-v4-*.png
+          if-no-files-found: ignore
+          retention-days: 7
