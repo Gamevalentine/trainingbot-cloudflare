@@ -62,7 +62,7 @@ try{
    assert.equal(await page.locator("#tbFGuides .tb-f-card:visible").count(),4);
    await page.waitForFunction(()=>{
     const imgs=[...document.querySelectorAll("#tbWikiGrid .tb-wiki-card img")];
-    return imgs.every(x=>x.dataset.tbHImage==="1");
+    return imgs.every((x,i)=>x.dataset.tbHImage==="1"&&x.loading===(i<4?"eager":"lazy"));
    },undefined,{timeout:8000});
    const f=await page.evaluate(()=>{
     const active=document.querySelector('#tbFGuides .tb-f-category[data-category="maps"]');
