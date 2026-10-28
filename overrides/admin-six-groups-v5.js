@@ -47,6 +47,12 @@ const polish=document.createElement("link");
 polish.id="tb5WorkspacePolishStyle";polish.rel="stylesheet";
 polish.href="/admin-workspace-polish-v5.css?v=1";
 document.head.append(polish);
+// Typography comes last to normalize Vietnamese glyphs across inherited fonts,
+// button defaults and V3/V5 display headings without altering layout.
+const typography=document.createElement("link");
+typography.id="tb5TypographyStyle";typography.rel="stylesheet";
+typography.href="/admin-typography-v5.css?v=1";
+document.head.append(typography);
 document.body.classList.add("tb-admin-six-groups");
 sidebar.querySelector(".tb3-sidebar-version")?.remove();
 // Hidden legacy menu retains all listeners but is excluded from tab and screen reader.
