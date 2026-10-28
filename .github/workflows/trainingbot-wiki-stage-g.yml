@@ -1,0 +1,61 @@
+name: TrainingBot Wiki V2 Stage G — Admin review Preview QA
+on:
+  push:
+    branches:
+      - aion-trainingbot-wiki-stage-g-20261029
+  pull_request:
+    branches:
+      - aion-trainingbot-wiki-stage-f-20261029
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions:
+  contents: read
+jobs:
+  wiki-g:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build isolated real Admin and Wiki A through G
+        env:
+          TRAININGBOT_LOCAL_G_QA: "1"
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          npm run build
+          for asset in admin-wiki-stage-g.js admin-wiki-stage-g.css wiki-stage-g-snapshot.js; do
+            test -f "public/$asset"
+          done
+          node --check public/admin-wiki-stage-g.js
+          node --check public/wiki-stage-g-snapshot.js
+          node --check tools/wiki/stage-g-browser-qa.mjs
+          grep -q admin-wiki-stage-g.js public/admin.html
+          grep -q wiki-stage-g-snapshot.js public/wiki.html
+          test ! -e public/admin-demo.html
+      - name: Install isolated Chromium runner
+        run: npm install --no-save --no-package-lock playwright
+      - name: G1–G6 authenticated Admin and draft-only QA
+        run: |
+          mkdir -p wiki-stage-g-screenshots
+          node tools/wiki/stage-g-browser-qa.mjs
+      - name: Regression F/E/D/C/B, SEO and D1 isolation
+        run: |
+          node tools/wiki/stage-f-browser-qa.mjs
+          node tools/wiki/stage-e-browser-qa.mjs
+          node tools/wiki/stage-d-browser-qa.mjs
+          node tools/wiki/stage-c-browser-qa.mjs
+          node tools/wiki/stage-b-browser-qa.mjs
+          node tools/qa/p1-seo.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
+      - name: Upload QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-wiki-stage-g-qa
+          path: |
+            wiki-stage-g-screenshots/
+            wiki-stage-f-screenshots/
+            wiki-stage-e-screenshots/
+            wiki-stage-d-screenshots/
+            wiki-stage-c-screenshots/
+          if-no-files-found: ignore
+          retention-days: 14
