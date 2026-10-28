@@ -39,8 +39,7 @@ assert.equal(three.visitorId,one.visitorId,"visitor identity persists after inac
 assert.notEqual(three.sessionId,one.sessionId,"new visit after 30 inactive minutes");
 
 async function loadModule(path){
-  const source=await fs.readFile(path,"utf8");
-  return import("data:text/javascript;charset=utf-8,"+encodeURIComponent(source));
+  return import(new URL("../../"+path,import.meta.url));
 }
 const ingest=await loadModule("functions/api/visitor-events.js");
 const batches=[];
