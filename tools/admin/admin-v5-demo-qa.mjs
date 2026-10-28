@@ -25,10 +25,23 @@ try{
   const page=await ctx.newPage();page.on("pageerror",e=>errors.push(e.message));
   try{
    await page.goto(root+"/admin-demo.html",{waitUntil:"domcontentloaded",timeout:27000});
-   await page.waitForFunction(()=>{
-     const a=document.getElementById("adminApp");
-     return !!a&&!a.classList.contains("hidden")&&document.querySelectorAll("#tb5Categories button").length===6;
-   },undefined,{timeout:25000});
+   try{
+    await page.waitForFunction(()=>{
+      const a=document.getElementById("adminApp");
+      return !!a&&!a.classList.contains("hidden")&&document.querySelectorAll("#tb5Categories button").length===6;
+    },undefined,{timeout:12000});
+   }catch(error){
+    const state=await page.evaluate(()=>({
+      title:document.title,body:document.body?.innerText.slice(0,600),classes:document.body?.className,
+      app:document.getElementById("adminApp")?.className,
+      nav:document.querySelectorAll("#tb5Categories button").length,
+      demo:!!window.__TRAININGBOT_DEMO__,
+      storage:sessionStorage.getItem("tb-admin-center-token-v2"),
+      scripts:[...document.scripts].map(x=>x.src||"inline").slice(-12)
+    })).catch(e=>({error:String(e)}));
+    console.log("V5 DEMO DIAG",JSON.stringify({state,requests,errors}));
+    throw error;
+   }
    assert.equal(await page.locator("#tb5Categories .tb5-category").count(),6);
    assert.equal(await page.locator("#tbDemoBanner").count(),1,"Missing synthetic-only notice");
    await page.evaluate(()=>document.querySelector('#tb5Categories [data-tb5-group="content"]').click());
