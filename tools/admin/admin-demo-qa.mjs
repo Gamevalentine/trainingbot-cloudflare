@@ -29,7 +29,22 @@ async function test(width){
  page.on("dialog",d=>d.accept());
  try {
   await page.goto(ROOT+"/admin-demo.html",{waitUntil:"domcontentloaded",timeout:25000});
-  await page.waitForSelector("#adminApp:not(.hidden)",{timeout:25000});
+  try {
+   await page.waitForSelector("#adminApp:not(.hidden)",{timeout:12000});
+  } catch(e) {
+   console.log("DEMO INIT DIAGNOSTIC",JSON.stringify(await page.evaluate(()=>({
+    href:location.href,title:document.title,ready:document.readyState,
+    body:document.body?.innerText.slice(0,1200),
+    app:!!document.getElementById("adminApp"),
+    appClass:document.getElementById("adminApp")?.className,
+    login:!!document.getElementById("loginForm"),
+    demo:!!window.__TRAININGBOT_DEMO__,
+    scripts:[...document.scripts].map(x=>x.src||"inline").slice(0,15)
+   })).catch(err=>({error:String(err)}))));
+   console.log("DEMO PAGE ERRORS",JSON.stringify(errors));
+   console.log("DEMO REAL NETWORK",JSON.stringify(attempts));
+   throw e;
+  }
   await page.waitForSelector("body.tb-admin-stage-d",{timeout:20000});
   await page.waitForSelector("#tbDemoBanner",{timeout:9000});
   await page.waitForFunction(()=>document.querySelectorAll("#sidebar .nav-item").length===13,undefined,{timeout:9000});
