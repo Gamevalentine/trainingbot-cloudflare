@@ -177,3 +177,27 @@ fs.writeFileSync(file,html);
 NODE
 grep -q wiki-stage-b-v2.css public/wiki.html
 grep -q wiki-stage-b-v2.js public/wiki.html
+
+# Wiki V2 Stage C — source-backed historical weapon profiles, Preview only.
+# No API/Worker/D1/R2 changes. Builds on A (PR21) and B (PR22).
+test -f public/wiki-stage-b-v2.js
+test -f public/wiki-stage-c-weapon.js
+test -f public/wiki-stage-c-weapon.css
+test -f public/wiki-stage-c-evidence.json
+node --check public/wiki-stage-c-weapon.js
+node -e "const e=require('./public/wiki-stage-c-evidence.json');if(e.schemaVersion!=='wiki-c1'||!Object.keys(e.weapons).length)process.exit(2)"
+node <<'NODE'
+const fs=require('node:fs'),file='public/wiki.html';
+let html=fs.readFileSync(file,'utf8');
+for(const required of ['wiki-stage-b-v2.js','wiki_weapon_detail_v144.js','wiki_audit_v149.js']){
+ if(!html.includes(required))throw Error('Wiki C requires prior loader '+required);
+}
+if(html.includes('wiki-stage-c-weapon.js'))throw Error('Wiki C duplicated');
+const script='<script defer src="/wiki-stage-c-weapon.js?v=1"></script>';
+html=html.replace('</body>',script+'\n</body>');
+fs.writeFileSync(file,html);
+NODE
+grep -q wiki-stage-c-weapon.js public/wiki.html
+if grep -q wiki-stage-c-weapon.js public/admin.html; then
+ echo 'Wiki C leaked into Admin' >&2; exit 2
+fi
