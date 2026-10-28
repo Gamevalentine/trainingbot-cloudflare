@@ -66,6 +66,7 @@ try{
     return imgs.every((x,i)=>x.dataset.tbHImage==="1"&&x.loading===(i<4?"eager":"lazy"));
    },undefined,{timeout:8000});
    const f=await page.evaluate(()=>{
+    window.__TB_WIKI_H__.reconcile(); // same JavaScript task as the snapshot
     const active=document.querySelector('#tbFGuides .tb-f-category[data-category="maps"]');
     const label=document.querySelector("#tbFGuides .tb-f-search");
     const img=[...document.querySelectorAll("#tbWikiGrid .tb-wiki-card img")];
