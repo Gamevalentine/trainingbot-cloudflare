@@ -65,8 +65,8 @@
     "maps": [
       "name",
       "size",
-      "description",
-      "mode"
+      "playstyle",
+      "description"
     ]
   },
   "aliases": {
