@@ -189,7 +189,7 @@ node -e "const e=require('./public/wiki-stage-c-evidence.json');if(e.schemaVersi
 node <<'NODE'
 const fs=require('node:fs'),file='public/wiki.html';
 let html=fs.readFileSync(file,'utf8');
-for(const required of ['wiki-stage-b-v2.js','wiki_weapon_detail_v144.js','wiki_audit_v149.js']){
+for(const required of ['wiki-stage-b-v2.js','wiki_verified_data_v145.js','wiki_audit_v149.js']){
  if(!html.includes(required))throw Error('Wiki C requires prior loader '+required);
 }
 if(html.includes('wiki-stage-c-weapon.js'))throw Error('Wiki C duplicated');
