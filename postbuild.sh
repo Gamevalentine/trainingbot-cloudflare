@@ -139,7 +139,7 @@ if(html.includes("admin-six-groups-v5.js"))throw Error("V5 duplicated");
 // The reconstructed Admin HTML uses document.open/write/close; deferring the
 // final script inside that HTML can prevent execution in Chrome. Attach it to
 // the finished document explicitly after document.close().
-const attach=';{const s=document.createElement("script");s.src="/admin-six-groups-v5.js?v=2";document.body.append(s)}';
+const attach=';setTimeout(()=>{const s=document.createElement("script");s.src="/admin-six-groups-v5.js?v=2";document.body?.append(s)},0)';
 html=html.replace(marker,marker+attach);
 fs.writeFileSync(file,html);
 NODE
