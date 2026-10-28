@@ -1,0 +1,41 @@
+name: TrainingBot — Unified Community Header QA
+on:
+  push:
+    branches:
+      - aion-trainingbot-global-header-reference-20261029
+permissions:
+  contents: read
+jobs:
+  header:
+    runs-on: ubuntu-latest
+    timeout-minutes: 23
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build all six public pages with the Community header
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          npm run build
+          test -f public/tb-community-header-v205.css
+          test -f public/community.html
+          test ! -f public/admin-demo.html
+          node --check tools/public/unify-main-header.mjs
+          node --check tools/public/community-header-v205-qa.mjs
+      - name: Install local browser QA
+        run: npm install --no-save --no-package-lock playwright
+      - name: Compare 6 headers pixel geometry with Community reference at 4 viewports
+        run: node tools/public/community-header-v205-qa.mjs
+      - name: Public SEO and navigation regression
+        run: |
+          node tools/qa/p0-responsive.mjs
+          node tools/qa/p1-content.mjs
+          node tools/qa/p1-seo.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
+      - name: Upload Community-standard screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-community-reference-headers
+          path: header-qa-screenshots/*.png
+          if-no-files-found: ignore
+          retention-days: 7
