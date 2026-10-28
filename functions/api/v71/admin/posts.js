@@ -148,6 +148,8 @@ export async function onRequestPost({request,env}){
   const category=clean(body.category,60)||"Tin mới";
   const summary=clean(body.summary,260)||makeSummary(content);
   const coverUrl=clean(body.cover_url,500);
+  const status=body.status===undefined?"published":String(body.status);
+  if(!["draft","published"].includes(status))return reply({ok:false,message:"Trạng thái bài viết không hợp lệ."},400);
   if(title.length<4)return reply({ok:false,message:"Tiêu đề quá ngắn."},400);
   if(content.length<20 && !richContent)return reply({ok:false,message:"Nội dung bài viết quá ngắn."},400);
   if(coverUrl && !coverUrl.startsWith("/"))return reply({ok:false,message:"Đường dẫn ảnh bìa không hợp lệ."},400);
@@ -155,8 +157,8 @@ export async function onRequestPost({request,env}){
   const slug=await uniqueSlug(env.DB,title);
   const now=new Date().toISOString();
   const id=`tb-post-${crypto.randomUUID()}`;
-  await env.DB.prepare("INSERT INTO tb_manual_posts_v1 (id,slug,title,summary,content,rich_content,category,cover_url,status,featured_at,created_at,updated_at,published_at) VALUES (?,?,?,?,?,?,?,?,'published','',?,?,?)").bind(id,slug,title,summary,content,richContent,category,coverUrl,now,now,now).run();
-  return reply({ok:true,post:{id,slug,title,summary,category,cover_url:coverUrl,featured_at:"",published_at:now,url:`/bai-viet/${slug}`}},201);
+  await env.DB.prepare("INSERT INTO tb_manual_posts_v1 (id,slug,title,summary,content,rich_content,category,cover_url,status,featured_at,created_at,updated_at,published_at) VALUES (?,?,?,?,?,?,?,?,?,'',?,?,?)").bind(id,slug,title,summary,content,richContent,category,coverUrl,status,now,now,status==="published"?now:"").run();
+  return reply({ok:true,post:{id,slug,title,summary,category,status,cover_url:coverUrl,featured_at:"",published_at:status==="published"?now:"",url:status==="published"?`/bai-viet/${slug}`:""}},201);
 }
 
 export async function onRequestPatch({request,env}){
@@ -167,10 +169,11 @@ export async function onRequestPatch({request,env}){
   const id=clean(body.id,160);
   if(!id)return reply({ok:false,message:"Thiếu thông tin bài viết."},400);
   await setup(env.DB);
-  const post=await env.DB.prepare("SELECT id,slug,title,summary,content,rich_content,category,cover_url,featured_at,published_at FROM tb_manual_posts_v1 WHERE id=? LIMIT 1").bind(id).first();
+  const post=await env.DB.prepare("SELECT id,slug,title,summary,content,rich_content,category,cover_url,status,featured_at,published_at FROM tb_manual_posts_v1 WHERE id=? LIMIT 1").bind(id).first();
   if(!post)return reply({ok:false,message:"Không tìm thấy bài viết."},404);
 
   if(typeof body.featured==="boolean"){
+    if(post.status!=="published"&&body.featured)return reply({ok:false,message:"Chỉ bài đã xuất bản mới được ghim."},409);
     const featuredAt=body.featured?new Date().toISOString():"";
     await env.DB.prepare("UPDATE tb_manual_posts_v1 SET featured_at=?,updated_at=? WHERE id=?").bind(featuredAt,new Date().toISOString(),id).run();
     if(body.featured){
@@ -185,13 +188,17 @@ export async function onRequestPatch({request,env}){
   const category=clean(body.category,60)||"Tin mới";
   const summary=clean(body.summary,260)||makeSummary(content);
   const coverUrl=clean(body.cover_url,500);
+  const status=body.status===undefined?post.status:String(body.status);
+  if(!["draft","published"].includes(status))return reply({ok:false,message:"Trạng thái bài viết không hợp lệ."},400);
   if(title.length<4)return reply({ok:false,message:"Tiêu đề quá ngắn."},400);
   if(content.length<20 && !richContent)return reply({ok:false,message:"Nội dung bài viết quá ngắn."},400);
   if(coverUrl && !coverUrl.startsWith("/"))return reply({ok:false,message:"Đường dẫn ảnh bìa không hợp lệ."},400);
 
   const now=new Date().toISOString();
-  await env.DB.prepare("UPDATE tb_manual_posts_v1 SET title=?,summary=?,content=?,rich_content=?,category=?,cover_url=?,updated_at=? WHERE id=?").bind(title,summary,content,richContent,category,coverUrl,now,id).run();
-  return reply({ok:true,post:{id,slug:post.slug,title,summary,content,rich_content:richContent,category,cover_url:coverUrl,featured_at:post.featured_at,published_at:post.published_at,updated_at:now,url:`/bai-viet/${post.slug}`},message:"Đã lưu thay đổi bài viết."});
+  const firstPublished=post.status!=="published"&&status==="published";
+  const publicationDate=firstPublished?now:post.published_at;
+  await env.DB.prepare("UPDATE tb_manual_posts_v1 SET title=?,summary=?,content=?,rich_content=?,category=?,cover_url=?,status=?,featured_at=?,published_at=?,updated_at=? WHERE id=?").bind(title,summary,content,richContent,category,coverUrl,status,status==="draft"?"":post.featured_at,publicationDate,now,id).run();
+  return reply({ok:true,post:{id,slug:post.slug,title,summary,content,rich_content:richContent,category,status,cover_url:coverUrl,featured_at:status==="draft"?"":post.featured_at,published_at:publicationDate,updated_at:now,url:status==="published"?`/bai-viet/${post.slug}`:""},message:status==="draft"?"Đã lưu nháp, chưa hiển thị công khai.":"Đã lưu và xuất bản bài viết."});
 }
 
 export async function onRequestDelete({request,env}){

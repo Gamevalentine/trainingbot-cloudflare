@@ -15,6 +15,10 @@
   let currentPost=null;
   let selectedImage=null;
   let savedRange=null;
+  let editorDirty=false,editorSaving=false,editorOpening=false;
+  const isOpen=()=>!!$("tbRichPostModal")?.classList.contains("open");
+  function markDirty(){if(currentPost&&!editorOpening)editorDirty=true;}
+  window.addEventListener("beforeunload",event=>{if(!isOpen()||!editorDirty)return;event.preventDefault();event.returnValue="";});
 
   function addStyle(){
     if($("tbRichPostStyle"))return;
@@ -229,12 +233,15 @@
     const status=make("div","tb-rich-status");status.id="tbRichStatus";
     const actions=make("div","tb-rich-save");
     const cancel=make("button","tb-rich-side-btn","Đóng");cancel.type="button";cancel.dataset.richClose="1";
-    const save=make("button","tb-rich-side-btn primary","Lưu thay đổi");save.type="button";save.id="tbRichSave";
-    actions.append(cancel,save);side.append(status,actions);
+    const draft=make("button","tb-rich-side-btn","Lưu nháp");draft.type="button";draft.id="tbRichDraft";draft.dataset.saveStatus="draft";
+    const save=make("button","tb-rich-side-btn primary","Xuất bản");save.type="button";save.id="tbRichSave";save.dataset.saveStatus="published";
+    actions.append(cancel,draft,save);side.append(status,actions);
 
     body.append(main,side);dialog.append(head,body);modal.appendChild(dialog);document.body.appendChild(modal);
 
     modal.addEventListener("click",e=>{if(e.target===modal||e.target.closest("[data-rich-close]"))closeModal();});
+    for(const type of ["input","change"]){dialog.addEventListener(type,e=>{if(e.target.closest(".tb-rich-body"))markDirty();},true);}
+    editor.addEventListener("input",markDirty);
     toolbar.addEventListener("mousedown",e=>{if(e.target.closest("button,select"))rememberRange();});
     toolbar.addEventListener("click",e=>{
       const button=e.target.closest("[data-cmd]");if(button)exec(button.dataset.cmd);
@@ -282,7 +289,8 @@
       finally{replaceBtn.disabled=false;}
     });
     removeBtn.addEventListener("click",()=>{if(!selectedImage)return;const figure=selectedImage.closest("figure");(figure||selectedImage).remove();selectImage(null);});
-    save.addEventListener("click",savePost);
+    save.addEventListener("click",()=>savePost("published"));
+    draft.addEventListener("click",()=>savePost("draft"));
   }
 
   function renderCover(url){
@@ -294,7 +302,9 @@
 
   async function openEditor(id){
     const auth=token();if(!auth)return alert("Phiên quản trị không còn hợp lệ. Hãy đăng nhập lại.");
-    buildModal();setStatus("Đang tải bài viết…");$("tbRichPostModal").classList.add("open");
+    buildModal();if(editorSaving)return;
+    editorOpening=true;editorDirty=false;currentPost=null;
+    setStatus("Đang tải bài viết…");$("tbRichPostModal").classList.add("open");
     try{
       const response=await fetch(`${API}?id=${encodeURIComponent(id)}`,{headers:{Authorization:`Bearer ${auth}`},cache:"no-store"});
       const data=await response.json().catch(()=>({}));if(!response.ok||!data.ok)throw new Error(data.message||"Không tải được bài viết.");
@@ -303,17 +313,19 @@
       $("tbRichSummary").value=currentPost.summary||"";
       $("tbRichCategory").value=currentPost.category||"Tin mới";
       $("tbRichEditor").innerHTML=currentPost.rich_content||markdownToHtml(currentPost.content||"");
-      renderCover(currentPost.cover_url||"");selectImage(null);setStatus("Có thể chỉnh trực tiếp nội dung bên trái.");
+      renderCover(currentPost.cover_url||"");selectImage(null);editorDirty=false;editorOpening=false;setStatus(currentPost.status==="draft"?"Đang chỉnh bản nháp — chưa hiển thị công khai.":"Bài đã xuất bản. Thay đổi chỉ áp dụng khi bạn bấm Lưu nháp hoặc Xuất bản.");
       setTimeout(()=>$("tbRichEditor")?.focus(),0);
-    }catch(error){setStatus(error.message||"Không tải được bài viết.","error");}
+    }catch(error){editorOpening=false;setStatus(error.message||"Không tải được bài viết.","error");}
   }
 
   function closeModal(){
-    $("tbRichPostModal")?.classList.remove("open");selectImage(null);currentPost=null;savedRange=null;
+    if(editorSaving)return;
+    if(editorDirty&&!confirm("Nội dung bài viết đang sửa chưa lưu. Đóng và bỏ thay đổi?"))return;
+    $("tbRichPostModal")?.classList.remove("open");selectImage(null);currentPost=null;savedRange=null;editorDirty=false;
   }
 
-  async function savePost(){
-    if(!currentPost)return;
+  async function savePost(targetStatus="published"){
+    if(!currentPost||editorSaving)return;
     const auth=token();if(!auth)return setStatus("Phiên quản trị không còn hợp lệ.","error");
     const title=$("tbRichTitle").value.trim();
     const summary=$("tbRichSummary").value.trim();
@@ -323,17 +335,17 @@
     const rich_content=editor.innerHTML.trim();
     if(title.length<4)return setStatus("Tiêu đề quá ngắn.","error");
     if(content.length<20&&!rich_content)return setStatus("Nội dung bài viết quá ngắn.","error");
-    const button=$("tbRichSave");button.disabled=true;setStatus("Đang lưu thay đổi…");
+    const button=$("tbRichSave"),draft=$("tbRichDraft");editorSaving=true;button.disabled=true;draft.disabled=true;setStatus(targetStatus==="draft"?"Đang lưu nháp…":"Đang xuất bản…");
     try{
       const response=await fetch(API,{method:"PATCH",headers:{Authorization:`Bearer ${auth}`,"Content-Type":"application/json"},body:JSON.stringify({
-        id:currentPost.id,title,summary,category,content,rich_content,cover_url:currentPost.cover_url||""
+        id:currentPost.id,title,summary,category,content,rich_content,cover_url:currentPost.cover_url||"",status:targetStatus
       })});
       const data=await response.json().catch(()=>({}));if(!response.ok||!data.ok)throw new Error(data.message||"Không lưu được bài viết.");
-      currentPost=data.post;setStatus("✓ Đã lưu. Trang bài viết đã được cập nhật.","ok",data.post.url);
+      currentPost=data.post;editorDirty=false;setStatus(targetStatus==="draft"?"✓ Đã lưu nháp, không hiển thị trên website.":"✓ Bài đã xuất bản trên website.","ok",data.post.url||"");
       document.dispatchEvent(new CustomEvent("tb:post-updated",{detail:data.post}));
       setTimeout(()=>{document.querySelector(".tb-post-refresh")?.click();},250);
     }catch(error){setStatus(error.message||"Không lưu được bài viết.","error");}
-    finally{button.disabled=false;}
+    finally{editorSaving=false;button.disabled=false;draft.disabled=false;}
   }
 
   function attachEditButtons(){

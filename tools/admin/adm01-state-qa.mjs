@@ -107,7 +107,7 @@ try{
   await sleep(90);await assertion();
  }
  await postsLoad("empty",async()=>{
-  assert((await page.locator("#tbPostPublishedList").textContent()).includes("Chưa có bài"));
+  assert((await page.locator("#tbPostPublishedList").textContent()).toLowerCase().includes("chưa có bài"));
  });
  await postsLoad("withData",async()=>{
   assert((await page.locator("#tbPostPublishedList").textContent()).includes("Bài thử nghiệm"));

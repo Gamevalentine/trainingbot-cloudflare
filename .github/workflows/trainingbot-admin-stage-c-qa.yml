@@ -1,0 +1,39 @@
+name: TrainingBot Admin Stage C — Dashboard, content and editor QA
+on:
+  push:
+    branches:
+      - aion-trainingbot-admin-stage-c-20261028
+
+permissions:
+  contents: read
+
+jobs:
+  stage-c:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Stage C Preview locally
+        run: npm run build
+      - name: Check executable source and safety boundaries
+        run: |
+          node --check public/admin-stage-c-ui.js
+          node --check public/admin-stage-b-ui.js
+          node --check public/admin_posts_manual_v171.js
+          node --check public/admin_posts_editor_v183.js
+          node --check public/admin_posts_feature_v173.js
+          node --check functions/api/v71/admin/posts.js
+          node --check tools/admin/adm06-draft-handler-qa.mjs
+          node --check tools/admin/adm04-06-browser-qa.mjs
+          test ! -f .github/workflows/trainingbot-d1-encrypted-backup.yml
+          test ! -f scripts/backup_d1_to_github.py
+      - name: Real Pages Functions in isolated D1
+        run: node tools/admin/adm06-draft-handler-qa.mjs
+      - name: Install local browser harness
+        run: npm install --no-save --no-package-lock playwright
+      - name: Regression Stage A — login/data security and validation
+        run: |
+          node tools/admin/adm01-state-qa.mjs
+          node tools/admin/adm01-real-handler-integration.mjs
+      - name: Acceptance Stage C — dashboard, content and editor
+        run: node tools/admin/adm04-06-browser-qa.mjs

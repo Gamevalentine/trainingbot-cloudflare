@@ -59,3 +59,22 @@ source=source.replace(marker,statement+marker);
 fs.writeFileSync(p,source);
 NODE
 grep -q 'admin-stage-b-ui.js' public/admin.html
+
+
+# ADM-04/05/06: install the readable Stage C UI only AFTER Stage B is loaded.
+# All Admin functions keep their original authentication and DB binding.
+test -f public/admin-stage-c-ui.js
+node --check public/admin-stage-c-ui.js
+node --check public/admin_posts_manual_v171.js
+node --check public/admin_posts_editor_v183.js
+node --check public/admin_posts_feature_v173.js
+node <<'NODE'
+const fs=require('fs'),path='public/admin.html';
+let html=fs.readFileSync(path,'utf8');
+const marker='document.open();document.write(h);document.close()';
+if(!html.includes(marker)||!html.includes('admin-stage-b-ui.js'))throw Error('Stage C requires intact Stage B loader');
+if(html.includes('admin-stage-c-ui.js'))throw Error('Stage C duplicate injection');
+html=html.replace(marker,"h=h.replace('</body>','<script defer src=\"/admin-stage-c-ui.js?v=1\"><\\/script></body>');"+marker);
+fs.writeFileSync(path,html);
+NODE
+grep -q 'admin-stage-c-ui.js' public/admin.html

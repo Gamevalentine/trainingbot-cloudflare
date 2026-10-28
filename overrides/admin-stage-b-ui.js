@@ -7,7 +7,7 @@
 "use strict";
 const GROUPS=[
  ["TỔNG QUAN",[["dashboard","Tổng quan"]]],
- ["NỘI DUNG",[["posts","Bài viết"],["content","Trang web"],["wiki","Wiki"],["studio","Studio V2"]]],
+ ["NỘI DUNG",[["posts","Bài viết"],["content","Trang web"],["wiki","Wiki"],["studio","Studio V2"],["beta","Phiên bản Beta"]]],
  ["THƯ VIỆN",[["media","Thư viện media"]]],
  ["CỘNG ĐỒNG",[["users","Người dùng"],["inbox","Hộp thư"]]],
  ["THỐNG KÊ",[["analytics","Thống kê"],["visitor-tracking","Theo dõi truy cập"]]],
