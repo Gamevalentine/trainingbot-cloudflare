@@ -1,0 +1,46 @@
+name: TrainingBot Wiki V2 Stage A — Audit & Normalization
+on:
+  push:
+    branches:
+      - aion-trainingbot-wiki-stage-a-20261029
+permissions:
+  contents: read
+jobs:
+  wiki-stage-a:
+    runs-on: ubuntu-latest
+    timeout-minutes: 23
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build real public Wiki with current layered patches
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          npm run build
+          test -f public/wiki.html
+          node --check tools/wiki/stage-a-audit.mjs
+          node --check tools/wiki/stage-a-browser-qa.mjs
+          node --check public/wiki_audit_v149.js
+          test ! -f public/admin-demo.html
+      - name: Run deterministic source inventory
+        run: |
+          node tools/wiki/stage-a-audit.mjs --out wiki-stage-a-static
+          node -e "const a=require('./wiki-stage-a-static/issues.json'); if(a.baselineCounts.weapons!==56||a.baselineCounts.attachments!==49||a.baselineCounts.vehicles!==26||a.baselineCounts.maps!==8) process.exit(2)"
+      - name: Install isolated browser runner
+        run: npm install --no-save --no-package-lock playwright
+      - name: Audit runtime records, patches, images and rendered tabs without real API calls
+        run: node tools/wiki/stage-a-browser-qa.mjs
+      - name: Validate normalized artifacts and integrity
+        run: |
+          node -e "const a=require('./wiki-stage-a-artifacts/issues.json'),c=require('./wiki-stage-a-artifacts/catalog.json');for (const [k,n] of Object.entries({weapons:61,attachments:51,vehicles:26,maps:8}))if(a.effectiveCounts[k]!==n)throw Error('Mismatch '+k);if(c.records.length!==146)throw Error('Catalog length mismatch');if(a.issues.some(x=>x.severity==='error'))throw Error('Critical data issue');const p=c.records.find(x=>x.name==='P90');if(!p||p.fields.ammo.value!=='5.7mm')throw Error('Final P90 mismatch');"
+          node tools/qa/p1-seo.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
+      - name: Publish audit evidence and screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-wiki-stage-a-inventory
+          path: |
+            wiki-stage-a-static/
+            wiki-stage-a-artifacts/
+          if-no-files-found: warn
+          retention-days: 14

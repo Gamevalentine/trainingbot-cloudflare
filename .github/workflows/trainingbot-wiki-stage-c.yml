@@ -1,0 +1,43 @@
+name: TrainingBot Wiki V2 Stage C — evidence-first weapon profiles
+on:
+  push:
+    branches:
+      - aion-trainingbot-wiki-stage-c-20261029
+permissions:
+  contents: read
+jobs:
+  wiki-c:
+    runs-on: ubuntu-latest
+    timeout-minutes: 26
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build real Cloudflare Pages site with A/B/C layers
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          npm run build
+          for file in wiki-stage-c-weapon.js wiki-stage-c-weapon.css wiki-stage-c-evidence.json; do test -f "public/$file"; done
+          node --check public/wiki-stage-c-weapon.js
+          node --check tools/wiki/stage-c-browser-qa.mjs
+          test -f public/wiki.html
+          ! grep -q wiki-stage-c-weapon.js public/admin.html
+          test ! -e public/admin-demo.html
+      - name: Install isolated browser QA
+        run: npm install --no-save --no-package-lock playwright
+      - name: C1–C6 source validation, 61 detailed profiles and actual dialog browser QA
+        run: node tools/wiki/stage-c-browser-qa.mjs
+      - name: Regression — existing B screen, A data, SEO and D1 isolation
+        run: |
+          node tools/wiki/stage-b-browser-qa.mjs
+          node tools/qa/p1-seo.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
+      - name: Collect desktop and phone screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-wiki-stage-c-evidence-qa
+          path: |
+            wiki-stage-c-screenshots/*.png
+            wiki-stage-b-screenshots/*.png
+          if-no-files-found: ignore
+          retention-days: 14

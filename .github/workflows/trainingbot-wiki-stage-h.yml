@@ -1,0 +1,76 @@
+name: TrainingBot Wiki V2 Stage H — SEO and performance QA
+on:
+  push:
+    branches:
+      - aion-trainingbot-wiki-stage-h-20261029
+  pull_request:
+    branches:
+      - aion-trainingbot-wiki-stage-g-20261029
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions:
+  contents: read
+jobs:
+  wiki-h:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build H Preview with inherited Admin G
+        env:
+          TRAININGBOT_LOCAL_H_QA: "1"
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          npm run build
+          for file in wiki-stage-h-perf.js wiki-stage-g-snapshot.js admin-wiki-stage-g.js; do
+            test -f "public/$file"
+          done
+          node --check public/wiki-stage-h-perf.js
+          node --check tools/wiki/stage-h-build.mjs
+          node --check tools/wiki/stage-h-browser-qa.mjs
+      - name: H.1 SEO and H.4 link integrity
+        run: |
+          node tools/wiki/stage-h-link-audit.mjs
+          node tools/qa/p1-seo.mjs
+      - name: Install isolated Chromium runner
+        run: npm install --no-save --no-package-lock playwright
+      - name: H.2 H.3 local laboratory metrics and accessibility
+        run: node tools/wiki/stage-h-browser-qa.mjs
+      - name: H.5 full regression G/F/E/D/C/B and Preview isolation
+        run: |
+          node tools/wiki/stage-g-browser-qa.mjs
+          node tools/wiki/stage-f-browser-qa.mjs
+          node tools/wiki/stage-e-browser-qa.mjs
+          node tools/wiki/stage-d-browser-qa.mjs
+          node tools/wiki/stage-c-browser-qa.mjs
+          node tools/wiki/stage-b-browser-qa.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
+      - name: Production build exclusion gate
+        env:
+          CF_PAGES_BRANCH: main
+          TRAININGBOT_LOCAL_G_QA: ""
+          TRAININGBOT_LOCAL_H_QA: ""
+          TRAININGBOT_LOCAL_DEMO: ""
+        run: |
+          npm run build
+          ! grep -q wiki-stage-h-perf.js public/wiki.html
+          ! grep -q wiki-stage-g-snapshot.js public/wiki.html
+          ! grep -q admin-wiki-stage-g.js public/admin.html
+          test ! -e public/wiki-stage-h-perf.js
+          test ! -e public/wiki-stage-g-snapshot.js
+          test ! -e public/admin-wiki-stage-g.js
+          test ! -e public/admin-demo.html
+      - name: QA metric JSON and viewport screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-wiki-stage-h-qa
+          path: |
+            wiki-stage-h-artifacts/
+            wiki-stage-g-screenshots/
+            wiki-stage-f-screenshots/
+            wiki-stage-e-screenshots/
+            wiki-stage-d-screenshots/
+            wiki-stage-c-screenshots/
+          if-no-files-found: ignore
+          retention-days: 14

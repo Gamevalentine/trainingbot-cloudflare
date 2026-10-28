@@ -1,0 +1,136 @@
+/* TrainingBot Wiki V2 — evidence-first firearm profile C1–C6.
+   Only the existing .tb-v145 weapon overlay. No layout changes elsewhere. */
+body.tb-wiki-stage-c .tb-v145{font-family:Inter,"Segoe UI",Arial,sans-serif}
+body.tb-wiki-stage-c .tb-v145 :is(.tb-v145-stats,.tb-v145-score-title,.tb-v145-score-note),
+body.tb-wiki-stage-c .tb-v145 .tb-v145-left > .tb-v145-unknown{
+ display:none!important;
+}
+/* Legacy v144 uses generic score arrays for unrelated guns. They are
+   hidden rather than mislabelled as confirmed damage or recoil values. */
+body.tb-wiki-stage-c .tb-v145 .tb-c-sheet{
+ display:flex;flex-direction:column;gap:13px;
+ margin:20px 0 22px;padding:21px;
+ background:linear-gradient(140deg,#13213a,#0c1525 82%);
+ border:1px solid #37516e;border-radius:17px;min-width:0;
+ color:#e9f4ff;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-heading{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:14px;flex-wrap:wrap;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-heading h3{
+ font-size:18px;font-weight:800;letter-spacing:-.02em;margin:0;color:#fff;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-version{
+ font-size:10px;color:#91dad7;padding:6px 9px;
+ border:1px solid #2c626a;border-radius:999px;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-context,
+body.tb-wiki-stage-c .tb-v145 .tb-c-disclaimer,
+body.tb-wiki-stage-c .tb-v145 .tb-c-unverified{
+ font-size:12px;line-height:1.65;color:#b9cde0;margin:0;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-unverified{
+ background:#17243a;border:1px solid #374964;border-radius:10px;padding:13px;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-fact{
+ display:flex;flex-direction:column;min-width:0;padding:12px;
+ background:#0c192b;border:1px solid #30435b;border-radius:11px;gap:5px;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-fact small{
+ font-size:10px;line-height:1.4;color:#93acc6;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-fact strong{
+ color:#f1f9ff;font-size:15px;font-weight:800;overflow-wrap:anywhere;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-field-status{
+ color:#80cfcc;font-size:10px;line-height:1.4;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-subtitle{
+ margin:9px 0 0;font-size:15px;font-weight:800;color:#f3f8ff;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-release{
+ border:1px solid #346060;border-radius:13px;
+ background:linear-gradient(145deg,#112a34,#102137);
+ padding:15px;display:flex;flex-direction:column;gap:12px;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-tag{
+ color:#a1ffe0;font-weight:800;letter-spacing:.06em;font-size:10px;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-release p{
+ color:#c3dbdf;line-height:1.6;font-size:12px;margin:0;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-release .tb-c-maps{
+ color:#e1c995;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-source{
+ display:inline-flex;width:max-content;max-width:100%;
+ font-size:12px;font-weight:750;color:#7dccf4;line-height:1.5;
+ text-decoration:underline;text-underline-offset:4px;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-source:hover{color:#b9e8ff}
+body.tb-wiki-stage-c .tb-v145 .tb-c-more{
+ font-size:12px;border:1px solid #32445d;border-radius:11px;
+ background:#101d30;padding:12px 14px;color:#a9bdd6;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-more summary{
+ cursor:pointer;color:#e8f4fc;font-weight:750;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-more ul{
+ margin:13px 0 0;padding-left:20px;line-height:1.75;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-guide{
+ border-left:3px solid #5b8aca;padding-left:13px;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-guide h4{
+ margin:0 0 6px;font-size:12px;color:#bbdef9;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-guide p,
+body.tb-wiki-stage-c .tb-v145 .tb-c-legacy-note{
+ margin:0;color:#b2bed2;font-size:12px;line-height:1.65;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-legacy-note{
+ padding:11px 13px;border:1px solid #544631;background:#271f16;
+ border-radius:10px;margin:0 0 14px;color:#e0c89d;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-v145-section-title{
+ font-size:12px;line-height:1.5;letter-spacing:0;
+}
+body.tb-wiki-stage-c .tb-v145 :is(a,button,summary):focus-visible{
+ outline:2px solid #8beed9;outline-offset:3px;
+}
+@media(max-width:640px){
+ body.tb-wiki-stage-c .tb-v145 .tb-c-sheet{padding:14px;border-radius:12px;margin:14px 0 18px}
+ body.tb-wiki-stage-c .tb-v145 .tb-c-grid{grid-template-columns:1fr}
+ body.tb-wiki-stage-c .tb-v145 .tb-c-heading h3{font-size:16px}
+ body.tb-wiki-stage-c .tb-v145 .tb-c-fact{padding:10px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.tb-wiki-stage-c .tb-v145 .tb-c-sheet *{animation:none!important;transition:none!important}
+}
+
+
+/* C profile must not inherit fixed/min-content widths from the v145 overlay. */
+body.tb-wiki-stage-c .tb-v145,
+body.tb-wiki-stage-c .tb-v145 .tb-v145-wrap{
+ box-sizing:border-box!important;max-width:100vw!important;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-v145-left,
+body.tb-wiki-stage-c .tb-v145 .tb-v145-right{
+ min-width:0!important;max-width:100%!important;overflow-wrap:break-word;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-sheet{
+ box-sizing:border-box!important;max-width:100%!important;width:100%!important;min-width:0!important;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-source{
+ overflow-wrap:anywhere;word-break:break-word;
+}
+@media(max-width:980px){
+ body.tb-wiki-stage-c .tb-v145 .tb-v145-wrap{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+  width:100%!important;padding-left:16px!important;padding-right:16px!important;
+ }
+}

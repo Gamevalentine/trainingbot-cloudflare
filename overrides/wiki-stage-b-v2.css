@@ -1,0 +1,328 @@
+/* TrainingBot Wiki V2 — Stage B.1–B.5, visual presentation only.
+   Keeps approved shared header and existing Wiki detail/comparison mechanics.
+   Data statuses and actual item totals are provided by wiki-stage-b-v2.js. */
+body.tb-wiki-stage-b{
+ --tb-b-ink:#f1f6ff;--tb-b-soft:#c1cce0;--tb-b-muted:#9bacc3;
+ --tb-b-line:#293853;--tb-b-card:#0e1829;--tb-b-blue:#879aff;
+ background-color:#080d17!important;
+ background-image:
+ linear-gradient(rgba(78,98,153,.045) 1px,transparent 1px),
+ linear-gradient(90deg,rgba(78,98,153,.045) 1px,transparent 1px)!important;
+ background-size:64px 64px!important;
+}
+body.tb-wiki-stage-b .tb-wiki-shell{
+ width:min(1450px,calc(100% - 72px))!important;
+ padding:39px 0 88px!important;
+ font-family:"Segoe UI",Inter,Arial,sans-serif!important;
+}
+body.tb-wiki-stage-b .tb-wiki-head{
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,510px);
+ align-items:center;gap:32px;
+ margin:0!important;padding:0 0 24px!important;
+}
+body.tb-wiki-stage-b .tb-wiki-kicker{
+ color:#93b3ff!important;font-family:inherit!important;
+ font-size:11px!important;letter-spacing:.1em!important;font-weight:800!important;
+}
+body.tb-wiki-stage-b .tb-wiki-head h1{
+ margin:11px 0 11px!important;font-family:inherit!important;
+ font-size:clamp(36px,4vw,56px)!important;
+ line-height:1.08!important;letter-spacing:-.035em!important;
+ font-weight:760!important;
+}
+body.tb-wiki-stage-b .tb-wiki-subtitle{
+ margin:0!important;color:#b6c3d8!important;font-size:14px!important;
+ line-height:1.67!important;max-width:700px;
+}
+body.tb-wiki-stage-b .tb-wiki-tools{align-items:stretch;gap:10px!important}
+body.tb-wiki-stage-b .tb-wiki-search{display:block;position:relative;flex:1;min-width:0;width:auto!important}
+body.tb-wiki-stage-b .tb-wiki-search input{
+ font-family:inherit!important;font-size:14px!important;font-weight:500!important;
+ height:52px!important;min-height:52px!important;
+ padding:0 40px 0 47px!important;background:#111b2b!important;
+ border:1px solid #34425b!important;
+ border-radius:14px!important;box-shadow:none!important;
+}
+body.tb-wiki-stage-b .tb-wiki-search input:focus{
+ border-color:#8c9dff!important;box-shadow:0 0 0 3px rgba(95,121,253,.14)!important;
+}
+body.tb-wiki-stage-b .tb-wiki-search svg{left:15px!important;width:19px!important;height:19px!important}
+body.tb-wiki-stage-b .tb-b-clear{
+ position:absolute;right:9px;top:50%;transform:translateY(-50%);
+ width:30px;height:30px;border:0;border-radius:8px;
+ display:grid;place-items:center;background:#28364e;
+ color:#e6efff;font-size:22px;line-height:1;cursor:pointer;
+}
+body.tb-wiki-stage-b .tb-b-clear[hidden]{display:none!important}
+body.tb-wiki-stage-b .tb-compare-btn{
+ height:52px!important;border-radius:14px!important;
+ padding:0 17px!important;background:#172239!important;
+ border-color:#354663!important;color:#e3eeff!important;
+ font-family:inherit!important;font-size:13px!important;font-weight:700!important;
+}
+body.tb-wiki-stage-b .tb-b-intro{
+ display:flex;align-items:center;gap:13px;
+ padding:13px 16px;border:1px solid #2a405e;
+ background:linear-gradient(90deg,#101e34,#101b2b);
+ border-radius:12px;margin:0 0 28px;
+}
+body.tb-wiki-stage-b .tb-b-intro-mark{
+ display:grid;place-items:center;flex:none;
+ width:24px;height:24px;border-radius:50%;
+ color:#89e2d6;border:1px solid #459990;background:#1a393e;
+ font-size:14px;font-weight:850;
+}
+body.tb-wiki-stage-b .tb-b-intro p{
+ color:#b7cbe4!important;margin:0!important;
+ font-size:12px!important;line-height:1.6!important;
+}
+body.tb-wiki-stage-b .tb-b-sections{
+ display:flex;justify-content:space-between;align-items:end;
+ gap:14px;margin:0 0 13px;
+}
+body.tb-wiki-stage-b .tb-b-section-label{
+ font-size:10px;font-weight:800;color:#8fe1d6;letter-spacing:.14em;
+}
+body.tb-wiki-stage-b .tb-b-section-copy h2{
+ color:#eef4ff;font-size:20px;letter-spacing:-.02em;
+ line-height:1.3;margin:6px 0 0;font-weight:760;
+}
+body.tb-wiki-stage-b .tb-b-total{
+ font-size:12px;color:#99acc8;white-space:nowrap;
+}
+body.tb-wiki-stage-b .tb-wiki-tabs{
+ margin:0!important;padding:0 0 2px!important;gap:10px!important;
+ overflow-x:auto!important;
+}
+body.tb-wiki-stage-b .tb-wiki-tab{
+ height:59px!important;min-height:59px!important;flex:none;
+ border-radius:13px!important;padding:0 18px!important;
+ background:#111b2b!important;border:1px solid #2d405a!important;
+ font:700 14px/1.2 "Segoe UI",Inter,Arial,sans-serif!important;
+ color:#d0daec!important;
+}
+body.tb-wiki-stage-b .tb-wiki-tab svg{
+ color:#9ab4e8;flex:none;
+}
+body.tb-wiki-stage-b .tb-wiki-tab small{
+ font-size:11px!important;color:#9fbbd5!important;
+ background:#24344d;padding:3px 6px;border-radius:7px;
+ font-variant-numeric:tabular-nums;
+}
+body.tb-wiki-stage-b .tb-wiki-tab.active{
+ color:#fff!important;
+ background:linear-gradient(125deg,#6267ed,#397bc4)!important;
+ border-color:#899aff!important;
+ box-shadow:0 6px 17px rgba(74,102,218,.17)!important;
+}
+body.tb-wiki-stage-b .tb-wiki-tab.active small{
+ color:#edf4ff!important;background:rgba(0,0,0,.22);
+}
+body.tb-wiki-stage-b .tb-wiki-filters{
+ display:flex;align-items:center;
+ gap:8px!important;margin:22px 0 16px!important;
+ padding-bottom:1px;scrollbar-width:thin;
+}
+body.tb-wiki-stage-b .tb-wiki-filter{
+ height:38px!important;min-height:38px!important;
+ border-radius:10px!important;padding:0 14px!important;
+ border-color:#344055!important;background:#101725!important;
+ color:#aebdd2!important;font:650 12.5px/1.2 "Segoe UI",Inter,Arial,sans-serif!important;
+}
+body.tb-wiki-stage-b .tb-wiki-filter.active{
+ color:#eff9ff!important;background:#26365e!important;
+ border-color:#778afa!important;
+}
+body.tb-wiki-stage-b .tb-b-controls{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:16px;margin:0 0 13px;padding-top:17px;
+ border-top:1px solid #25334a;
+}
+body.tb-wiki-stage-b .tb-b-controls-label h2{
+ color:#f1f6ff;margin:0 0 5px;font-size:19px;
+ font-weight:760;letter-spacing:-.018em;
+}
+body.tb-wiki-stage-b .tb-b-controls-label p{
+ color:#99b0ca;margin:0;font-size:12px;
+}
+body.tb-wiki-stage-b .tb-b-sort-label{
+ display:flex;align-items:center;gap:11px;flex:none;
+ color:#92a7c0;font-size:12px;font-weight:650;
+}
+body.tb-wiki-stage-b .tb-b-sort-label select{
+ font:650 12.5px/1.3 "Segoe UI",Inter,Arial,sans-serif;
+ color:#e7efff;min-height:38px;
+ background:#142039;border:1px solid #33445f;
+ border-radius:9px;padding:0 28px 0 11px;
+ cursor:pointer;
+}
+body.tb-wiki-stage-b .tb-b-sort-label select:focus-visible,
+body.tb-wiki-stage-b .tb-wiki-tab:focus-visible,
+body.tb-wiki-stage-b .tb-wiki-filter:focus-visible,
+body.tb-wiki-stage-b .tb-b-clear:focus-visible,
+body.tb-wiki-stage-b .tb-b-reset:focus-visible,
+body.tb-wiki-stage-b #tbWikiGrid .tb-wiki-card:focus-visible{
+ outline:2px solid #a1b3ff!important;outline-offset:2px!important;
+}
+body.tb-wiki-stage-b #tbWikiGrid{
+ display:grid!important;
+ grid-template-columns:repeat(5,minmax(0,1fr))!important;
+ align-items:stretch!important;gap:14px!important;
+}
+body.tb-wiki-stage-b #tbWikiGrid .tb-wiki-card{
+ position:relative;
+ display:flex!important;flex-direction:column!important;
+ width:auto!important;
+ height:auto!important;min-height:252px!important;max-height:none!important;
+ padding:10px 12px 13px!important;
+ border:1px solid #28384d!important;border-radius:15px!important;
+ background:linear-gradient(157deg,#111a29,#0c131e)!important;
+ overflow:hidden!important;contain:none!important;
+ transform:none!important;
+ color:#f0f4ff;
+ box-shadow:0 6px 18px rgba(0,0,0,.11);
+ transition:border-color .18s ease,box-shadow .18s ease!important;
+}
+body.tb-wiki-stage-b #tbWikiGrid .tb-wiki-card[hidden]{
+ display:none!important;
+}
+body.tb-wiki-stage-b #tbWikiGrid .tb-wiki-card:hover{
+ border-color:#5e88b6!important;box-shadow:0 11px 28px rgba(0,0,0,.24)!important;
+}
+body.tb-wiki-stage-b #tbWikiGrid .tb-card-tag{
+ top:13px!important;left:13px!important;
+ color:#a8e7de!important;background:#172d39!important;
+ border:1px solid #29535c;padding:4px 7px!important;
+ font:750 10px/1.2 "Segoe UI",Inter,Arial,sans-serif!important;
+}
+body.tb-wiki-stage-b #tbWikiGrid .tb-card-visual{
+ width:100%!important;height:115px!important;min-height:115px!important;max-height:115px!important;
+ margin:14px 0 12px!important;padding:9px!important;
+ background:#192331!important;border-radius:10px!important;
+ border:1px solid #273448;overflow:hidden!important;
+}
+body.tb-wiki-stage-b #tbWikiGrid .tb-card-visual img,
+body.tb-wiki-stage-b #tbWikiGrid .tb-real-item-image{
+ max-width:96%!important;max-height:96px!important;
+ width:auto!important;height:auto!important;object-fit:contain!important;
+}
+body.tb-wiki-stage-b #tbWikiGrid .tb-v140-map .tb-card-visual img,
+body.tb-wiki-stage-b #tbWikiGrid .tb-completion-map .tb-card-visual img{
+ width:100%!important;height:100%!important;max-width:100%!important;
+ max-height:100%!important;object-fit:cover!important;
+}
+body.tb-wiki-stage-b #tbWikiGrid .tb-wiki-card h3{
+ height:auto!important;min-height:33px!important;max-height:none!important;
+ margin:0 0 3px!important;padding:0 2px!important;
+ display:flex;align-items:center;justify-content:center;
+ text-align:center!important;
+ overflow:visible!important;white-space:normal!important;
+ color:#f4f7ff!important;
+ font:750 14px/1.3 "Segoe UI",Inter,Arial,sans-serif!important;
+ letter-spacing:0!important;
+}
+body.tb-wiki-stage-b #tbWikiGrid .tb-wiki-card p{
+ height:auto!important;min-height:20px!important;max-height:none!important;
+ padding:0!important;margin:0 0 8px!important;
+ display:block!important;text-align:center!important;
+ color:#9eb2cc!important;overflow:visible!important;
+ font:500 11.5px/1.44 "Segoe UI",Inter,Arial,sans-serif!important;
+}
+body.tb-wiki-stage-b #tbWikiGrid .tb-vehicle-speed{
+ height:auto!important;min-height:0!important;max-height:none!important;
+ font-size:11px!important;color:#a6b8cf!important;
+ text-align:center!important;overflow:visible!important;
+}
+body.tb-wiki-stage-b #tbWikiGrid .tb-b-card-facts{
+ display:flex;flex-wrap:wrap;justify-content:center;gap:6px;
+ margin-top:auto;padding-top:9px;
+ border-top:1px solid #25374b;
+}
+body.tb-wiki-stage-b #tbWikiGrid .tb-b-card-fact{
+ min-width:0;display:inline-flex;align-items:center;gap:4px;
+ max-width:100%;font-size:10.5px;line-height:1.4;
+ padding:4px 6px;background:#1a2a3d;border-radius:7px;
+ color:#adc5dd;overflow:hidden;
+}
+body.tb-wiki-stage-b #tbWikiGrid .tb-b-card-fact b{
+ flex:none;color:#7fdfd1;font-weight:750;
+}
+body.tb-wiki-stage-b #tbWikiGrid .tb-b-card-fact span{
+ min-width:0;overflow:hidden;text-overflow:ellipsis;
+}
+body.tb-wiki-stage-b #tbWikiGrid .tb-wiki-empty{display:none!important}
+body.tb-wiki-stage-b .tb-b-empty{
+ text-align:center;margin:14px 0 40px;
+ padding:46px 20px;border:1px dashed #3a5069;
+ border-radius:15px;background:#0e1828;
+}
+body.tb-wiki-stage-b .tb-b-empty[hidden]{display:none!important}
+body.tb-wiki-stage-b .tb-b-empty strong{
+ display:block;color:#ebf5ff;font-size:18px;
+}
+body.tb-wiki-stage-b .tb-b-empty p{color:#9bacbd;font-size:13px}
+body.tb-wiki-stage-b .tb-b-reset{
+ border:1px solid #627da6;border-radius:10px;
+ background:#21324f;color:#e2ecff;font-weight:700;
+ padding:10px 16px;cursor:pointer;
+}
+@media(max-width:1300px){
+ body.tb-wiki-stage-b #tbWikiGrid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+}
+@media(max-width:1000px){
+ body.tb-wiki-stage-b .tb-wiki-head{grid-template-columns:1fr}
+ body.tb-wiki-stage-b .tb-wiki-tools{width:100%}
+ body.tb-wiki-stage-b .tb-wiki-head h1{font-size:41px!important}
+ body.tb-wiki-stage-b #tbWikiGrid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:720px){
+ body.tb-wiki-stage-b .tb-wiki-shell{
+  width:calc(100% - 26px)!important;padding:26px 0 75px!important;
+ }
+ body.tb-wiki-stage-b .tb-wiki-head{gap:19px!important;padding-bottom:16px!important}
+ body.tb-wiki-stage-b .tb-wiki-head h1{font-size:36px!important}
+ body.tb-wiki-stage-b .tb-wiki-subtitle{font-size:13px!important}
+ body.tb-wiki-stage-b .tb-wiki-tools{gap:8px!important}
+ body.tb-wiki-stage-b .tb-wiki-search input{height:47px!important;min-height:47px!important}
+ body.tb-wiki-stage-b .tb-compare-btn{height:47px!important;padding:0 12px!important;font-size:12px!important}
+ body.tb-wiki-stage-b .tb-b-intro{padding:11px 12px;margin-bottom:22px}
+ body.tb-wiki-stage-b .tb-b-intro p{font-size:11.5px!important}
+ body.tb-wiki-stage-b .tb-b-section-copy h2{font-size:17px}
+ body.tb-wiki-stage-b .tb-b-total{font-size:10px}
+ body.tb-wiki-stage-b .tb-wiki-tab{
+  min-height:51px!important;height:51px!important;padding:0 12px!important;
+  font-size:12.5px!important;
+ }
+ body.tb-wiki-stage-b .tb-wiki-filters{margin:17px 0 13px!important}
+ body.tb-wiki-stage-b .tb-wiki-filter{height:37px!important}
+ body.tb-wiki-stage-b .tb-b-controls{padding-top:14px}
+ body.tb-wiki-stage-b .tb-b-controls-label h2{font-size:16px}
+ body.tb-wiki-stage-b .tb-b-sort-label span{display:none}
+ body.tb-wiki-stage-b #tbWikiGrid{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important;
+ }
+ body.tb-wiki-stage-b #tbWikiGrid .tb-wiki-card{
+  min-height:235px!important;padding:8px 8px 12px!important;border-radius:12px!important;
+ }
+ body.tb-wiki-stage-b #tbWikiGrid .tb-card-visual{
+  height:94px!important;min-height:94px!important;max-height:94px!important;
+  padding:6px!important;margin:18px 0 8px!important;
+ }
+ body.tb-wiki-stage-b #tbWikiGrid .tb-card-visual img{
+  max-height:78px!important;
+ }
+ body.tb-wiki-stage-b #tbWikiGrid .tb-wiki-card h3{font-size:12.5px!important}
+ body.tb-wiki-stage-b #tbWikiGrid .tb-wiki-card p{font-size:10.5px!important}
+ body.tb-wiki-stage-b #tbWikiGrid .tb-b-card-facts{gap:4px}
+ body.tb-wiki-stage-b #tbWikiGrid .tb-b-card-fact{font-size:9.5px;padding:3px 5px}
+ body.tb-wiki-stage-b #tbWikiGrid .tb-vehicle-speed{font-size:10px!important}
+}
+@media(max-width:350px){
+ body.tb-wiki-stage-b .tb-b-total{display:none}
+ body.tb-wiki-stage-b .tb-compare-btn span{display:none}
+ body.tb-wiki-stage-b .tb-wiki-head h1{font-size:32px!important}
+ body.tb-wiki-stage-b #tbWikiGrid{grid-template-columns:1fr!important}
+}
+@media(prefers-reduced-motion:reduce){
+ body.tb-wiki-stage-b #tbWikiGrid .tb-wiki-card{transition:none!important}
+}

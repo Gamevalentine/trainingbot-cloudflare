@@ -1,0 +1,226 @@
+{
+  "schemaVersion": "wiki-c1",
+  "checkedAt": "2026-10-29",
+  "notices": {
+    "historical": "Chỉ phản ánh ghi chú cập nhật PUBG MOBILE 2.4 năm 2023, không xác nhận thông số hiện tại.",
+    "legacy": "Thông tin tổng hợp từ mã Wiki cũ, chưa được kiểm chứng riêng cho bản PUBG MOBILE hiện hành.",
+    "current": "Dữ liệu nguồn chính thức phiên bản 4.6 (09/2026), không áp dụng cho bản thử nghiệm 4.7."
+  },
+  "sources": {
+    "pubg-official-2.4": {
+      "sourceId": "pubg-official-2.4",
+      "title": "PUBG MOBILE 2.4 Update Announcement",
+      "url": "https://www.pubgmobile.com/webplat/info/news_version3/35372/60662/60663/60724/60725/m22521/202301/928128.shtml",
+      "version": "2.4",
+      "publishedAt": "2023-01-04",
+      "checkedAt": "2026-10-29",
+      "isCurrent": false
+    },
+    "pubg-official-4.6-vng": {
+      "sourceId": "pubg-official-4.6-vng",
+      "title": "Thông Báo Cập Nhật Phiên Bản 4.6 — PUBG MOBILE VN",
+      "url": "https://pubgm.vnggames.com/tin-tuc/thong-bao-cap-nhat/thong-bao-cap-nhat-phien-ban-4-6.html",
+      "version": "4.6",
+      "publishedAt": "2026-09-07",
+      "checkedAt": "2026-10-29",
+      "isCurrent": false,
+      "applicability": "Ghi chú phát hành bản 4.6 (September 2026), không khẳng định tiếp tục áp dụng cho Beta 4.7."
+    }
+  },
+  "weapons": {
+    "QBZ": {
+      "history": [
+        {
+          "sourceId": "pubg-official-2.4",
+          "summary": "PUBG MOBILE 2.4 tăng sát thương cơ bản từ 41 lên 42 và thay đổi thời gian nạp đạn.",
+          "facts": [
+            {
+              "label": "Sát thương cơ bản (sau điều chỉnh 2.4)",
+              "value": 42,
+              "unit": "điểm"
+            },
+            {
+              "label": "Nạp đạn băng rỗng (2.4)",
+              "value": 3.1,
+              "unit": "giây"
+            },
+            {
+              "label": "Nạp đạn chiến thuật (2.4)",
+              "value": 2.5,
+              "unit": "giây"
+            }
+          ],
+          "mapsAtRelease": [
+            "Livik",
+            "Sanhok"
+          ]
+        }
+      ]
+    },
+    "FAMAS": {
+      "history": [
+        {
+          "sourceId": "pubg-official-2.4",
+          "summary": "PUBG MOBILE 2.4 giảm 20% tản đạn khi di chuyển và điều chỉnh thời gian nạp đạn.",
+          "facts": [
+            {
+              "label": "Nạp đạn băng rỗng (2.4)",
+              "value": 3.6,
+              "unit": "giây"
+            },
+            {
+              "label": "Nạp đạn chiến thuật (2.4)",
+              "value": 2.5,
+              "unit": "giây"
+            },
+            {
+              "label": "Tản đạn khi di chuyển (điều chỉnh 2.4)",
+              "value": -20,
+              "unit": "%"
+            }
+          ],
+          "mapsAtRelease": [
+            "Livik",
+            "Sanhok"
+          ]
+        }
+      ]
+    },
+    "PP-19 Bizon": {
+      "history": [
+        {
+          "sourceId": "pubg-official-2.4",
+          "summary": "PUBG MOBILE 2.4 tăng sát thương cơ bản từ 35 lên 37; giảm tản đạn khi di chuyển 20%.",
+          "facts": [
+            {
+              "label": "Sát thương cơ bản (sau điều chỉnh 2.4)",
+              "value": 37,
+              "unit": "điểm"
+            },
+            {
+              "label": "Tản đạn khi di chuyển (điều chỉnh 2.4)",
+              "value": -20,
+              "unit": "%"
+            }
+          ]
+        }
+      ]
+    },
+    "UZI": {
+      "history": [
+        {
+          "sourceId": "pubg-official-2.4",
+          "summary": "PUBG MOBILE 2.4 tăng 35% tốc độ đổi vũ khí và giảm tản đạn khi di chuyển 30%.",
+          "facts": [
+            {
+              "label": "Tốc độ đổi vũ khí (điều chỉnh 2.4)",
+              "value": 35,
+              "unit": "%"
+            },
+            {
+              "label": "Tản đạn khi di chuyển (điều chỉnh 2.4)",
+              "value": -30,
+              "unit": "%"
+            }
+          ]
+        }
+      ]
+    },
+    "UMP45": {
+      "history": [
+        {
+          "sourceId": "pubg-official-2.4",
+          "summary": "PUBG MOBILE 2.4 cải thiện sát thương tầm xa, tăng 35% tốc độ đổi vũ khí và giảm tản đạn khi di chuyển 20%.",
+          "facts": [
+            {
+              "label": "Tốc độ đổi vũ khí (điều chỉnh 2.4)",
+              "value": 35,
+              "unit": "%"
+            },
+            {
+              "label": "Tản đạn khi di chuyển (điều chỉnh 2.4)",
+              "value": -20,
+              "unit": "%"
+            }
+          ]
+        }
+      ]
+    },
+    "Honey Badger": {
+      "history": [
+        {
+          "sourceId": "pubg-official-2.4",
+          "summary": "PUBG MOBILE 2.4 giới thiệu Honey Badger, đạn 7.62mm, thiên về cận chiến.",
+          "facts": [
+            {
+              "label": "Loại đạn công bố ở 2.4",
+              "value": "7.62mm",
+              "unit": ""
+            }
+          ],
+          "mapsAtRelease": [
+            "Erangel",
+            "Sanhok",
+            "Livik"
+          ]
+        },
+        {
+          "sourceId": "pubg-official-4.6-vng",
+          "summary": "Bản 4.6 nêu Honey Badger trong nhóm 7.62mm được cải thiện trải nghiệm ổn định khi bắn; không công bố giá trị độ giật mới.",
+          "facts": []
+        }
+      ]
+    },
+    "ACE32": {
+      "history": [
+        {
+          "sourceId": "pubg-official-4.6-vng",
+          "summary": "Bản 4.6 tăng sát thương cơ bản ACE32 từ 46 lên 47 và giảm độ giật ngang/dọc.",
+          "facts": [
+            {
+              "label": "Sát thương cơ bản sau điều chỉnh 4.6",
+              "value": 47,
+              "unit": "điểm"
+            }
+          ]
+        }
+      ]
+    },
+    "AKM": {
+      "history": [
+        {
+          "sourceId": "pubg-official-4.6-vng",
+          "summary": "Bản 4.6 giảm rung camera và cải thiện độ ổn định khi bắn các súng trường 7.62mm; không công bố giá trị độ giật mới.",
+          "facts": []
+        }
+      ]
+    },
+    "M762": {
+      "history": [
+        {
+          "sourceId": "pubg-official-4.6-vng",
+          "summary": "Bản 4.6 giảm rung camera và cải thiện độ ổn định khi bắn các súng trường 7.62mm; không công bố giá trị độ giật mới.",
+          "facts": []
+        }
+      ]
+    },
+    "Mk47 Mutant": {
+      "history": [
+        {
+          "sourceId": "pubg-official-4.6-vng",
+          "summary": "Bản 4.6 nêu Mk47 trong nhóm 7.62mm được cải thiện trải nghiệm ổn định khi bắn; không công bố giá trị độ giật mới.",
+          "facts": []
+        }
+      ]
+    },
+    "GROZA": {
+      "history": [
+        {
+          "sourceId": "pubg-official-4.6-vng",
+          "summary": "Bản 4.6 nêu GROZA trong nhóm 7.62mm được cải thiện trải nghiệm ổn định khi bắn; không công bố giá trị độ giật mới.",
+          "facts": []
+        }
+      ]
+    }
+  }
+}

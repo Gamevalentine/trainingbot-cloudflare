@@ -149,7 +149,7 @@
 
   function patchCount(){document.querySelectorAll('#tbWikiTabs .tb-wiki-tab').forEach(b=>{if(b.textContent.includes('Phụ kiện')){const sm=b.querySelector('small');if(sm)sm.textContent='51'}})}
   function boot(){if(!patchData()){setTimeout(boot,70);return}patchCount();const tabs=document.getElementById('tbWikiTabs');if(tabs)new MutationObserver(patchCount).observe(tabs,{childList:true,subtree:true});
-    window.addEventListener('click',e=>{const card=e.target.closest?.('#tbWikiGrid .tb-wiki-card');if(!card)return;const name=card.querySelector('h3')?.textContent.trim();const row=rowByName(name);if(!row)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();render(row,card)},true);
+    window.addEventListener('click',e=>{const card=e.target.closest?.('#tbWikiGrid .tb-wiki-card');if(!card)return;if(window.__TB_WIKI_E__?.selecting)return;const name=card.querySelector('h3')?.textContent.trim();const row=rowByName(name);if(!row)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();render(row,card)},true);
     document.addEventListener('keydown',e=>{if(!overlay?.classList.contains('open'))return;if(e.key==='Escape')close();if(e.key==='ArrowLeft')move(-1);if(e.key==='ArrowRight')move(1)});
   }
   boot();

@@ -1,0 +1,123 @@
+{
+  "schemaVersion": "wiki-a.1",
+  "description": "Canonical read-only audit record for TrainingBot Wiki. Source-derived values are not independently verified.",
+  "recordFields": {
+    "id": "category-prefixed Unicode-normalized slug; collisions flagged",
+    "kind": [
+      "weapons",
+      "attachments",
+      "vehicles",
+      "maps"
+    ],
+    "name": "string",
+    "category": "string | null",
+    "rawFields": "array of values from the current effective DATA table",
+    "aliases": "array<string>",
+    "fields": "object<string, FieldEvidence>",
+    "image": "{url:string|null, origin:string|null, verificationStatus:string}",
+    "review": "{status:'needs_source'|'source_linked'|'verified_official', notes:string[]}"
+  },
+  "fieldEvidence": {
+    "value": "unknown | null",
+    "unit": "string|null",
+    "status": [
+      "unverified",
+      "source_claimed",
+      "verified_official"
+    ],
+    "sourceTitle": "string|null",
+    "sourceUrl": "string|null",
+    "gameVersion": "string|null",
+    "checkedAt": "ISO datetime|null",
+    "note": "string|null"
+  },
+  "requiredValidation": {
+    "verifiedOfficialRequires": [
+      "sourceUrl",
+      "sourceTitle",
+      "gameVersion",
+      "checkedAt"
+    ],
+    "sourceClaimedMeans": "The code makes a claim; its accuracy is not independently validated.",
+    "missingValue": "Represent missing/unverified data as null, never 0 or a guessed number.",
+    "provenance": "Code filename/patch labels alone are not authoritative game-data sources.",
+    "compatibility": "Audit creates normalized snapshots and reports; A stage must NOT modify existing DATA or live rendering."
+  },
+  "targets": {
+    "weapons": [
+      "name",
+      "type",
+      "ammo",
+      "fireMode"
+    ],
+    "attachments": [
+      "name",
+      "type",
+      "description"
+    ],
+    "vehicles": [
+      "name",
+      "type",
+      "seats",
+      "maps",
+      "description"
+    ],
+    "maps": [
+      "name",
+      "size",
+      "playstyle",
+      "description"
+    ]
+  },
+  "aliases": {
+    "Nỏ": "Crossbow",
+    "Súng pháo sáng": "Flare Gun",
+    "Súng cưa nòng": "Sawed-Off",
+    "Xe Buggy": "Buggy",
+    "Xe mô tô": "Motorcycle"
+  },
+  "sourceRegistry": [
+    {
+      "id": "trainingbot-wiki-inline",
+      "kind": "internal",
+      "location": "overrides/wiki.html",
+      "trust": "unverified",
+      "note": "Source table; values are inventory facts, not gameplay verification."
+    },
+    {
+      "id": "trainingbot-wiki-v145",
+      "kind": "internal",
+      "location": "overrides/wiki_verified_data_v145.js",
+      "trust": "unverified",
+      "note": "Historical weapon scores/magazine claims and attachment patches; 'verified' filename is not evidence."
+    },
+    {
+      "id": "trainingbot-wiki-v147",
+      "kind": "internal",
+      "location": "overrides/wiki_catalog_verified_v147.js",
+      "trust": "unverified",
+      "note": "Adds 5 weapons and changes details; a patch may be overridden later."
+    },
+    {
+      "id": "trainingbot-wiki-v149",
+      "kind": "internal",
+      "location": "overrides/wiki_audit_v149.js",
+      "trust": "unverified",
+      "note": "Later patch of P90, Dual MP7 and BRDM-2 display names."
+    },
+    {
+      "id": "pubg-mobile-official",
+      "kind": "external",
+      "location": null,
+      "trust": "not_yet_linked",
+      "note": "Each individual statistic requires a specific primary release or official doc URL, title, version and checked date."
+    },
+    {
+      "id": "community-reference",
+      "kind": "external",
+      "location": null,
+      "trust": "not_yet_linked",
+      "note": "Mad Tamizha/community references may inform research but are not primary verification."
+    }
+  ]
+}

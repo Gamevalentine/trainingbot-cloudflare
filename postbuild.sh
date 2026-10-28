@@ -157,3 +157,151 @@ if [[ "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-admin-six-groups-20261029" || 
 else
   rm -f public/admin-demo-runtime.js public/admin-demo.html
 fi
+
+
+# Wiki V2 Stage B: additional public presentation only, after existing v149
+# data patches and preserved weapon/vehicle/map detail handlers.
+test -f public/wiki.html
+test -f public/wiki-stage-b-v2.css
+test -f public/wiki-stage-b-v2.js
+node --check public/wiki-stage-b-v2.js
+node <<'NODE'
+const fs=require("node:fs");
+const file="public/wiki.html";
+let html=fs.readFileSync(file,"utf8");
+if(!html.includes('wiki_audit_v149.js'))throw Error("Wiki B requires existing audited runtime");
+if(html.includes("wiki-stage-b-v2.js")||html.includes("wiki-stage-b-v2.css"))throw Error("Wiki B duplicate");
+html=html.replace("</head>",'<link rel="stylesheet" href="/wiki-stage-b-v2.css?v=1">\n</head>');
+html=html.replace("</body>",'<script defer src="/wiki-stage-b-v2.js?v=1"></script>\n</body>');
+fs.writeFileSync(file,html);
+NODE
+grep -q wiki-stage-b-v2.css public/wiki.html
+grep -q wiki-stage-b-v2.js public/wiki.html
+
+# Wiki V2 Stage C — source-backed historical weapon profiles, Preview only.
+# No API/Worker/D1/R2 changes. Builds on A (PR21) and B (PR22).
+test -f public/wiki-stage-b-v2.js
+test -f public/wiki-stage-c-weapon.js
+test -f public/wiki-stage-c-weapon.css
+test -f public/wiki-stage-c-evidence.json
+node --check public/wiki-stage-c-weapon.js
+node -e "const e=require('./public/wiki-stage-c-evidence.json');if(e.schemaVersion!=='wiki-c1'||!Object.keys(e.weapons).length)process.exit(2)"
+node <<'NODE'
+const fs=require('node:fs'),file='public/wiki.html';
+let html=fs.readFileSync(file,'utf8');
+for(const required of ['wiki-stage-b-v2.js','wiki_verified_data_v145.js','wiki_audit_v149.js']){
+ if(!html.includes(required))throw Error('Wiki C requires prior loader '+required);
+}
+if(html.includes('wiki-stage-c-weapon.js'))throw Error('Wiki C duplicated');
+const script='<script defer src="/wiki-stage-c-weapon.js?v=1"></script>';
+html=html.replace('</body>',script+'\n</body>');
+fs.writeFileSync(file,html);
+NODE
+grep -q wiki-stage-c-weapon.js public/wiki.html
+if grep -q wiki-stage-c-weapon.js public/admin.html; then
+ echo 'Wiki C leaked into Admin' >&2; exit 2
+fi
+
+# Wiki V2 Stage D: read-only source panels for attachments, vehicles and maps.
+test -f public/wiki-stage-d-v2.js
+test -f public/wiki-stage-d-v2.css
+test -f public/wiki-stage-d-evidence.json
+node --check public/wiki-stage-d-v2.js
+node -e "const e=require('./public/wiki-stage-d-evidence.json');if(e.schemaVersion!=='wiki-d1'||e.coverage.attachments.total!==51||e.coverage.vehicles.total!==26||e.coverage.maps.total!==8)process.exit(2)"
+node <<'NODE'
+const fs=require('node:fs'),p='public/wiki.html';
+let h=fs.readFileSync(p,'utf8');
+if(!h.includes("wiki-stage-c-weapon.js")||!h.includes("wiki-stage-b-v2.js"))throw Error('Wiki D requires B and C');
+if(h.includes("wiki-stage-d-v2.js"))throw Error('Wiki D script duplicated');
+h=h.replace('</body>','<script defer src="/wiki-stage-d-v2.js?v=1"></script>\n</body>');
+fs.writeFileSync(p,h);
+NODE
+grep -q wiki-stage-d-v2.js public/wiki.html
+if grep -q wiki-stage-d-v2.js public/admin.html; then echo 'Wiki D leaked into Admin' >&2; exit 2; fi
+
+# Wiki V2 Stage E — source-safe comparison, 2 to 3 weapons, Preview only.
+test -f public/wiki-stage-e-compare.js
+test -f public/wiki-stage-e-compare.css
+test -f public/wiki-stage-c-evidence.json
+node --check public/wiki-stage-e-compare.js
+node <<'NODE'
+const fs=require('node:fs'),p='public/wiki.html';
+let h=fs.readFileSync(p,'utf8');
+for(const file of ['wiki-stage-b-v2.js','wiki-stage-c-weapon.js','wiki-stage-d-v2.js','wiki_verified_data_v145.js']){
+ if(!h.includes(file))throw Error('Wiki E requires prior loader '+file);
+}
+if(h.includes("wiki-stage-e-compare.js"))throw Error('Wiki E script duplicated');
+h=h.replace('</body>','<script defer src="/wiki-stage-e-compare.js?v=1"></script>\n</body>');
+fs.writeFileSync(p,h);
+const v145=fs.readFileSync('public/wiki_verified_data_v145.js','utf8');
+if(!v145.includes('window.__TB_WIKI_E__?.selecting'))throw Error('Wiki E compare capture guard missing');
+if(fs.readFileSync('public/admin.html','utf8').includes('wiki-stage-e-compare.js'))throw Error('E leaked into Admin');
+NODE
+
+
+# Wiki V2 Stage F — searchable editorial practice guides with read-only C/D sources.
+# Stage F is an isolated presentation layer installed *after* Wiki E.
+for asset in wiki-stage-f-guides.js wiki-stage-f-guides.css wiki-stage-f-guides.json; do
+  test -f "public/$asset"
+done
+node --check public/wiki-stage-f-guides.js
+node -e "const d=require('./public/wiki-stage-f-guides.json'); if(d.schemaVersion!=='wiki-f1'||d.guides.length!==16||new Set(d.guides.map(x=>x.id)).size!==16)process.exit(2)"
+node <<'NODE'
+const fs=require('node:fs'),p='public/wiki.html';
+let h=fs.readFileSync(p,'utf8');
+for(const prior of ['wiki-stage-b-v2.js','wiki-stage-c-weapon.js','wiki-stage-d-v2.js','wiki-stage-e-compare.js']){
+ if(!h.includes(prior))throw Error('Wiki F requires '+prior);
+}
+if(h.includes('wiki-stage-f-guides.js')||h.includes('wiki-stage-f-guides.css'))throw Error('Wiki F duplicate');
+h=h.replace('</head>','<link rel="stylesheet" href="/wiki-stage-f-guides.css?v=1">\n</head>');
+h=h.replace('</body>','<script defer src="/wiki-stage-f-guides.js?v=1"></script>\n</body>');
+fs.writeFileSync(p,h);
+if(fs.readFileSync('public/admin.html','utf8').includes('wiki-stage-f-guides.js'))throw Error('Wiki F must not load in Admin');
+NODE
+
+# Wiki V2 G — isolated Admin review workbench, gated to G Preview or local QA.
+# No release path: Production/Admin remain unchanged until separate approval.
+if [[ "${CF_PAGES_BRANCH:-}" == "main" || "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-wiki-v2-public-release-20261029" || "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-wiki-stage-g-20261029" || "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-wiki-stage-h-20261029" || "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-wiki-stage-i-20261029" || "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-seo-recovery-20261029" || "${TRAININGBOT_LOCAL_G_QA:-}" == "1" || "${TRAININGBOT_LOCAL_H_QA:-}" == "1" || "${TRAININGBOT_LOCAL_I_QA:-}" == "1" ]]; then
+  for asset in wiki-stage-g-snapshot.js admin-wiki-stage-g.js admin-wiki-stage-g.css wiki-stage-f-guides.json; do
+    test -f "public/$asset"
+  done
+  node --check public/wiki-stage-g-snapshot.js
+  node --check public/admin-wiki-stage-g.js
+  node <<'NODE'
+const fs=require('node:fs');
+const wiki='public/wiki.html',admin='public/admin.html';
+let w=fs.readFileSync(wiki,'utf8');
+if(!w.includes('wiki-stage-f-guides.js')||w.includes('wiki-stage-g-snapshot.js'))throw Error('G requires F and no duplicate');
+w=w.replace('</body>','<script defer src="/wiki-stage-g-snapshot.js?v=1"></script>\n</body>');
+fs.writeFileSync(wiki,w);
+let h=fs.readFileSync(admin,'utf8');
+const marker='document.open();document.write(h);document.close()';
+if(!h.includes(marker)||!h.includes('admin-six-groups-v5.js'))throw Error('G requires genuine protected Admin V5');
+if(h.includes('admin-wiki-stage-g.js'))throw Error('G duplicated');
+const attach=';setTimeout(()=>{const l=document.createElement("link");l.rel="stylesheet";l.href="/admin-wiki-stage-g.css?v=1";document.head.append(l);const s=document.createElement("script");s.src="/admin-wiki-stage-g.js?v=1";document.body?.append(s)},150)';
+h=h.replace(marker,marker+attach);
+fs.writeFileSync(admin,h);
+if(w.includes('admin-wiki-stage-g.js')||h.includes('wiki-stage-g-snapshot.js'))throw Error('Wiki/Admin boundaries violated');
+NODE
+else
+  rm -f public/admin-wiki-stage-g.js public/admin-wiki-stage-g.css public/wiki-stage-g-snapshot.js
+fi
+
+# Wiki V2 H — only H branch or explicit QA flag; no Worker/D1/R2 writes.
+if [[ "${CF_PAGES_BRANCH:-}" == "main" || "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-wiki-v2-public-release-20261029" || "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-wiki-stage-h-20261029" || "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-wiki-stage-i-20261029" || "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-seo-recovery-20261029" || "${TRAININGBOT_LOCAL_H_QA:-}" == "1" || "${TRAININGBOT_LOCAL_I_QA:-}" == "1" ]]; then
+  test -f public/wiki-stage-h-perf.js
+  node --check public/wiki-stage-h-perf.js
+  node --check tools/wiki/stage-h-build.mjs
+  node tools/wiki/stage-h-build.mjs
+  node <<'NODE'
+const fs=require('node:fs'),p='public/wiki.html';
+let h=fs.readFileSync(p,'utf8');
+if(!h.includes('wiki-stage-f-guides.js')||!h.includes('wiki-stage-g-snapshot.js'))throw Error('Wiki H requires F and G Preview');
+if(h.includes('wiki-stage-h-perf.js'))throw Error('H loader duplicated');
+h=h.replace('</body>','<script defer src="/wiki-stage-h-perf.js?v=1"></script>\n</body>');
+fs.writeFileSync(p,h);
+if(fs.readFileSync('public/admin.html','utf8').includes('wiki-stage-h-perf.js'))throw Error('H leaked into Admin');
+NODE
+else
+  rm -f public/wiki-stage-h-perf.js
+fi

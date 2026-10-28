@@ -1,0 +1,42 @@
+name: TrainingBot Wiki V2 — Stage B UX & Browser QA
+on:
+  push:
+    branches:
+      - aion-trainingbot-wiki-stage-b-20261029
+permissions:
+  contents: read
+jobs:
+  wiki-b:
+    runs-on: ubuntu-latest
+    timeout-minutes: 23
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild public Wiki from current production sources
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          npm run build
+          node --check public/wiki-stage-b-v2.js
+          node --check tools/wiki/stage-b-browser-qa.mjs
+          test -f public/wiki-stage-b-v2.css
+          test -f public/wiki.html
+          grep -q wiki-stage-b-v2.js public/wiki.html
+          ! grep -q admin-demo-runtime.js public/admin.html
+          test ! -f public/admin-demo.html
+      - name: Browser runner
+        run: npm install --no-save --no-package-lock playwright
+      - name: B.1–B.6 — Test public Wiki UI, counts and legacy details safely
+        run: node tools/wiki/stage-b-browser-qa.mjs
+      - name: Regression — Stage A inventory and production isolation
+        run: |
+          node tools/wiki/stage-a-audit.mjs --out wiki-stage-b-audit
+          node tools/qa/p1-seo.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
+      - name: Upload desktop/mobile screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-wiki-stage-b-screenshots
+          path: wiki-stage-b-screenshots/*.png
+          if-no-files-found: ignore
+          retention-days: 10
