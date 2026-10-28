@@ -130,6 +130,10 @@ function applyChange(key,value){
  if(key==="status"&&!allowedStatuses.has(v))return;
  if(key==="imageLicense"&&!legalLicenses.has(v))return;
  if(rec.review[key]===v)return;
+ if(key==="status"&&v==="approved"){
+  const blockers=validate({...rec.review,status:"approved"});
+  if(blockers.length){msg("Không thể đề xuất duyệt: "+blockers.join("; "));renderDetail();return}
+ }
  if(!state.history.has(rec.id))state.history.set(rec.id,[]);
  const h=state.history.get(rec.id);h.push({before:{...rec.review},field:key,at:new Date().toISOString()});
  if(h.length>40)h.shift();
@@ -210,6 +214,7 @@ async function importDraft(file){
     proposed[k]=raw;
    }
    if(!allowedStatuses.has(proposed.status)||!legalLicenses.has(proposed.imageLicense))throw Error("Trạng thái không hợp lệ");
+   if(proposed.status==="approved"&&validate(proposed).length)throw Error("Bản ghi đề xuất duyệt chưa có đủ chứng cứ");
    pending.push([current,proposed]);
   }
   // Atomic apply: reject the entire package before changing any record.
