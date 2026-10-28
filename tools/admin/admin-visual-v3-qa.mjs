@@ -16,7 +16,7 @@ try{
  browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_BIN||"/usr/bin/google-chrome",args:["--no-sandbox"]});
  for(const width of [390,768,1440]){
   const ctx=await browser.newContext({viewport:{width,height:930},reducedMotion:"reduce"});
-  let outside=0,writes=0,errors=[];
+  let outside=[],writes=0,errors=[];
   await ctx.route("**/*",route=>{
    const r=route.request(),u=new URL(r.url()),p=u.pathname,method=r.method();
    if(p.startsWith("/api/")){
@@ -30,7 +30,7 @@ try{
     return respond({ok:true,changes:[],page:"/index.html"});
    }
    if(u.origin===ROOT)return route.continue();
-   outside++;return route.abort();
+   outside.push(r.url());return route.abort();
   });
   const page=await ctx.newPage();
   page.on("pageerror",e=>errors.push(e.message));
@@ -64,7 +64,7 @@ try{
    const dims=await page.evaluate(()=>({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));
    assert(dims.scroll<=width+8,"Horizontal overflow "+JSON.stringify(dims));
    assert.equal(writes,0,"V3 generated an unexpected write request");
-   assert.equal(outside,0,"V3 generated external network requests");
+   assert.deepEqual(outside,[],"V3 external network requests: "+JSON.stringify(outside));
    assert.deepEqual(errors,[],"Uncaught script errors");
    console.log("Visual V3 "+width+"px PASS — new hero, responsive design, 13 original routes, Beta/Posts navigation, no writes");
   }finally{await ctx.close();}
