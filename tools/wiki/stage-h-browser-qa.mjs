@@ -21,6 +21,18 @@ try{
    attemptedRemote.push(url.hostname);return route.abort();
   });
   const page=await context.newPage();
+  await page.addInitScript(()=>{
+   window.__H_SHIFTS__=[];
+   try{new PerformanceObserver(list=>{
+    for(const e of list.getEntries()){
+     if(e.hadRecentInput)continue;
+     window.__H_SHIFTS__.push({value:Number(e.value.toFixed(4)),time:Math.round(e.startTime),
+       sources:(e.sources||[]).slice(0,4).map(x=>({tag:x.node?.tagName||"",id:x.node?.id||"",className:typeof x.node?.className==="string"?x.node.className.slice(0,100):"",
+         previous:{x:Math.round(x.previousRect.x),y:Math.round(x.previousRect.y),h:Math.round(x.previousRect.height)},
+         current:{x:Math.round(x.currentRect.x),y:Math.round(x.currentRect.y),h:Math.round(x.currentRect.height)}}))});
+    }
+   }).observe({type:"layout-shift",buffered:true})}catch(_){}
+  });
   page.on("pageerror",e=>failures.push(e.message));
   try{
    const response=await page.goto(root+"/wiki.html",{waitUntil:"domcontentloaded",timeout:29000});
@@ -68,7 +80,9 @@ try{
    assert.equal(f.hinted,f.imagesNow,"All current images must be processed by H");
    assert(before.imagesPrepared>=f.imagesNow,"Cumulative image processing must cover current render");
    assert.deepEqual(failures,[],"Unexpected runtime errors");
-   const row={width,...before,interactionResponseMs:responseMs,images:f,remoteAssetAttemptCount:attemptedRemote.length};
+   const shifts=await page.evaluate(()=>window.__H_SHIFTS__||[]);
+   console.log("WIKI H "+width+" layout-shift attribution "+JSON.stringify(shifts.sort((a,b)=>b.value-a.value).slice(0,8)));
+   const row={width,...before,interactionResponseMs:responseMs,images:f,remoteAssetAttemptCount:attemptedRemote.length,largestShifts:shifts.slice(0,8)};
    report.viewports.push(row);
    console.log("WIKI H "+width+" PASS: FCP="+before.fcp+"ms LCP="+before.lcp+"ms CLS="+before.cls+"; image hints "+f.lazy+" lazy/"+f.eager+" eager; no overflow");
    fs.mkdirSync("wiki-stage-h-artifacts",{recursive:true});
