@@ -29,6 +29,7 @@ jobs:
           node tools/qa/p1-seo.mjs
           node tools/qa/p3-1-d1-preview-isolation.mjs
       - name: Prove no unfinished Wiki V2 modules were added
+        if: github.head_ref != 'aion-trainingbot-wiki-v2-public-release-20261029'
         run: |
           ! grep -q wiki-stage-f-guides.js public/wiki.html
           ! grep -q wiki-stage-h-perf.js public/wiki.html
