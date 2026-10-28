@@ -148,7 +148,7 @@
       const online=isOnline(session);
       return `<tr>
         <td class="tb-vis-time"><strong>${esc(fmtTime(session.first_seen_at))}</strong><small>Cập nhật ${esc(fmtTime(session.last_seen_at))}</small></td>
-        <td><div class="tb-vis-id"><i class="tb-vis-dot ${online?"online":""}"></i><code>#${esc(String(session.visitor_id||"").slice(0,8).toUpperCase())}</code></div></td>
+        <td><div class="tb-vis-id"><i class="tb-vis-dot ${online?"online":""}"></i>${session.is_admin?'<strong style="color:#7ff7e5">ADMIN</strong>':""}<code>#${esc(String(session.visitor_id||"").slice(0,8).toUpperCase())}</code></div></td>
         <td>${esc(session.device||"Khác")}</td>
         <td>${esc(session.os||"Khác")}</td>
         <td>${esc(session.browser||"Khác")}</td>
