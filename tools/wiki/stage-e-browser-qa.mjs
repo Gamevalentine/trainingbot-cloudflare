@@ -59,7 +59,7 @@ try{
    assert.equal(await page.locator("#tbECompareModal[open]").count(),0);
    // Native card selection must still work after return from the dialog.
    await clickWeapon(page,"QBZ");
-   assert.equal(await page.locator("#tbETray .tb-e-chip").count(),3);
+   await page.waitForFunction(()=>document.querySelectorAll("#tbETray .tb-e-chip").length===3,undefined,{timeout:8000});
    await clickWeapon(page,"FAMAS");
    assert.deepEqual(await page.evaluate(()=>window.__TB_WIKI_E__.selected),["M416","AKM","QBZ"],"Maximum three weapons exceeded");
    await page.locator("#tbETray .tb-e-chip").filter({hasText:"M416"}).click();
@@ -70,11 +70,6 @@ try{
    await page.locator("#tbETray .tb-e-open").click();
    await page.waitForFunction(()=>window.__TB_WIKI_E__.open&&document.querySelector("#tbECompareModal")?.open,undefined,{timeout:9000});
    assert.equal(await page.locator("#tbECompareModal .tb-e-weapon-head").count(),2);
-   console.log("E SOURCE DEBUG",JSON.stringify({
-     selected:await page.evaluate(()=>window.__TB_WIKI_E__.selected),
-     evidence:["QBZ","PP-19 Bizon"].map(n=>source.weapons[n]?.history.map(x=>({id:x.sourceId,facts:x.facts,source:source.sources[x.sourceId]}))),
-     labels:await page.locator("#tbECompareModal .tb-e-weapon-head h3").allTextContents()
-   }));
    const chart=await page.locator("#tbECompareModal .tb-e-chart").innerText();
    assert(chart.includes("Sát thương cơ bản")&&chart.includes("42")&&chart.includes("37"),"Same-release 2.4 sourced chart missing "+chart);
    assert.equal(await page.locator("#tbECompareModal .tb-e-chart-row").count(),2,"Unverifiable comparisons in bar chart");
