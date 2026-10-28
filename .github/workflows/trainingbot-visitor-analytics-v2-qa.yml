@@ -1,0 +1,42 @@
+name: TrainingBot — Visitor Analytics V2 QA
+on:
+  push:
+    branches:
+      - aion-trainingbot-visitor-analytics-v2-20261029
+  pull_request:
+    paths:
+      - 'functions/api/visitor-events.js'
+      - 'functions/api/v72/admin/visitor-summary.js'
+      - 'overrides/visitor_tracking_v177.js'
+      - 'overrides/admin_visitor_analytics_v2.js'
+      - 'build.sh'
+      - 'tools/analytics/**'
+permissions:
+  contents: read
+jobs:
+  analytics-v2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify JS and shell syntax
+        run: |
+          bash -n build.sh postbuild.sh
+          node --check overrides/visitor_tracking_v177.js
+          node --check overrides/admin_visitor_analytics_v2.js
+          node --check tools/analytics/visitor-analytics-qa.mjs
+          node --input-type=module --check < functions/api/visitor-events.js
+          node --input-type=module --check < functions/api/v72/admin/visitor-summary.js
+      - name: Build genuine website locally (no deploy)
+        run: npm run build
+      - name: Test analytics identities, database, authorization and bundle
+        run: node tools/analytics/visitor-analytics-qa.mjs
+      - name: Verify actual SQLite semantics, multi-tab coalescing and country filters
+        run: node --disable-warning=ExperimentalWarning tools/analytics/visitor-analytics-sqlite.mjs
+      - name: Regress public SEO and Preview write isolation
+        run: |
+          node tools/qa/p1-seo.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
