@@ -78,7 +78,7 @@ try{
     const names=[...document.querySelectorAll("#tbWikiGrid .tb-wiki-card")].map(x=>x.querySelector("h3")?.textContent.trim());
     return names.length===61&&names[0]!=="AKM";
    },undefined,{timeout:5000});
-   const sorted=await page.locator("#tbWikiGrid .tb-wiki-card h3").allInnerTexts();
+   const sorted=(await page.locator("#tbWikiGrid .tb-wiki-card h3").allTextContents()).map(x=>x.trim()); // content-visibility:auto skips off-screen innerText
    assert.deepEqual(sorted,sorted.slice().sort((a,b)=>a.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().localeCompare(b.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase(),"vi")),"Alphabetic sorted grid order");
    await page.locator("#tbBSort").selectOption("default");
 
