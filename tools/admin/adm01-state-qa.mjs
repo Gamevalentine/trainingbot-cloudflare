@@ -148,6 +148,71 @@ try{
  assert.equal(writes,0,"Mock test issued a non-GET request");
  console.log("ADM-01 entire local Stage A UI test: PASS, reads="+readCount+", writes="+writes);
  await context.close();
+
+ // Complete ADM-01 by using the original login form with strictly mocked GETs.
+ // The fake password is never sent to a real host. These tests exercise the
+ // decoded Admin runtime, not just the readable Beta/visitor scripts.
+ for(const scenario of ["zero","data","partialFailure"]){
+  const ctx=await browser.newContext({viewport:{width:1280,height:860}});
+  const p=await ctx.newPage();
+  let usersSeen=0,inboxSeen=0,validationSeen=0,localWrites=0;
+  const payload=(status,data)=>({status,contentType:"application/json",body:JSON.stringify(data)});
+  await p.route("**/*",route=>{
+   const req=route.request(),u=new URL(req.url()),path=u.pathname;
+   if(req.method()!=="GET"&&req.method()!=="HEAD"){localWrites++;return route.abort();}
+   if(path==="/api/v49/admin/users"){
+    const limit=u.searchParams.get("limit");
+    if(limit==="1"){validationSeen++;return route.fulfill(payload(200,{ok:true,users:[],stats:{total:0}}));}
+    usersSeen++;
+    if(scenario==="partialFailure")return route.fulfill(payload(503,{ok:false,message:"API người dùng tạm lỗi"}));
+    const n=scenario==="data"?5:0;
+    return route.fulfill(payload(200,{ok:true,users:[],stats:{total:n,active_24h:n,new_today:n,active_7d:n}}));
+   }
+   if(path.endsWith("/admin-contacts")||path.endsWith("/admin-contacts/")){
+    inboxSeen++;
+    if(scenario==="partialFailure")return route.fulfill(payload(503,{ok:false,message:"API hộp thư tạm lỗi"}));
+    const n=scenario==="data"?2:0;
+    return route.fulfill(payload(200,{ok:true,messages:[],counts:{total:n,unread:n,read:0,replied:0}}));
+   }
+   if(path.startsWith("/api/v40/"))return route.fulfill(payload(200,{ok:true,changes:[],page:"/index.html"}));
+   if(path.startsWith("/api/"))return route.fulfill(payload(401,{ok:false,message:"Unauthorized"}));
+   if(req.url().startsWith(root))return route.continue();
+   return route.abort();
+  });
+  await p.goto(root+"/admin.html",{waitUntil:"domcontentloaded",timeout:20000});
+  await p.waitForSelector("#loginForm",{state:"visible",timeout:12000});
+  await p.locator("#adminToken").fill("LOCAL-FAKE-LOGIN");
+  await p.locator('#loginForm button[type="submit"]').click();
+  await p.waitForSelector("#adminApp:not(.hidden)",{timeout:12000});
+  for(let i=0;i<130&&(usersSeen===0||inboxSeen===0);i++)await sleep(35);
+  assert(validationSeen>0,"Real Admin login form did not validate with mocked API");
+  assert(usersSeen>0&&inboxSeen>0,"Dashboard did not call both mock backends");
+  await p.waitForFunction(()=>document.querySelector("#healthScore")?.textContent!=="—",undefined,{timeout:9000});
+  await sleep(120);
+  const dashboard=await p.evaluate(()=>Object.fromEntries(
+   ["kpiUsers","kpiActive24","kpiUnread","kpiNewToday","healthScore","kpiUsersSub","kpiInboxTotal","actionCenter"]
+    .map(id=>[id,document.getElementById(id)?.textContent||""])));
+  if(scenario==="zero"){
+   assert.equal(dashboard.kpiUsers,"0");
+   assert.equal(dashboard.kpiUnread,"0");
+   assert.equal(dashboard.healthScore,"3/3");
+   assert(!dashboard.actionCenter.includes("chưa tải được"));
+  }else if(scenario==="data"){
+   assert.equal(dashboard.kpiUsers,"5");
+   assert.equal(dashboard.kpiUnread,"2");
+   assert.equal(dashboard.healthScore,"3/3");
+  }else{
+   assert.equal(dashboard.kpiUsers,"—");
+   assert.equal(dashboard.kpiUnread,"—");
+   assert(dashboard.kpiUsersSub.includes("chưa")||dashboard.kpiUsersSub.includes("Chưa"));
+   assert(dashboard.kpiInboxTotal.includes("chưa")||dashboard.kpiInboxTotal.includes("Chưa"));
+   assert(dashboard.actionCenter.toLowerCase().includes("chưa tải được"),"Action center claimed no work when data failed");
+   assert.notEqual(dashboard.healthScore,"3/3","Health claimed all 3 probes passed with failing API");
+  }
+  assert.equal(localWrites,0,"Dashboard mock tried to mutate data");
+  console.log("ADM-01 protected Dashboard login+data scenario "+scenario+": PASS (reads only)");
+  await ctx.close();
+ }
 }finally{
  if(browser)await browser.close();
  server.kill("SIGTERM");
