@@ -20,6 +20,10 @@ jobs:
         run: |
           node --check tools/admin/audit-runtime.mjs
           node tools/admin/audit-runtime.mjs --layout
+      - name: Admin local no-login browser regression
+        run: |
+          npm install --no-save --no-package-lock playwright
+          node tools/admin/qa-admin-rework.mjs
       - name: Check critical admin endpoint resources
         run: |
           test -f public/admin.html
