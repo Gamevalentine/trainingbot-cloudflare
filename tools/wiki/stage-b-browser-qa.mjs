@@ -31,6 +31,8 @@ try{
   page.on("pageerror",e=>errors.push(e.stack||e.message));
   try{
    await page.goto(ROOT+"/wiki.html",{waitUntil:"domcontentloaded",timeout:25000});
+   // H preflight: assert visible UI state before reading computed text or keyboard focus.
+   await page.waitForFunction(()=>{const main=document.querySelector("main");return !!main&&getComputedStyle(main).visibility==="visible";},undefined,{timeout:9500});
    try{
     await page.waitForFunction(()=>document.body.classList.contains("tb-wiki-stage-b")&&DATA.weapons.length===61&&document.querySelectorAll("#tbWikiGrid .tb-wiki-card").length===61,undefined,{timeout:14000});
    }catch(error){
