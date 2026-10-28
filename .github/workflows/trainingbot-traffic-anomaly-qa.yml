@@ -1,0 +1,43 @@
+name: TrainingBot — Traffic anomaly review QA
+on:
+  push:
+    branches:
+      - aion-trainingbot-traffic-anomaly-review-20261029
+  pull_request:
+    paths:
+      - 'functions/api/v72/admin/traffic-anomalies.js'
+      - 'overrides/admin_traffic_anomalies_v1.js'
+      - 'build.sh'
+      - 'tools/analytics/traffic-anomalies-sqlite.mjs'
+permissions:
+  contents: read
+jobs:
+  anomaly-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax
+        run: |
+          bash -n build.sh postbuild.sh
+          node --check overrides/admin_traffic_anomalies_v1.js
+          node --check tools/analytics/traffic-anomalies-sqlite.mjs
+          node --input-type=module --check < functions/api/v72/admin/traffic-anomalies.js
+      - name: Real production-equivalent build (no deploy)
+        run: npm run build
+      - name: SQLite anomaly audit and privacy/safety safeguards
+        run: node --disable-warning=ExperimentalWarning tools/analytics/traffic-anomalies-sqlite.mjs
+      - name: Existing visitor D1 and interface regressions
+        run: |
+          node --disable-warning=ExperimentalWarning tools/analytics/traffic-sources-sqlite.mjs
+          node tools/analytics/visitor-analytics-qa.mjs
+          node --disable-warning=ExperimentalWarning tools/analytics/visitor-analytics-sqlite.mjs
+          node --disable-warning=ExperimentalWarning tools/analytics/admin-browser-label-sqlite.mjs
+          node tools/analytics/visitor-online-ui-qa.mjs
+      - name: SEO and Preview separation
+        run: |
+          node tools/qa/p1-seo.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
