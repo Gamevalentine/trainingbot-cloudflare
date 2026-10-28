@@ -63,6 +63,11 @@ try{
    assert.equal(await page.locator(".tb-v145.open .tb-c-source").count(),0,
     "M416 has no verified release evidence and must not invent a source");
    assert((await page.locator(".tb-v145.open .tb-c-unverified").innerText()).includes("Chưa có thông số nâng cao"));
+   // The Stage C CSS is dynamically loaded; source-ready may precede style application.
+   await page.waitForFunction(()=>{
+    const node=document.querySelector(".tb-v145.open .tb-v145-score-title");
+    return !!node&&getComputedStyle(node).display==="none";
+   },undefined,{timeout:8500});
    assert.equal(await page.locator(".tb-v145.open .tb-v145-score-title").evaluate(el=>getComputedStyle(el).display),"none",
     "Generic v144 scores must not masquerade as actual damage/recoil");
    assert((await page.locator(".tb-v145.open .tb-c-legacy-note").innerText()).includes("chưa có bằng chứng"));
