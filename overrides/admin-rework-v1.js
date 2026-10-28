@@ -51,6 +51,8 @@
   betaButton.addEventListener("click",()=>{
    if(location.hash!=="#beta")location.hash="beta";
    showBeta();
+   // When login happened after the initial loader, refresh only on explicit entry.
+   byId("tbBetaReload")?.click();
   });
   const groups=[
    ["TỔNG QUAN",[["dashboard","Tổng quan"]]],
