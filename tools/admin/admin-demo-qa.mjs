@@ -30,7 +30,7 @@ async function test(width){
  try {
   await page.goto(ROOT+"/admin-demo.html",{waitUntil:"domcontentloaded",timeout:25000});
   try {
-   await page.waitForSelector("#adminApp:not(.hidden)",{timeout:12000});
+   await page.waitForFunction(()=>{const app=document.getElementById("adminApp");return app&&!app.classList.contains("hidden");},undefined,{timeout:18000});
   } catch(e) {
    console.log("DEMO INIT DIAGNOSTIC",JSON.stringify(await page.evaluate(()=>({
     href:location.href,title:document.title,ready:document.readyState,
@@ -91,7 +91,7 @@ async function test(width){
   const dimensions=await page.evaluate(()=>({document:document.documentElement.scrollWidth,viewport:document.documentElement.clientWidth}));
   assert(dimensions.document<=width+8,"Demo horizontal overflow "+JSON.stringify(dimensions));
   await page.reload({waitUntil:"domcontentloaded"});
-  await page.waitForSelector("#adminApp:not(.hidden)",{timeout:24000});
+  await page.waitForFunction(()=>{const app=document.getElementById("adminApp");return app&&!app.classList.contains("hidden");},undefined,{timeout:22000});
   await page.waitForFunction(()=>!!window.__TRAININGBOT_DEMO__,undefined,{timeout:9000});
   assert.equal(await page.evaluate(()=>window.__TRAININGBOT_DEMO__.getPosts().length),2,"Demo data persisted after reload");
   assert.equal(attempts.length,0,"Actual network detected after reload: "+attempts.join(" | "));
