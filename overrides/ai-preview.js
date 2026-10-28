@@ -10,6 +10,7 @@
   const help = get("composer-help");
   const thread = get("thread");
   let ready = false;
+  let conversationId = null;
   function renderStatus(message, detail) {
     statusElement.querySelector("strong").textContent = message;
     statusElement.querySelector("p").textContent = detail;
@@ -33,6 +34,14 @@
       ready = response.ok && status?.ready === true && status?.surfaces?.[surface] === true &&
         (surface === "visitor" ? status?.anonymousVisitorReady === true : status?.identityVerified === true);
       if (!ready) throw Error("IDENTITY_BRIDGE_NOT_READY");
+      if (surface === "visitor") {
+        const session = await fetch("/api/ai-preview/session", {
+          method:"POST",credentials:"same-origin",cache:"no-store",redirect:"error",
+          headers:{"content-type":"application/json","accept":"application/json"},
+          body:"{}"
+        });
+        if (!session.ok) throw Error("VISITOR_SESSION_UNAVAILABLE");
+      }
       statusLabel.textContent = surface === "admin" ? "Phiên Admin đã xác minh" : "Visitor AI sẵn sàng";
       renderStatus("Dịch vụ đã sẵn sàng", surface === "admin" ? "Máy chủ đã xác minh tài khoản Admin." : "Bạn có thể trò chuyện mà không cần tài khoản.");
       prompt.disabled = false; submit.disabled = false;
@@ -59,13 +68,16 @@
       // First-party BFF only. No direct call to the isolated Worker, no browser-managed API token.
       const response=await fetch("/api/ai-preview/chat", {method:"POST",credentials:"same-origin",cache:"no-store",
         redirect:"error",headers:{"content-type":"application/json","accept":"application/json"},
-        body:JSON.stringify({surface,message:text})});
+        body:JSON.stringify({surface,message:text,...(conversationId?{conversationId}:{})})});
       if(!response.ok)throw Error("UNAVAILABLE");
       const result=await response.json();
       if(typeof result.reply!=="string" || result.reply.length>16000)throw Error("INVALID_REPLY");
+      if(typeof result.conversationId === "string" && /^[A-Za-z0-9_-]{8,100}$/.test(result.conversationId))
+        conversationId=result.conversationId;
       message("assistant",result.reply);
     } catch {
       message("assistant","Dịch vụ AI chưa sẵn sàng. Vui lòng thử lại khi máy chủ được mở.");
+      conversationId = null;
       await check();
     } finally {submit.disabled = !ready;}
   });

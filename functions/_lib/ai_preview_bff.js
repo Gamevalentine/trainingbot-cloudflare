@@ -79,6 +79,7 @@ async function validateCookie(req,ctx){
 }
 function expiresCookie(){return cookieName+'=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0';}
 export async function status(request,env){
+ if(!previewHost(new URL(request.url)))return safe(404,{error:{code:'NOT_FOUND'}});
  const ctx=await context(request,env);
  if(!ctx||request.method!=='GET')return safe(200,{preview:true,ready:false,identityVerified:false,
   anonymousVisitorReady:false,surfaces:{visitor:false,admin:false},reason:'PREVIEW_BFF_NOT_CONFIGURED'});
@@ -89,6 +90,7 @@ export async function status(request,env){
    ...(!isReady?{reason:'STAGING_BRIDGE_UNAVAILABLE'}:{})});
 }
 export async function session(request,env){
+ if(!previewHost(new URL(request.url)))return safe(404,{error:{code:'NOT_FOUND'}});
  const ctx=await context(request,env);
  if(!ctx)return safe(503,{error:{code:'PREVIEW_BFF_NOT_CONFIGURED'}});
  if(!goodPost(request,ctx))return safe(403,{error:{code:'FORBIDDEN'}});
@@ -106,6 +108,7 @@ export async function session(request,env){
   '; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=3600'});
 }
 export async function chat(request,env){
+ if(!previewHost(new URL(request.url)))return safe(404,{error:{code:'NOT_FOUND'}});
  const ctx=await context(request,env);
  if(!ctx)return safe(503,{error:{code:'PREVIEW_BFF_NOT_CONFIGURED'}});
  if(!goodPost(request,ctx))return safe(403,{error:{code:'FORBIDDEN'}});
