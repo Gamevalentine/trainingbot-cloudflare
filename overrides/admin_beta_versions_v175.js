@@ -4,7 +4,7 @@
   const TOKEN_KEYS=["tb-admin-center-token-v2","tb-admin-center-token-v1","tb-cloud-admin-token-v40","tb-cloud-admin-token-v39"];
   const $=id=>document.getElementById(id);
   const token=()=>TOKEN_KEYS.map(key=>sessionStorage.getItem(key)).find(Boolean)||"";
-  let rows=[],editingId="";
+  let rows=null,editingId="",loading=false;
 
   function style(){
     if($("tbBetaAdminStyle"))return;
@@ -22,22 +22,28 @@
     document.head.appendChild(node);
   }
 
-  function status(message,type=""){
+  function status(message,type="",state=""){
     const el=$("tbBetaStatus");if(!el)return;
     el.textContent=message||"";el.className=`tb-beta-status ${type}`;
+    el.dataset.state=state||(type==="error"?"error":type==="ok"?"success":"loading");
   }
   async function api(method="GET",body){
-    const headers={Authorization:`Bearer ${token()}`};
+    const auth=token();
+    if(!auth)throw new Error("Chưa đăng nhập quản trị. Hãy đăng nhập rồi thử lại.");
+    const headers={Authorization:`Bearer ${auth}`};
     if(body!==undefined)headers["Content-Type"]="application/json";
     const response=await fetch("/api/v71/admin/beta-versions",{method,headers,body:body===undefined?undefined:JSON.stringify(body),cache:"no-store"});
     const data=await response.json().catch(()=>({}));
+    if(response.status===401)throw new Error("Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Hãy đăng nhập lại; dữ liệu đang nhập chưa bị xóa.");
+    if(response.status===403)throw new Error("Không đủ quyền để xem hoặc thay đổi phiên bản Beta.");
     if(!response.ok||data.ok===false)throw new Error(data.message||`Yêu cầu thất bại (${response.status}).`);
     return data;
   }
   function render(){
     const list=$("tbBetaList");if(!list)return;
     list.replaceChildren();
-    if(!rows.length){const e=document.createElement("div");e.className="tb-beta-empty";e.textContent="Chưa có phiên bản beta.";list.appendChild(e);return;}
+    if(rows===null){const e=document.createElement("div");e.className="tb-beta-empty";e.textContent="Chưa có dữ liệu đã xác thực. Chọn Tải lại sau khi đăng nhập hoặc kiểm tra kết nối.";list.appendChild(e);return;}
+    if(!rows.length){const e=document.createElement("div");e.className="tb-beta-empty";e.textContent="Tải thành công: chưa có phiên bản Beta nào.";list.appendChild(e);return;}
     rows.forEach(row=>{
       const item=document.createElement("article");item.className="tb-beta-row";
       const v=document.createElement("div");v.className="tb-beta-version";v.textContent=row.version;
@@ -50,10 +56,19 @@
     });
   }
   async function load(){
-    if(!token())return status("Phiên quản trị không còn hợp lệ.","error");
-    status("Đang tải phiên bản…");
-    try{const data=await api();rows=data.versions||[];render();status(`${rows.length} phiên bản beta đang được quản lý.`);}
-    catch(error){status(error.message||"Không tải được phiên bản.","error");}
+    if(loading)return;
+    rows=null;render();
+    if(!token())return status("Chưa đăng nhập quản trị. Hãy đăng nhập rồi tải lại danh sách.","error","unauthenticated");
+    loading=true;
+    const reload=$("tbBetaReload");if(reload)reload.disabled=true;
+    status("Đang tải phiên bản…","","loading");
+    try{
+      const data=await api();
+      if(!Array.isArray(data.versions))throw new Error("API không trả danh sách phiên bản hợp lệ.");
+      rows=data.versions;render();
+      status(`${rows.length} phiên bản Beta đã tải thành công.`,"ok",rows.length?"success":"empty");
+    }catch(error){status(error.message||"Không tải được phiên bản. Thử lại khi có kết nối.","error","error");}
+    finally{loading=false;if(reload)reload.disabled=false;}
   }
   function reset(){
     editingId="";
@@ -72,12 +87,12 @@
     if(!released)input.value="";
   }
   function edit(id){
-    const row=rows.find(x=>x.id===id);if(!row)return;
+    const row=Array.isArray(rows)?rows.find(x=>x.id===id):null;if(!row)return;
     editingId=id;$("tbBetaVersion").value=row.version||"";$("tbBetaArch").value=row.arch||"x64";$("tbBetaState").value=row.status||"coming_soon";$("tbBetaLink").value=row.download_url||"";
     $("tbBetaSave").textContent="Lưu thay đổi";$("tbBetaCancel").classList.add("show");toggleLink();$("tbBetaVersion").focus();
   }
   async function remove(id){
-    const row=rows.find(x=>x.id===id);if(!row||!confirm(`Xóa ${row.version} khỏi danh sách beta?`))return;
+    const row=Array.isArray(rows)?rows.find(x=>x.id===id):null;if(!row||!confirm(`Xóa ${row.version} khỏi danh sách beta?`))return;
     status(`Đang xóa ${row.version}…`);
     try{const data=await api("DELETE",{id});rows=data.versions||[];render();if(editingId===id)reset();status(`✓ Đã xóa ${row.version}.`,"ok");}
     catch(error){status(error.message||"Không xóa được phiên bản.","error");}
@@ -104,7 +119,8 @@
     const box=document.createElement("section");box.className="tb-beta-admin";box.id="tbBetaAdmin";
     const head=document.createElement("div");head.className="tb-beta-head";
     head.innerHTML='<div><span class="eyebrow">PUBG MOBILE BETA</span><h3>Quản lý phiên bản Beta</h3><p>Thêm phiên bản, trạng thái phát hành và link APK. Nhóm V4.x được tạo tự động từ số phiên bản.</p></div>';
-    const open=document.createElement("a");open.className="tb-beta-open";open.href="/ban-cap-nhat";open.target="_blank";open.rel="noopener";open.textContent="Mở trang cập nhật ↗";head.appendChild(open);
+    const reload=document.createElement("button");reload.type="button";reload.className="tb-beta-open";reload.id="tbBetaReload";reload.textContent="Tải lại danh sách";reload.addEventListener("click",load);
+    const open=document.createElement("a");open.className="tb-beta-open";open.href="/ban-cap-nhat";open.target="_blank";open.rel="noopener";open.textContent="Mở trang cập nhật ↗";head.append(reload,open);
 
     const form=document.createElement("form");form.className="tb-beta-form";form.id="tbBetaForm";
     const version=document.createElement("input");version.id="tbBetaVersion";version.required=true;version.placeholder="V4.8.1";version.autocomplete="off";
@@ -116,7 +132,7 @@
     form.append(field("PHIÊN BẢN",version),field("KIẾN TRÚC",arch),field("TRẠNG THÁI",state),field("LINK APK",link,"link"),save,cancel);
 
     const note=document.createElement("div");note.className="tb-beta-note";note.textContent="Ví dụ: nhập V4.8.1 thì website tự tạo nhóm V4.8. Phiên bản cao nhất sẽ được mở mặc định.";
-    const stat=document.createElement("div");stat.className="tb-beta-status";stat.id="tbBetaStatus";
+    const stat=document.createElement("div");stat.className="tb-beta-status";stat.id="tbBetaStatus";stat.setAttribute("role","status");stat.setAttribute("aria-live","polite");
     const list=document.createElement("div");list.className="tb-beta-list";list.id="tbBetaList";
     box.append(head,form,note,stat,list);
 
