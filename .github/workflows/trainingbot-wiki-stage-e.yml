@@ -3,6 +3,10 @@ on:
   push:
     branches:
       - aion-trainingbot-wiki-stage-e-20261029
+  pull_request:
+    branches:
+      - aion-trainingbot-wiki-stage-d-20261029
+    types: [opened, synchronize, reopened, ready_for_review]
 permissions:
   contents: read
 jobs:
