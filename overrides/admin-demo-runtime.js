@@ -169,6 +169,15 @@
   var loginAttempts=0;
   function boot(){
     mount();
+    // The main V5 loader is appended after document.close(). In the
+    // synthetic Demo, initialize the category UI from the finished document
+    // too, in case the outer async loader has already yielded.
+    if(document.getElementById("adminApp")&&!document.getElementById("tb5Categories")&&!document.querySelector('script[data-tb5-demo-loader]')){
+      var script=document.createElement("script");
+      script.src="/admin-six-groups-v5.js?v=1";
+      script.dataset.tb5DemoLoader="true";
+      document.body.appendChild(script);
+    }
     var app=document.getElementById("adminApp");
     if(app && !app.classList.contains("hidden")){
       notify("Đã vào Demo bằng token giả. Có thể thử lưu nháp và Beta.");
