@@ -25,6 +25,9 @@ async function test(width){
    return r.continue();
  });
  const page=await context.newPage();
+ const click=selector=>page.evaluate(s=>{const el=document.querySelector(s);if(!el)throw Error("Demo click selector not found "+s);el.click();},selector);
+ const fill=(selector,value)=>page.evaluate(args=>{const el=document.querySelector(args.selector);if(!el)throw Error("Demo fill selector not found "+args.selector);el.value=args.value;el.dispatchEvent(new Event("input",{bubbles:true}));el.dispatchEvent(new Event("change",{bubbles:true}));},{selector,value});
+ const count=selector=>page.evaluate(s=>document.querySelectorAll(s).length,selector);
  page.on("pageerror",e=>errors.push(e.message));
  page.on("dialog",d=>d.accept());
  try {
@@ -45,11 +48,11 @@ async function test(width){
    console.log("DEMO REAL NETWORK",JSON.stringify(attempts));
    throw e;
   }
-  await page.waitForSelector("body.tb-admin-stage-d",{timeout:20000});
-  await page.waitForSelector("#tbDemoBanner",{timeout:9000});
+  await page.waitForFunction(()=>document.body.classList.contains("tb-admin-stage-d"),undefined,{timeout:20000});
+  await page.waitForFunction(()=>!!document.getElementById("tbDemoBanner"),undefined,{timeout:9000});
   await page.waitForFunction(()=>document.querySelectorAll("#sidebar .nav-item").length===13,undefined,{timeout:9000});
-  assert.equal(await page.locator("#adminApp.hidden").count(),0);
-  const names=await page.locator("#sidebar .nav-item").evaluateAll(nodes=>nodes.map(n=>n.id==="tbVisitorNav"?"visitor-tracking":n.dataset.view));
+  assert.equal(await count("#adminApp.hidden"),0);
+  const names=await page.evaluate(()=>[...document.querySelectorAll("#sidebar .nav-item")].map(n=>n.id==="tbVisitorNav"?"visitor-tracking":n.dataset.view));
   assert.deepEqual(names,routes);
   const saved=await page.evaluate(()=>["tb-admin-center-token-v2","tb-admin-center-token-v1"].map(k=>sessionStorage.getItem(k)));
   assert(saved.every(x=>!x||x==="TRAININGBOT-DEMO-FAKE-NOT-A-CREDENTIAL"),"Unexpected persisted token");
@@ -57,28 +60,28 @@ async function test(width){
   assert.equal(testCtx.length,2);
   for(const name of routes){
     const nav=name==="visitor-tracking"?"#tbVisitorNav":'#sidebar .nav-item[data-view="'+name+'"]';
-    await page.locator(nav).evaluate(el=>el.click());
+    await click(nav);
     await page.waitForFunction(key=>document.querySelector('[data-view-panel="'+key+'"]')?.classList.contains("active"),name,{timeout:8500});
   }
-  await page.locator('#sidebar .nav-item[data-view="posts"]').evaluate(el=>el.click());
+  await click('#sidebar .nav-item[data-view="posts"]');
   await page.waitForFunction(()=>document.querySelectorAll("#tbPostPublishedList .tb-post-row").length===2,undefined,{timeout:8000});
-  await page.locator("#tbManualPostCreate").evaluate(el=>el.click());
-  await page.locator("#tbPostTitle").fill("Bài Demo vừa lưu");
-  await page.locator("#tbPostContent").fill("Nội dung giả để kiểm tra nút lưu nháp trong bản Preview Admin.");
-  await page.locator("#tbPostDraftSubmit").evaluate(el=>el.click());
+  await click("#tbManualPostCreate");
+  await fill("#tbPostTitle","Bài Demo vừa lưu");
+  await fill("#tbPostContent","Nội dung giả để kiểm tra nút lưu nháp trong bản Preview Admin.");
+  await click("#tbPostDraftSubmit");
   await page.waitForFunction(()=>window.__TRAININGBOT_DEMO__.getPosts().length===3,undefined,{timeout:6000});
   const p=await page.evaluate(()=>window.__TRAININGBOT_DEMO__.getPosts()[0]);
   assert.equal(p.status,"draft");
   assert.equal(p.title,"Bài Demo vừa lưu");
-  await page.locator('#sidebar .nav-item[data-view="beta"]').evaluate(el=>el.click());
+  await click('#sidebar .nav-item[data-view="beta"]');
   await page.waitForFunction(()=>document.querySelectorAll("#tbBetaList .tb-beta-row").length===2,undefined,{timeout:8500});
-  await page.locator("#tbCBetaEditor summary").evaluate(el=>el.click());
-  await page.locator("#tbBetaVersion").fill("V4.9.1");
-  await page.locator("#tbBetaArch").fill("x64");
-  await page.locator("#tbBetaSave").evaluate(el=>el.click());
+  await click("#tbCBetaEditor summary");
+  await fill("#tbBetaVersion","V4.9.1");
+  await fill("#tbBetaArch","x64");
+  await click("#tbBetaSave");
   await page.waitForFunction(()=>window.__TRAININGBOT_DEMO__.getBetas().length===3,undefined,{timeout:9000});
   assert.equal((await page.evaluate(()=>window.__TRAININGBOT_DEMO__.getBetas()))[0].version,"V4.9.1");
-  assert.equal(await page.locator("#tbDemoBanner").count(),1);
+  assert.equal(await count("#tbDemoBanner"),1);
   const writes=await page.evaluate(()=>window.__TRAININGBOT_DEMO__.getWrites());
   assert(writes.some(x=>x.scope==="posts"&&x.method==="POST"),"Demo post write missing");
   assert(writes.some(x=>x.scope==="beta"&&x.method==="POST"),"Demo Beta write missing");
