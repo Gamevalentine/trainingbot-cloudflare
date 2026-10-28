@@ -48,6 +48,19 @@ function boot(){
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});
 else boot();
+// Reveal stable Wiki after F/E initialization, with a short two-frame settle.
+// The H build also has an independent 3.2s fallback if this script fails.
+let revealAttempts=0;
+function revealAfterMount(){
+ if(!window.__TB_WIKI_F__?.ready||!window.__TB_WIKI_E__?.ready){
+  if(++revealAttempts<140)setTimeout(revealAfterMount,20);
+  return;
+ }
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{
+  setTimeout(()=>document.body.classList.add("tb-h-layout-ready"),180);
+ }));
+}
+revealAfterMount();
 state.capture=()=>({metrics:{...metrics},imagesPrepared:state.imagesPrepared,
  navigation:performance.getEntriesByType("navigation").map(e=>({domContentLoaded:Math.round(e.domContentLoadedEventEnd),loadEvent:Math.round(e.loadEventEnd),transferSize:e.transferSize})),
  resources:performance.getEntriesByType("resource").length});
