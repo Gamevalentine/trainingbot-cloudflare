@@ -92,6 +92,12 @@
     event.preventDefault();
     const button=$("tbBetaSave"),body={version:$("tbBetaVersion").value.trim(),arch:$("tbBetaArch").value.trim(),status:$("tbBetaState").value,download_url:$("tbBetaLink").value.trim()};
     if(editingId)body.id=editingId;
+    if(!/^V\d+\.\d+\.\d+$/i.test(body.version))return status("Phiên bản phải có dạng V4.8.1.","error");
+    if(Array.isArray(rows)&&rows.some(row=>row.version?.toUpperCase()===body.version.toUpperCase()&&row.id!==editingId))return status("Phiên bản đã tồn tại. Hãy chọn Sửa trong danh sách.","error");
+    if(body.status==="released"){
+      try{const url=new URL(body.download_url);if(!["http:","https:"].includes(url.protocol))throw Error();}
+      catch{return status("Bản đã phát hành cần URL tải HTTP/HTTPS hợp lệ.","error");}
+    }
     button.disabled=true;status(editingId?"Đang lưu thay đổi…":"Đang thêm phiên bản…");
     try{
       const data=await api(editingId?"PATCH":"POST",body);rows=data.versions||[];render();
@@ -101,7 +107,7 @@
   }
   function field(labelText,input,className=""){
     const wrap=document.createElement("div");wrap.className=`tb-beta-field ${className}`;
-    const label=document.createElement("label");label.textContent=labelText;wrap.append(label,input);return wrap;
+    const label=document.createElement("label");label.textContent=labelText;label.htmlFor=input.id;wrap.append(label,input);return wrap;
   }
   function inject(){
     if($("tbBetaAdmin"))return true;
