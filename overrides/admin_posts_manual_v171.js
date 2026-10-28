@@ -51,7 +51,7 @@
     if(link){el.append(document.createTextNode(" "));const a=make("a","","Mở bài ↗");a.href=link;a.target="_blank";a.rel="noopener";el.appendChild(a);}
   }
   function managerStatus(message,type=""){
-    const el=$("tbPostManagerStatus");if(!el)return;el.textContent=message||"";el.className=`tb-post-manager-status ${type}`;
+    const el=$("tbPostManagerStatus");if(!el)return;el.textContent=message||"";el.className=`tb-post-manager-status ${type}`;el.dataset.state=type==="error"?"error":type==="ok"?"success":"loading";
   }
   function openModal(){buildModal();$("tbManualPostModal").classList.add("open");setTimeout(()=>$("tbPostTitle")?.focus(),0);}
   function closeModal(){$("tbManualPostModal")?.classList.remove("open");}
@@ -81,13 +81,23 @@
   }
 
   async function loadPosts(){
-    const auth=token();if(!auth)return managerStatus("Phiên quản trị không còn hợp lệ.","error");
+    const list=$("tbPostPublishedList");
+    if(list){list.replaceChildren();list.append(make("div","tb-post-empty","Chưa tải dữ liệu bài viết đã xác thực."));}
+    const auth=token();if(!auth)return managerStatus("Chưa đăng nhập quản trị. Hãy đăng nhập rồi tải lại.","error");
     managerStatus("Đang tải bài đã đăng…");
     try{
       const response=await fetch("/api/v71/admin/posts",{headers:{Authorization:`Bearer ${auth}`},cache:"no-store"});
-      const data=await response.json().catch(()=>({}));if(!response.ok||!data.ok)throw new Error(data.message||"Không tải được danh sách bài.");
-      renderPosts(data.posts||[]);managerStatus(`${(data.posts||[]).length} bài do Admin tạo.`);
-    }catch(error){managerStatus(error.message||"Không tải được danh sách bài.","error");}
+      const data=await response.json().catch(()=>({}));
+      if(response.status===401)throw new Error("Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Hãy đăng nhập lại.");
+      if(response.status===403)throw new Error("Tài khoản không đủ quyền xem danh sách bài viết.");
+      if(!response.ok||data.ok!==true)throw new Error(data.message||"Không tải được danh sách bài.");
+      if(!Array.isArray(data.posts))throw new Error("API không trả danh sách bài viết hợp lệ.");
+      renderPosts(data.posts);
+      managerStatus(`${data.posts.length} bài đã tải thành công.`,data.posts.length?"ok":"");
+    }catch(error){
+      if(list){list.replaceChildren();list.append(make("div","tb-post-empty","Không tải được danh sách. Không thể kết luận có 0 bài viết."));}
+      managerStatus(error.message||"Không tải được danh sách bài.","error");
+    }
   }
 
   async function deletePost(id,title,button){
@@ -119,7 +129,7 @@
     const manager=make("section","tb-post-manager");manager.id="tbPostManager";
     const managerHead=make("div","tb-post-manager-head");const copy=make("div","");copy.append(make("h3","","Bài đã đăng"),make("small","","Các bài được tạo trực tiếp từ Admin. Có thể mở hoặc xóa vĩnh viễn."));
     const refresh=make("button","tb-post-refresh","Làm mới");refresh.type="button";refresh.addEventListener("click",loadPosts);managerHead.append(copy,refresh);
-    const status=make("div","tb-post-manager-status");status.id="tbPostManagerStatus";const list=make("div","tb-post-list");list.id="tbPostPublishedList";
+    const status=make("div","tb-post-manager-status");status.id="tbPostManagerStatus";status.setAttribute("role","status");status.setAttribute("aria-live","polite");const list=make("div","tb-post-list");list.id="tbPostPublishedList";
     list.addEventListener("click",event=>{const del=event.target.closest("button[data-delete-post]");if(del)deletePost(del.dataset.deletePost,del.dataset.postTitle,del);});
     manager.append(managerHead,status,list);head.insertAdjacentElement("afterend",manager);loadPosts();return true;
   }
