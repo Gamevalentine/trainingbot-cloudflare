@@ -16,6 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build real Production-shaped static site without secrets
+        env:
+          CF_PAGES_BRANCH: main
         run: |
           bash -n build.sh
           bash -n postbuild.sh
