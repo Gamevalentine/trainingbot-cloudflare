@@ -90,22 +90,24 @@ function buildSheet(row){
 }
 function reflect(){
  queued=false;if(!evidence)return;
- const o=document.querySelector(".tb-wd.open");
+ const o=document.querySelector(".tb-v145.open");
  if(!o)return;
- const left=o.querySelector(".tb-wd-left");
+ const left=o.querySelector(".tb-v145-left");
  const name=left?.querySelector("h2")?.textContent?.trim();
  if(!name)return;
  const row=getRow(name);
  if(!row)return;
+ const unsourced=left.querySelector(".tb-v145-note b");
+ if(unsourced&&unsourced.textContent.includes("đã đối chiếu"))unsourced.textContent="Thông tin từ Wiki cũ (chưa liên kết nguồn):";
  if(left.querySelector(".tb-c-sheet")?.dataset.tbCName===name)return;
  left.querySelector(".tb-c-sheet")?.remove();
- const parent=left.querySelector(".tb-wd-stats");
+ const parent=left.querySelector(".tb-v145-score-title");
  const sheet=buildSheet(row);
  if(parent)parent.before(sheet);else left.append(sheet);
  // Clarify what the older UI does and does not establish.
- const right=o.querySelector(".tb-wd-right");
+ const right=o.querySelector(".tb-v145-right");
  if(right){
-   const header=[...right.querySelectorAll(".tb-wd-section-title")].find(el=>el.textContent.includes("Phụ kiện"));
+   const header=[...right.querySelectorAll(".tb-v145-title")].find(el=>el.textContent.includes("Phụ kiện"));
    if(header)header.textContent="Phụ kiện gợi ý từ Wiki (chưa xác minh tương thích)";
    if(!right.querySelector(".tb-c-legacy-note")){
     const note=make("p","tb-c-legacy-note","Các bản đồ, phụ kiện và nhận xét từ giao diện cũ chưa có bằng chứng cho phiên bản hiện hành.");
@@ -120,7 +122,7 @@ function schedule(){
 }
 function watch(){
  if(overlay)return;
- overlay=document.querySelector(".tb-wd");
+ overlay=document.querySelector(".tb-v145");
  if(!overlay)return;
  observer=new MutationObserver(schedule);
  observer.observe(overlay,{subtree:true,childList:true,attributes:true,attributeFilter:["class"]});
