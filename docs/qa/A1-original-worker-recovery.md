@@ -1,5 +1,8 @@
 # A.1 — TrainingBot original login Worker source recovery audit
 
+> **Scope correction (2026-10-29):** User confirmed public visitors must NOT register or log in. The inaccessible legacy guest Worker is no longer an A.1 release blocker. This document preserves the historic investigation only. **A.1 Admin source inventory is COMPLETE**, see [A1-admin-auth-inventory.md](A1-admin-auth-inventory.md). Person-specific Admin authentication and public Visitor protection are A.7; Production unaffected by this audit.
+
+
 **Status: BLOCKED — source not recovered; Production unchanged.** Date: 2026-10-29.
 
 ## Verified sources
