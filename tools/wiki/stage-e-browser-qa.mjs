@@ -50,6 +50,21 @@ try{
    await page.locator("#tbETray .tb-e-open").click();
    await page.waitForFunction(()=>window.__TB_WIKI_E__.open&&document.querySelector("#tbECompareModal")?.open,undefined,{timeout:8500});
    assert.equal(await page.locator("#tbECompareModal .tb-e-weapon-head").count(),2);
+   // E.8: check the actual comparison modal and share controls fit the viewport.
+   // The metrics table may legitimately scroll inside its dedicated region.
+   const responsive=await page.evaluate(()=>{
+    const dialog=document.getElementById("tbECompareModal");
+    const share=dialog.querySelector(".tb-e-share");
+    const table=dialog.querySelector(".tb-e-scroll");
+    const bounds=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width}};
+    return {viewport:innerWidth,dialog:bounds(dialog),share:bounds(share),table:bounds(table),
+      tableOverflow:table.scrollWidth>table.clientWidth+1};
+   });
+   for(const [key,rect] of Object.entries({dialog:responsive.dialog,share:responsive.share,table:responsive.table})){
+    assert(rect.left>=-2&&rect.right<=responsive.viewport+2,
+      "E.8 "+width+"px: "+key+" overflows viewport "+JSON.stringify(responsive));
+   }
+   if(width===390)assert(responsive.tableOverflow,"E.8: mobile table should have its own horizontal scroll");
    const noFake=await page.locator("#tbECompareModal .tb-e-empty-chart").innerText();
    assert(noFake.includes("Chưa đủ ít nhất 2 giá trị"),"Invented chart for unsourced M416 AKM");
    assert((await page.locator("#tbECompareModal .tb-e-warning").innerText()).includes("Chưa xác minh"));
@@ -78,11 +93,16 @@ try{
    const url=await page.locator("#tbEShareLink").inputValue();
    const raw=new URL(url).searchParams.get("compare");
    assert.equal(raw,"QBZ,PP-19 Bizon");
-   if(width===1440||width===390){
+   if([390,768,1440].includes(width)){
     fs.mkdirSync("wiki-stage-e-screenshots",{recursive:true});
     await page.screenshot({path:"wiki-stage-e-screenshots/qbz-pp19-"+width+".png",animations:"disabled"});
    }
-   await page.locator("#tbECompareModal .tb-e-close").click();
+   // E.7: Escape must close the native dialog without discarding selections.
+   if(width===768){
+    await page.keyboard.press("Escape");
+    await page.waitForFunction(()=>!document.getElementById("tbECompareModal")?.open);
+    assert.equal(await page.evaluate(()=>window.__TB_WIKI_E__.selected.length),2);
+   }else await page.locator("#tbECompareModal .tb-e-close").click();
    await page.locator("#tbETray .tb-e-exit").click();
    assert.equal(await page.evaluate(()=>window.__TB_WIKI_E__.selecting),false);
    await page.waitForFunction(()=>document.getElementById("tbETray")?.hidden===true,undefined,{timeout:8000});
@@ -102,6 +122,17 @@ try{
    await page.locator('#tbWikiTabs .tb-wiki-tab[data-tab="attachments"]').evaluate(el=>el.click());
    await page.waitForFunction(()=>document.querySelector("#tbWikiTabs .tb-wiki-tab.active")?.dataset.tab==="attachments"&&!window.__TB_WIKI_E__.selecting,undefined,{timeout:9000});
    await page.waitForFunction(()=>document.getElementById("tbETray")?.hidden===true,undefined,{timeout:8000});
+   // E.7: invalid, duplicate and oversized shared selections must be rejected.
+   if(width===1440){
+    for(const invalid of ["QBZ,QBZ","QBZ,INVALID","QBZ,M416,AKM,FAMAS"]){
+     await page.goto(root+"/wiki.html?compare="+encodeURIComponent(invalid),{waitUntil:"domcontentloaded",timeout:25000});
+     await page.waitForFunction(()=>window.__TB_WIKI_E__?.ready,undefined,{timeout:18000});
+     assert.equal(await page.evaluate(()=>new URL(location.href).searchParams.has("compare")),false,
+       "Invalid shared selection not removed: "+invalid);
+     assert.deepEqual(await page.evaluate(()=>window.__TB_WIKI_E__.selected),[],
+       "Invalid shared selection was restored: "+invalid);
+    }
+   }
    assert.deepEqual(writes,[],"Unexpected API writes");
    assert.deepEqual(errors,[],"JS errors "+errors.join("; "));
    console.log("WIKI E "+width+" PASS: 2/3 selection, v145 guard, no fake scores, 2.4 chart, share/restore, navigation");
