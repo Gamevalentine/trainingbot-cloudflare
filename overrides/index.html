@@ -57,6 +57,13 @@
 /* Avoid showing two bars if an earlier video script inserts a custom track. */
 .tb-home-video-scroll-track { display: none !important; }
 </style>
+<style id="tb-seo-article-links-v1">
+.tb-seo-article-shortcuts{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px;margin-top:18px;padding:14px 16px;border:1px solid rgba(153,173,207,.16);border-radius:14px;background:rgba(15,22,37,.48)}
+.tb-seo-article-shortcuts span{font-weight:700;color:#cbd8ef;font-size:13px}
+.tb-seo-article-shortcuts a{color:#9cdaf5;text-decoration:underline;text-decoration-color:rgba(156,218,245,.42);text-underline-offset:3px;font-size:13px}
+.tb-seo-article-shortcuts a:hover{color:#fff}
+@media(max-width:520px){.tb-seo-article-shortcuts{padding:12px;gap:9px 13px}.tb-seo-article-shortcuts span,.tb-seo-article-shortcuts a{font-size:12px}}
+</style>
 </head>
 <body>
 <header class="site-header">
@@ -100,7 +107,7 @@
 </div>
 
 <main id="main-content" class="tb202-main">
-<section class="tb202-hero"><div class="container tb203-hero-layout"><div class="tb203-hero-copy"><span class="kicker">PUBG MOBILE · TRAININGBOT</span><h1>Tin mới, <span class="gradient-text">Beta và Wiki PUBG Mobile.</span></h1><p>TrainingBot là trang thông tin và cẩm nang PUBG Mobile bằng tiếng Việt, tổng hợp tin mới, bản thử nghiệm Beta và Wiki tra cứu vũ khí, phụ kiện, phương tiện, bản đồ.</p><div class="tb202-actions"><a class="button button-primary" href="#tbLatestBeta">Xem cập nhật mới</a><a class="button button-secondary" href="/wiki">Tra cứu Wiki</a><button id="tbHomeSearch" type="button">Tìm kiếm</button></div></div><aside class="tb203-spotlight" id="tb203Spotlight" aria-roledescription="carousel" aria-label="Tin nổi bật và bản tải PUBG Mobile">
+<section class="tb202-hero"><div class="container tb203-hero-layout"><div class="tb203-hero-copy"><span class="kicker">PUBG MOBILE · TRAININGBOT</span><h1>TrainingBot: <span class="gradient-text">Tin PUBG Mobile, Beta và Wiki.</span></h1><p>TrainingBot là trang thông tin và cẩm nang PUBG Mobile bằng tiếng Việt, tổng hợp tin mới, bản thử nghiệm Beta và Wiki tra cứu vũ khí, phụ kiện, phương tiện, bản đồ.</p><div class="tb202-actions"><a class="button button-primary" href="#tbLatestBeta">Xem cập nhật mới</a><a class="button button-secondary" href="/wiki">Tra cứu Wiki</a><button id="tbHomeSearch" type="button">Tìm kiếm</button></div></div><aside class="tb203-spotlight" id="tb203Spotlight" aria-roledescription="carousel" aria-label="Tin nổi bật và bản tải PUBG Mobile">
 <div class="tb203-slide-frame" id="tb203SlideFrame" aria-live="off"><div class="tb203-loading"><img src="/pubg-game-avatar.webp?v=140" alt="" width="96" height="96"><span>Đang tải nội dung nổi bật…</span></div></div>
 <div class="tb203-controls"><button type="button" id="tb203Prev" aria-label="Ảnh trước">‹</button><div id="tb203Dots" class="tb203-dots" role="group" aria-label="Chọn ảnh"></div><button type="button" id="tb203Next" aria-label="Ảnh tiếp theo">›</button></div>
 </aside></div></section>
@@ -109,7 +116,13 @@
 <article class="tb-flash-card"><img class="tb-flash-image" src="/pubg-mobile-light-avatar.webp?v=150" alt="PUBG Mobile Flash Beta v4.6.1" loading="lazy"><div class="tb-flash-content"><h2>PUBG MOBILE FLASH BETA</h2><p>phiên bản v4.6.1</p><a class="tb-flash-download" href="/download/flash-v4-6-1" rel="noopener noreferrer">Tải bản v4.6.1</a><span class="tb-flash-download-count" data-flash-download-version="v4.6.1" aria-live="polite">Đang tải số liệu…</span></div></article>
 <article class="tb-flash-card"><img class="tb-flash-image" src="/pubg-mobile-light-avatar.webp?v=150" alt="PUBG Mobile Flash Beta v4.7.0" loading="lazy"><div class="tb-flash-content"><h2>PUBG MOBILE FLASH BETA</h2><p>phiên bản v4.7.0</p><a class="tb-flash-download" href="/download/flash-v4-7-0" rel="noopener noreferrer">Tải bản v4.7.0</a><span class="tb-flash-download-count" data-flash-download-version="v4.7.0" aria-live="polite">Đang tải số liệu…</span></div></article>
 </div></div><p class="tb202-note">Bản Beta có thể chưa ổn định. Lượt tải là lượt bắt đầu tải, không phải lượt cài đặt. Chỉ công bố mã SHA-256 và dung lượng khi đã đối chiếu được nguồn.</p></div></section>
-<section class="tb202-section" id="tbHomeNews"><div class="container"><div class="tb202-heading"><div><span class="kicker">TIN TỨC</span><h2>Bài viết mới nhất</h2></div><a href="/news">Xem tất cả →</a></div><div class="article-grid" id="tbHomeArticleGrid" data-v202="1"><p>Đang tải bài viết mới…</p></div></div></section>
+<section class="tb202-section" id="tbHomeNews"><div class="container"><div class="tb202-heading"><div><span class="kicker">TIN TỨC</span><h2>Bài viết mới nhất</h2></div><a href="/news">Xem tất cả →</a></div><div class="article-grid" id="tbHomeArticleGrid" data-v202="1"><p>Đang tải bài viết mới…</p></div>
+<nav class="tb-seo-article-shortcuts" aria-label="Bài viết PUBG Mobile nổi bật trên TrainingBot">
+  <span>Đọc thêm trên TrainingBot:</span>
+  <a href="/bai-viet/pubg-mobile-4-7-beta-1-chinh-thuc-khoi-dong-hang-loat-thay-doi-gameplay-dang-chu-y">PUBG MOBILE 4.7 Beta 1</a>
+  <a href="/bai-viet/battlegrounds-mo-rong-erangel-subzero-trong-pubg-mobile-bgmi-voi-ban-beta-4-7-2">Erangel Subzero và Beta 4.7.2</a>
+  <a href="/bai-viet/pubg-mobile-xac-nhan-m416-glacier-switch-effect-gan-hoan-thien-viet-nam-van-cho-thong-tin">M416 Glacier Switch Effect</a>
+</nav></div></section>
 <section class="tb202-section tb202-wiki"><div class="container"><div class="tb202-heading"><div><span class="kicker">TRA CỨU NHANH</span><h2>Wiki PUBG Mobile</h2></div><a href="/wiki">Tra cứu toàn bộ →</a></div><div class="tb202-wiki-grid"><a href="/wiki#catalog"><span>🎯</span><b>Vũ khí</b><small>Đạn, chế độ bắn</small></a><a href="/wiki#catalog"><span>⚙️</span><b>Phụ kiện</b><small>Tương thích trang bị</small></a><a href="/wiki#catalog"><span>🚙</span><b>Phương tiện</b><small>Xe và vai trò</small></a><a href="/wiki#catalog"><span>🗺️</span><b>Bản đồ</b><small>Khu vực, chiến thuật</small></a></div><p class="tb202-note">Thông số Wiki mang tính tham khảo; mục chưa xác minh không được tự điền giá trị.</p></div></section>
 <section class="tb202-section tb202-videos" id="tbFeaturedVideos"><div class="container"><div class="tb202-heading"><div><span class="kicker">VIDEO</span><h2>Video nổi bật</h2></div><a href="https://www.tiktok.com/@trainingbot.ai2" target="_blank" rel="noopener noreferrer">Mở TikTok →</a></div><p>Chỉ tải trình phát TikTok khi người xem chủ động bấm.</p><div class="tb202-video-stage"><div class="hero-visual hero-tiktok" aria-label="Video TikTok nổi bật"><div class="tb-home-video-poster tb-home-video-static"><img src="/pubg-game-avatar.webp?v=140" alt="Ảnh PUBG Mobile" loading="lazy"><div class="tb-home-video-overlay"><h3>Video của TrainingBot</h3><a href="https://www.tiktok.com/@trainingbot.ai2" target="_blank" rel="noopener noreferrer">Mở trên TikTok</a></div></div></div></div></div></section>
 <section class="tb202-section tb202-community"><div class="container"><span class="kicker">CỘNG ĐỒNG</span><h2>Cập nhật và chia sẻ cùng TrainingBot</h2><p>Discord, Telegram, TikTok và Facebook được tập hợp tại một nơi.</p><a class="button button-primary" href="/community">Tham gia cộng đồng</a> <a class="button button-secondary" href="/contact">Liên hệ</a></div></section>
