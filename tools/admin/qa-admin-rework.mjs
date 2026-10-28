@@ -15,7 +15,7 @@ let browser;
 try{
  await sleep(850);
  browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_BIN||"/usr/bin/google-chrome",args:["--no-sandbox"]});
- for(const width of [390,1440]){
+ for(const width of [360,390,768,1440]){
   const context=await browser.newContext({viewport:{width,height:900}});
   const page=await context.newPage();
   let writes=0;
