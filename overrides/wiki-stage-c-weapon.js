@@ -128,6 +128,7 @@ function watch(){
 }
 function init(){
  if(!document.getElementById("tbWikiGrid")||typeof DATA==="undefined")return false;
+ document.body.classList.add("tb-wiki-stage-c");
  const style=make("link");style.rel="stylesheet";style.href="/wiki-stage-c-weapon.css?v=1";
  document.head.append(style);
  fetch("/wiki-stage-c-evidence.json",{credentials:"omit",cache:"no-store"})
