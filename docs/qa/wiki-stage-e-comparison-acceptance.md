@@ -31,5 +31,19 @@ QA thiết kế trong `tools/wiki/stage-e-browser-qa.mjs` dùng Chromium 390/768
 - [ ] Bảng tương thích phụ kiện chính thức trên mọi phiên bản còn thiếu. Không được đánh dấu phần này là đã hoàn thiện dữ liệu.
 - [ ] Không merge Production khi chưa nghiệm thu và kiểm tra đầy đủ các giai đoạn phụ thuộc.
 
+## E.7–E.10 — nghiệm thu kỹ thuật bổ sung (29/10/2026)
+
+**E.7 — chức năng và xử lý liên kết:** Tăng cường Playwright xác nhận hộp thoại đóng bằng Escape mà vẫn giữ lựa chọn, và từ chối link chia sẻ chứa tên không tồn tại, vũ khí trùng hoặc quá 3 tên. Kiểm tra 2/3 lựa chọn, cap 3, v145 guard, đọc nguồn và restore tiếp tục PASS.
+
+**E.8 — responsive:** Chạy ở 390px / 768px / 1440px, đo thực tế bounding boxes của dialog, thanh chia sẻ và vùng bảng (tránh tràn ngang viewport). Trên màn hình 390px bảng có vùng cuộn ngang độc lập. Screenshot mẫu được xuất cho cả ba kích thước.
+
+**E.9 — hồi quy:** Gọi lại bộ browser QA B/C/D ở đủ ba viewport, kiểm tra SEO và D1 isolation. Không được gọi endpoint ghi dữ liệu Production.
+
+**E.10 — nghiệm thu:** [GitHub Actions run #40774648541](https://github.com/Gamevalentine/trainingbot-cloudflare/actions/runs/40774648541) **SUCCESS** trên HEAD `b9da2575c0f7f4b7f2d3b4eccb6c367b20b723ac`. Log xác nhận Wiki E/B/C/D 390/768/1440 PASS, P1 SEO PASS, P3.1 D1 Preview isolation PASS, artifact `trainingbot-wiki-stage-e-qa` đã lưu. Test cập nhật có sẵn tại `tools/wiki/stage-e-browser-qa.mjs`. Workflow đã bổ sung trigger PR synchronize, vẫn giữ push-to-preview.
+
+**Giới hạn nghiệm thu:** đây là QA trình duyệt tự động trong build tĩnh, chưa phải kiểm tra độc lập toàn bộ độ chính xác số liệu, giấy phép hình ảnh, tương thích phụ kiện theo phiên bản hiện hành hoặc nghiệm thu Production. PR #25 vẫn Draft; không tự merge.
+
+**Điều kiện để chuyển F:** Giai đoạn E đạt nghiệm thu kỹ thuật tính năng/CI; những thiếu sót dữ liệu C/D/E phải chuyển sang backlog xác minh riêng, không ngầm coi đã giải quyết.
+
 ## Tiếp theo
 Giai đoạn F — hướng dẫn thực chiến có nguồn, sau đó G — Admin Wiki, H — SEO/hiệu năng, I — nghiệm thu phát hành. Đồng thời tiếp tục tồn đọng C/D về số liệu, ảnh và quyền sử dụng; không giấu phần chưa hoàn thành.
