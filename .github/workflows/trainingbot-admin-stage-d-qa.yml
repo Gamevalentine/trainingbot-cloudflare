@@ -26,3 +26,22 @@ jobs:
       - name: Isolated backend integration (A and C)
         run: |
           node tools/admin/adm06-draft-handler-qa.mjs
+
+      - name: Install browser test harness
+        run: npm install --no-save --no-package-lock playwright
+      - name: Regression Stage A — real handlers with isolated D1 and login
+        run: |
+          node tools/admin/adm01-state-qa.mjs
+          node tools/admin/adm01-real-handler-integration.mjs
+      - name: Regression Stage C — content and editor
+        run: node tools/admin/adm04-06-browser-qa.mjs
+      - name: Stage D — secondary panels and full 13-route browser QA
+        run: node tools/admin/adm07-09-browser-qa.mjs
+      - name: Upload synthetic Admin acceptance screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-admin-stage-d-mock-screenshots
+          path: admin-qa-screenshots/*.png
+          if-no-files-found: ignore
+          retention-days: 7
