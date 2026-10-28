@@ -78,17 +78,20 @@ async function viewportCheck(width){
   if(await menuToggle.isVisible())await menuToggle.click();
   await page.locator('#sidebar .nav-item[data-view="content"]').click();
   await page.waitForFunction(()=>document.querySelector('[data-view-panel="content"]')?.classList.contains("active"),undefined,{timeout:6000});
+  await page.waitForFunction(()=>document.getElementById("pageEyebrow")?.textContent==="NỘI DUNG",undefined,{timeout:5000});
   assert.equal(await page.locator("#pageEyebrow").textContent(),"NỘI DUNG");
   assert.equal(await page.locator('#sidebar .nav-item[data-view="content"]').getAttribute("aria-current"),"page");
 
   // Preserve original Studio route with functional edit actions.
   await page.locator('#sidebar .nav-item[data-view="studio"]').evaluate(node=>node.click());
   await page.waitForFunction(()=>document.querySelector('[data-view-panel="studio"]')?.classList.contains("active"),undefined,{timeout:5000});
+  await page.waitForFunction(()=>document.getElementById("pageEyebrow")?.textContent==="NỘI DUNG",undefined,{timeout:5000});
   assert.equal(await page.locator("#pageEyebrow").textContent(),"NỘI DUNG");
 
   // Legacy Visitor Tracking custom click handler must survive DOM moving.
   await page.locator("#tbVisitorNav").evaluate(node=>node.click());
   await page.waitForFunction(()=>document.querySelector('[data-view-panel="visitor-tracking"]')?.classList.contains("active"),undefined,{timeout:5000});
+  await page.waitForFunction(()=>document.getElementById("pageEyebrow")?.textContent==="THỐNG KÊ",undefined,{timeout:5000});
   assert.equal(await page.locator("#pageEyebrow").textContent(),"THỐNG KÊ");
   assert.equal(new URL(page.url()).hash,"#visitor-tracking");
 
@@ -102,6 +105,7 @@ async function viewportCheck(width){
   await page.locator('#sidebar .nav-item[data-view="users"]').evaluate(el=>el.focus());
   await page.keyboard.press("Enter");
   await page.waitForFunction(()=>document.querySelector('[data-view-panel="users"]')?.classList.contains("active"),undefined,{timeout:7000});
+  await page.waitForFunction(()=>document.getElementById("pageEyebrow")?.textContent==="CỘNG ĐỒNG",undefined,{timeout:5000});
   assert.equal(await page.locator("#pageEyebrow").textContent(),"CỘNG ĐỒNG");
 
   // The accessible skip control moves focus without corrupting route hash.
