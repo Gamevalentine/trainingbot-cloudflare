@@ -22,3 +22,14 @@ const functions=functionHints.map(name=>{
 });
 console.log("ADM-07 PANELS "+JSON.stringify(["media","users","inbox","analytics","security","system"].map(panel),null,2));
 console.log("ADM-07 FUNCTIONS "+JSON.stringify(functions,null,2));
+
+if(process.argv.includes("--details")){
+ const names=["loadUsers","loadInbox","renderAnalytics","renderInbox","renderUsers","runHealthCheck","healthOne","toggleUserStatus","revokeUserSessions","clearInbox","removeMediaIndex"];
+ const summaries=names.map(name=>{
+  const pattern=new RegExp("(?:async )?function "+name+"\\s*\\(","g");
+  const result=pattern.exec(raw),i=result?.index;
+  return {name,exists:i!==undefined,source:i===undefined?"":raw.slice(i,i+name.length>12?i+2600:i+1800)
+    .replace(/Bearer\s+[^\s"']+/gi,"Bearer [REDACTED]")};
+ });
+ console.log("ADM-07 DETAILED LEGACY ROUTINES "+JSON.stringify(summaries,null,2));
+}
