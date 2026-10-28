@@ -18,7 +18,7 @@ Date: 2026-10-28. Scope: private development branch `aion-trainingbot-admin-rewo
 - ADM-02/03: six navigation groups with existing view buttons retained for compatibility; Studio remains accessible from editing context but is no longer a standalone sidebar entry. Readable progressive enhancement, not base64 patching.
 - ADM-04 (scoped): hide promotional dashboard hero and duplicate shortcut grid; explain limitations of per-service health checks rather than showing an unqualified 100 score; keep existing live data binding.
 - ADM-05 (scoped): visually separate Beta into its own view/list, with form initially collapsed; moving the same DOM node preserves original Beta API listeners and editor logic.
-- ADM-08: mock-only local browser UI smoke test for 390px/1440px; no real login or D1. Verify GitHub Actions before considering these items accepted.
+- ADM-08: mock-only local browser UI smoke test for 360px/390px/768px/1440px; no real login or D1. Verify GitHub Actions before considering these items accepted.
 
 ## Pending / blockers before any Production release
 - Proper article list/search/filter, draft/create/publish action fidelity and unsaved-form protection (ADM-05/06).
