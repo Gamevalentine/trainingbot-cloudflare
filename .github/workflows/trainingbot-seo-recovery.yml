@@ -1,0 +1,63 @@
+name: TrainingBot — SEO recovery technical QA
+on:
+  push:
+    branches:
+      - aion-trainingbot-seo-recovery-20261029
+  pull_request:
+    branches:
+      - aion-trainingbot-wiki-stage-i-20261029
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions:
+  contents: read
+jobs:
+  seo-recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build SEO Preview without Production credentials
+        env:
+          TRAININGBOT_LOCAL_I_QA: "1"
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          npm run build
+          node --check functions/_middleware.js
+          node --check functions/sitemap-posts.xml.js
+          node --check tools/seo/seo-recovery-qa.mjs
+      - name: Verify brand identity, sitemap, canonical and Preview robots
+        run: |
+          node tools/seo/seo-recovery-qa.mjs
+          node tools/qa/p1-seo.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
+          node tools/wiki/stage-i-release-audit.mjs
+          node tools/wiki/stage-h-link-audit.mjs
+      - name: Browser regression of SEO Wiki and Admin
+        run: |
+          npm install --no-save --no-package-lock playwright
+          node tools/wiki/stage-h-browser-qa.mjs
+          node tools/wiki/stage-g-browser-qa.mjs
+      - name: Guard ordinary Production build exclusions
+        env:
+          CF_PAGES_BRANCH: main
+          TRAININGBOT_LOCAL_G_QA: ""
+          TRAININGBOT_LOCAL_H_QA: ""
+          TRAININGBOT_LOCAL_I_QA: ""
+        run: |
+          npm run build
+          ! grep -q admin-wiki-stage-g.js public/admin.html
+          ! grep -q wiki-stage-h-perf.js public/wiki.html
+          test ! -f public/admin-wiki-stage-g.js
+          test ! -f public/wiki-stage-h-perf.js
+      - name: Save SEO audit and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-seo-recovery-qa
+          path: |
+            seo-recovery-artifacts/
+            wiki-stage-i-artifacts/
+            wiki-stage-h-artifacts/
+            wiki-stage-g-screenshots/
+          retention-days: 14
+          if-no-files-found: ignore
