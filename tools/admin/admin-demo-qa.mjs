@@ -73,6 +73,14 @@ async function test(width){
   const p=await page.evaluate(()=>window.__TRAININGBOT_DEMO__.getPosts()[0]);
   assert.equal(p.status,"draft");
   assert.equal(p.title,"Bài Demo vừa lưu");
+  // Publish the same fake draft through the existing Rich Editor, not a new Demo form.
+  await page.waitForFunction(id=>!!document.querySelector('button[data-edit-post="'+id+'"]'),p.id,{timeout:7000});
+  await click('button[data-edit-post="'+p.id+'"]');
+  await page.waitForFunction(()=>document.getElementById("tbRichPostModal")?.classList.contains("open"),undefined,{timeout:8000});
+  await click("#tbRichSave");
+  await page.waitForFunction(id=>window.__TRAININGBOT_DEMO__.getPosts().find(x=>x.id===id)?.status==="published",p.id,{timeout:9000});
+  assert((await page.evaluate(()=>window.__TRAININGBOT_DEMO__.getWrites())).some(x=>x.scope==="posts"&&x.method==="PATCH"),"Fake publication was not registered");
+  await page.evaluate(()=>{document.querySelector("#tbRichPostModal [data-rich-close]")?.click();});
   await click('#sidebar .nav-item[data-view="beta"]');
   await page.waitForFunction(()=>document.querySelectorAll("#tbBetaList .tb-beta-row").length===2,undefined,{timeout:8500});
   await click("#tbCBetaEditor summary");
