@@ -14,14 +14,14 @@ for(const name of ["wiki-stage-c-weapon.js","wiki-stage-c-weapon.css","wiki-stag
 assert(!fs.readFileSync("public/admin.html","utf8").includes("wiki-stage-c"));
 const e=JSON.parse(fs.readFileSync("public/wiki-stage-c-evidence.json","utf8"));
 assert.equal(e.schemaVersion,"wiki-c1");
-assert.equal(Object.keys(e.weapons).length,6);
+assert.equal(Object.keys(e.weapons).length,11);
 for(const [name,record] of Object.entries(e.weapons)){
  assert(name&&record.history.length>0);
  for(const item of record.history){
   const src=e.sources[item.sourceId];
-  assert(src&&src.url.startsWith("https://www.pubgmobile.com/"));
+  assert(src&&/^https:\/\/(?:www\.pubgmobile\.com|pubgm\.vnggames\.com)\//.test(src.url));
   assert.equal(src.isCurrent,false,"Never claim v2.4 is current");
-  assert(src.version==="2.4"&&src.checkedAt&&src.publishedAt);
+  assert(["2.4","4.6"].includes(src.version)&&src.checkedAt&&src.publishedAt);
   for(const fact of item.facts)assert(fact.label&&fact.value!==undefined&&fact.unit!==undefined);
  }
 }
@@ -87,11 +87,37 @@ try{
    });
    assert(box.left>=-3&&box.right<=width+3,"C evidence panel horizontal overflow "+JSON.stringify(box));
    if(width===1440){
+    // The same release-linked data must resolve for new version 4.6.
+    await page.locator(".tb-v145-close").click();
+    await click("ACE32");
+    await page.waitForFunction(()=>document.querySelector('.tb-v145.open .tb-c-sheet')?.dataset.tbCName==="ACE32",undefined,{timeout:9000});
+    const ace=await page.locator(".tb-v145.open .tb-c-release").innerText();
+    assert(ace.includes("47 điểm")&&ace.includes("4.6"),"ACE32 4.6 official evidence missing "+ace);
+    const ledger=await page.evaluate(()=>{
+      const data=typeof DATA!=="undefined"?DATA.weapons:[];
+      return data.map(row=>({
+        name:row[0],kind:row[1],ammo:row[2],fireMode:row[3],
+        claimsVerifiedCurrent:false,officialHistory:[],
+        imageState:"not_licensed_or_content_verified",attachmentCompatibility:"not_verified"
+      }));
+    });
+    assert.equal(ledger.length,61);
+    for(const item of ledger){
+      item.officialHistory=e.weapons[item.name]?.history.map(x=>({sourceId:x.sourceId,version:e.sources[x.sourceId].version}))||[];
+    }
+    fs.mkdirSync("wiki-stage-c-screenshots",{recursive:true});
+    fs.writeFileSync("wiki-stage-c-screenshots/source-ledger.json",JSON.stringify({
+      createdAt:"2026-10-29",records:ledger,counts:{
+        weapons:ledger.length,withOfficialHistoricalSource:ledger.filter(x=>x.officialHistory.length).length,
+        noOfficialHistory:ledger.filter(x=>!x.officialHistory.length).length,
+        currentStatsIndividuallyVerified:0,imagesRightsVerified:0,attachmentMatricesVerified:0
+      },note:"No 61-weapon complete official verification is claimed; only some version-specific release notes have evidence."
+    },null,2));
     for(const name of ["FAMAS","UZI","UMP45","PP-19 Bizon","Honey Badger","AKM"]){
      await page.locator(".tb-v145-close").click();
      await click(name);
      await page.waitForFunction(n=>document.querySelector('.tb-v145.open .tb-c-sheet')?.dataset.tbCName===n,name,{timeout:9000});
-     assert.equal(await page.locator(".tb-v145.open .tb-c-source").count(),name==="AKM"?0:1,"Incorrect evidence for "+name);
+     assert.equal(await page.locator(".tb-v145.open .tb-c-source").count(),name==="AKM"?1:name==="Honey Badger"?2:1,"Incorrect evidence for "+name);
     }
    }
    assert.deepEqual(writes,[],"Unexpected API writes");
