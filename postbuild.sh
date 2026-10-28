@@ -157,3 +157,23 @@ if [[ "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-admin-six-groups-20261029" || 
 else
   rm -f public/admin-demo-runtime.js public/admin-demo.html
 fi
+
+
+# Wiki V2 Stage B: additional public presentation only, after existing v149
+# data patches and preserved weapon/vehicle/map detail handlers.
+test -f public/wiki.html
+test -f public/wiki-stage-b-v2.css
+test -f public/wiki-stage-b-v2.js
+node --check public/wiki-stage-b-v2.js
+node <<'NODE'
+const fs=require("node:fs");
+const file="public/wiki.html";
+let html=fs.readFileSync(file,"utf8");
+if(!html.includes('wiki_audit_v149.js'))throw Error("Wiki B requires existing audited runtime");
+if(html.includes("wiki-stage-b-v2.js")||html.includes("wiki-stage-b-v2.css"))throw Error("Wiki B duplicate");
+html=html.replace("</head>",'<link rel="stylesheet" href="/wiki-stage-b-v2.css?v=1">\n</head>');
+html=html.replace("</body>",'<script defer src="/wiki-stage-b-v2.js?v=1"></script>\n</body>');
+fs.writeFileSync(file,html);
+NODE
+grep -q wiki-stage-b-v2.css public/wiki.html
+grep -q wiki-stage-b-v2.js public/wiki.html
