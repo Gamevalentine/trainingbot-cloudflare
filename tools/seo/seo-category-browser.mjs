@@ -13,7 +13,7 @@ try{
  for(const width of [390,768,1440]){
   const context=await browser.newContext({viewport:{width,height:930},reducedMotion:"reduce"});
   await context.route("**/*",route=>{
-   const u=new URL(route.request().url);
+   const u=new URL(route.request().url());
    if(u.origin===root)return route.continue();
    return route.abort();
   });
