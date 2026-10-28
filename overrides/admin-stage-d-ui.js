@@ -47,6 +47,13 @@ note("inbox","Hộp thư:","Được nạp qua Worker quản trị cũ. Nút Tr�
 note("analytics","Phạm vi thống kê:","Số liệu tổng hợp lấy từ các API Admin; khi không tải được sẽ hiển thị chưa có dữ liệu, không quy đổi thành 0. Chỉ số Media là danh mục lưu trên trình duyệt này.");
 note("security","Phiên quản trị:","Quyền truy cập vẫn dựa vào cơ chế xác thực hiện có. Màn này không kiểm tra thay cho bảo mật của toàn hệ thống và không hiển thị mã truy cập.");
 note("system","Kiểm tra giới hạn:","Nút Chạy kiểm tra hiện chỉ kiểm tra ba API: Người dùng, Hộp thư và Studio. Trạng thái thành công không có nghĩa mọi dịch vụ, database, lưu trữ và tác vụ đều hoạt động.");
+// Make legacy Users table scroll *inside its panel* on narrow viewports.
+const usersBody=$("usersTable"),usersTable=usersBody?.closest("table");
+if(usersTable&&!usersTable.parentElement.classList.contains("tb-d-table-scroll")){
+ const wrap=document.createElement("div");wrap.className="tb-d-table-scroll";
+ usersTable.insertAdjacentElement("beforebegin",wrap);wrap.append(usersTable);
+ wrap.style.overflowX="auto";wrap.style.maxWidth="100%";
+}
 // Keep legacy refresh handlers; add a clear, accessible refresh action to the
 // summary page using only existing buttons, never a new backend.
 const analytics=panels.analytics;
