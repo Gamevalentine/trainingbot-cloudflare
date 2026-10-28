@@ -1,0 +1,28 @@
+name: TrainingBot Admin Stage D — integration and acceptance
+on:
+  push:
+    branches:
+      - aion-trainingbot-admin-stage-d-20261028
+permissions:
+  contents: read
+jobs:
+  stage-d:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - name: Stage D source inventory
+        run: node tools/admin/adm07-legacy-inventory.mjs
+      - name: Build protected Admin Preview without deploying
+        run: npm run build
+      - name: Verify source safety
+        run: |
+          test ! -f .github/workflows/trainingbot-d1-encrypted-backup.yml
+          test ! -f scripts/backup_d1_to_github.py
+          node --check public/admin-stage-b-ui.js
+          node --check public/admin-stage-c-ui.js
+          node --check public/admin-image-manager-v1.js
+          node --check public/admin_visitor_tracking_v177.js
+      - name: Isolated backend integration (A and C)
+        run: |
+          node tools/admin/adm06-draft-handler-qa.mjs
