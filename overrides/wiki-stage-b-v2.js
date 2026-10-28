@@ -81,9 +81,19 @@ let query="",active="weapons",sortKey="default",queued=false,paused=false;
 function getActive(){
  return tabs.querySelector(".tb-wiki-tab.active")?.dataset.tab||"weapons";
 }
-function rowFor(kind,displayTitle){
+function rowFor(kind,displayTitle,card){
  const title=aliases[displayTitle]||displayTitle;
- return DATA[kind]?.find(row=>row[0]===title)||DATA[kind]?.find(row=>normalize(row[0])===normalize(title))||null;
+ const direct=DATA[kind]?.find(row=>row[0]===title)||DATA[kind]?.find(row=>normalize(row[0])===normalize(title));
+ if(direct)return direct;
+ // v136 localizes many attachment/vehicle display names. Preserve the
+ // original data-index -> currentRows contract instead of re-translating or
+ // inventing metadata. data-index is calculated BEFORE DOM sorting.
+ const index=Number(card?.dataset.index);
+ if(!Number.isInteger(index)||index<0)return null;
+ const currentFilter=filters.querySelector(".tb-wiki-filter.active")?.dataset.filter||"Tất cả";
+ const originalRows=currentFilter==="Tất cả"?DATA[kind]:
+  DATA[kind].filter(row=>(kind==="maps"?row[2]:row[1])===currentFilter);
+ return originalRows[index]||null;
 }
 function chips(kind,row){
  if(!row)return [];
@@ -95,7 +105,7 @@ function chips(kind,row){
 function addCardFacts(card,kind){
  const title=card.querySelector("h3")?.textContent.trim();
  if(!title)return;
- const row=rowFor(kind,title);
+ const row=rowFor(kind,title,card);
  if(!row)return;
  card.setAttribute("role","button");
  card.setAttribute("aria-label","Xem chi tiết "+title);
@@ -136,7 +146,7 @@ function sync(){
  cards.forEach((card,index)=>{if(!card.dataset.tbBOrigin)card.dataset.tbBOrigin=String(index+1);addCardFacts(card,active);});
  if(cards.length>1&&sortKey!=="default"){
   const normalized=card=>normalize(card.querySelector("h3")?.textContent);
-  const category=card=>normalize(rowFor(active,card.querySelector("h3")?.textContent.trim())?.[1]);
+  const category=card=>normalize(rowFor(active,card.querySelector("h3")?.textContent.trim(),card)?.[1]);
   const sorted=[...cards].sort((a,b)=>{
    if(sortKey==="name-asc")return normalized(a).localeCompare(normalized(b),"vi");
    if(sortKey==="name-desc")return normalized(b).localeCompare(normalized(a),"vi");
@@ -147,7 +157,7 @@ function sync(){
  }
  let visible=0;
  for(const card of grid.querySelectorAll(".tb-wiki-card")){
-  const row=rowFor(active,card.querySelector("h3")?.textContent.trim());
+  const row=rowFor(active,card.querySelector("h3")?.textContent.trim(),card);
   const haystack=[...row||[],card.querySelector("h3")?.textContent,card.querySelector("p")?.textContent,
    ...[...(card.querySelectorAll(".tb-b-card-fact"))].map(x=>x.textContent)].join(" ");
   const match=!query||normalize(haystack).includes(normalize(query));
