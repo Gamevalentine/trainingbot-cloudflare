@@ -151,7 +151,10 @@ async function viewportCheck(width){
    await direct.waitForSelector("#loginForm",{state:"visible",timeout:15000});
    await direct.locator("#adminToken").fill("LOCAL-ADMIN-B-STAGE-TEST");
    await direct.locator('#loginForm button[type="submit"]').click();
-   await direct.waitForFunction(()=>document.querySelector('[data-view-panel="posts"]')?.classList.contains("active"),undefined,{timeout:12000});
+   await direct.waitForFunction(()=>document.querySelector('[data-view-panel="posts"]')?.classList.contains("active"),undefined,{timeout:6500}).catch(async error=>{
+    const detail=await direct.evaluate(()=>({hash:location.hash,adminVisible:!document.getElementById("adminApp")?.classList.contains("hidden"),active:[...document.querySelectorAll(".view.active")].map(x=>x.dataset.viewPanel),postsPanel:!!document.querySelector('[data-view-panel="posts"]'),postsNav:!!document.querySelector('[data-view="posts"]'),title:document.getElementById("pageTitle")?.textContent,stageB:document.body.classList.contains("tb-admin-stage-b"),navReady:document.querySelector("#sidebar .side-nav")?.dataset.stageB,loginNotice:document.getElementById("loginNotice")?.textContent}));
+    throw new Error("ADM-B deep-link diagnostics: "+JSON.stringify(detail)+"; "+String(error));
+   });
    await direct.waitForFunction(()=>document.getElementById("pageTitle")?.textContent==="Bài viết",undefined,{timeout:7000});
    assert.equal(await direct.locator("#pageEyebrow").textContent(),"NỘI DUNG");
    await direct.close();
