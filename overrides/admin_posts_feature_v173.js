@@ -22,10 +22,11 @@
     document.querySelectorAll("button[data-delete-post]").forEach(del=>{
       const id=del.dataset.deletePost;if(!id)return;const actions=del.closest(".tb-post-row-actions");if(!actions)return;
       let button=actions.querySelector(`[data-feature-post="${CSS.escape(id)}"]`);
-      const active=!!posts.get(id)?.featured_at;
+      const post=posts.get(id);const draft=post?.status==="draft";
+      const active=!draft&&!!post?.featured_at;
       if(!button){button=document.createElement("button");button.type="button";button.className="tb-post-feature";button.dataset.featurePost=id;actions.insertBefore(button,del);}
-      const label=active?"Gỡ khỏi Tin tức":"Đẩy lên Tin tức";
-      button.classList.toggle("active",active);if(button.textContent!==label)button.textContent=label;button.dataset.featured=active?"1":"0";button.disabled=false;
+      const label=draft?"Nháp không thể ghim":active?"Gỡ khỏi Tin tức":"Đẩy lên Tin tức";
+      button.classList.toggle("active",active);if(button.textContent!==label)button.textContent=label;button.dataset.featured=active?"1":"0";button.disabled=draft;
     });
   }
 
