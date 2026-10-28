@@ -1,0 +1,84 @@
+name: TrainingBot Admin A-E — Release Candidate Safety Gate
+on:
+  push:
+    branches:
+      - aion-trainingbot-admin-release-candidate-20261028
+permissions:
+  contents: read
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify source and build scripts
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          test ! -f .github/workflows/trainingbot-d1-encrypted-backup.yml
+          test ! -f scripts/backup_d1_to_github.py
+          test ! -e overrides/admin-demo-runtime.js
+          test ! -e tools/admin/build-demo.mjs
+          test ! -e tools/admin/admin-demo-qa.mjs
+
+      - name: Build candidate locally — NO DEPLOY
+        run: npm run build
+
+      - name: Verify canonical Admin and exclude Demo
+        run: |
+          test -f public/admin.html
+          test ! -e public/admin
+          test ! -e public/admin-demo.html
+          test ! -e public/admin-demo-runtime.js
+          ! grep -q admin-demo-runtime.js public/admin.html
+          for f in public/admin-stage-b-ui.js public/admin-stage-c-ui.js public/admin-stage-d-ui.js; do
+            node --check "$f"
+          done
+          node tools/admin/adm07-legacy-inventory.mjs
+          node tools/admin/adm10-release-preflight.mjs
+          if node tools/admin/adm10-release-preflight.mjs --require-production-ready; then
+            echo "ERROR: Release gate declared GO without staging/rollback signoff" >&2
+            exit 1
+          fi
+
+      - name: No real backend writes — Pages Functions against local fake DB and R2
+        run: |
+          node tools/admin/adm06-draft-handler-qa.mjs
+          node tools/admin/adm07-real-secondary-handler-qa.mjs
+          node tools/admin/adm01-real-handler-integration.mjs
+          node tools/qa/p0-runtime.mjs
+
+      - name: Browser QA installation
+        run: npm install --no-save --no-package-lock playwright
+
+      - name: Admin A-D regression and navigation
+        run: |
+          node tools/admin/adm01-state-qa.mjs
+          node tools/admin/adm02-03-ui-qa.mjs
+          node tools/admin/adm04-06-browser-qa.mjs
+          node tools/admin/adm07-09-browser-qa.mjs
+
+      - name: Public website responsive, links and article safety regression
+        run: |
+          node tools/qa/p0-responsive.mjs
+          node tools/qa/p1-content.mjs
+          node tools/qa/p1-seo.mjs
+          node tools/qa/p2-search.mjs
+          node tools/qa/p3-2-5-regression.mjs
+
+      - name: Preview middleware isolation — read-only public, Admin and writes blocked
+        run: |
+          node tools/qa/p3-1-d1-preview-isolation.mjs
+          node --check functions/_middleware.js
+          node --check 'functions/api/[[path]].js'
+
+      - name: Store safe QA and release gate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-admin-release-candidate-synthetic-evidence
+          path: |
+            admin-qa-artifacts/adm10-preflight.json
+            admin-qa-screenshots/*.png
+          if-no-files-found: ignore
+          retention-days: 7
