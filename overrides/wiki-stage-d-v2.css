@@ -1,0 +1,80 @@
+/* TrainingBot Wiki D: readable source-linked catalog companions.
+   Keep original B navigation/card design; no global layout modifications. */
+body.tb-wiki-stage-d .tb-d-summary{
+ display:grid;grid-template-columns:minmax(0,1fr) auto;gap:11px 20px;
+ align-items:center;margin:0 0 20px;border:1px solid #34536c;
+ border-radius:15px;padding:16px 20px;
+ background:linear-gradient(120deg,#12253a,#111b2c);
+ color:#f0f7ff;font-family:Inter,"Segoe UI",Arial,sans-serif;
+}
+body.tb-wiki-stage-d .tb-d-summary[hidden]{display:none}
+body.tb-wiki-stage-d .tb-d-summary-copy strong{
+ font-size:14px;line-height:1.4;font-weight:750;
+}
+body.tb-wiki-stage-d .tb-d-summary-copy p{
+ margin:5px 0 0;font-size:12px;color:#a9bfd4;line-height:1.6;
+}
+body.tb-wiki-stage-d .tb-d-status{
+ padding:6px 11px;border-radius:999px;
+ color:#bee9d9;background:#163b3f;border:1px solid #316c65;
+ font-size:10px;font-weight:750;white-space:nowrap;
+}
+body.tb-wiki-stage-d .tb-d-gap{
+ grid-column:1/-1;border:1px solid #4a4738;background:#292318;
+ border-radius:11px;padding:12px 14px;
+}
+body.tb-wiki-stage-d .tb-d-gap strong{color:#eed5a2;font-size:12px}
+body.tb-wiki-stage-d .tb-d-gap p{
+ margin:5px 0 7px;color:#dfc9a8;font-size:12px;line-height:1.6;
+}
+body.tb-wiki-stage-d .tb-d-panel{
+ margin-top:18px;padding:17px 19px;border:1px solid #34576c;
+ border-radius:14px;background:linear-gradient(135deg,#14233b,#0d182a);
+ color:#ddecfb;font-family:Inter,"Segoe UI",Arial,sans-serif;
+}
+body.tb-wiki-stage-d .tb-d-panel h4{
+ font-size:15px;font-weight:780;line-height:1.45;margin:0 0 8px;
+}
+body.tb-wiki-stage-d .tb-d-unverified,
+body.tb-wiki-stage-d .tb-d-checklist{
+ font-size:12px;color:#abc0d8;line-height:1.68;
+}
+body.tb-wiki-stage-d .tb-d-unverified{margin:0}
+body.tb-wiki-stage-d .tb-d-checklist{
+ padding-left:18px;margin:9px 0 13px;
+}
+body.tb-wiki-stage-d .tb-d-release{
+ display:grid;gap:7px;border:1px solid #33615e;background:#152f34;
+ padding:12px 13px;border-radius:10px;
+}
+body.tb-wiki-stage-d .tb-d-release b{
+ color:#a1e8d2;font-size:11px;letter-spacing:.04em;
+}
+body.tb-wiki-stage-d .tb-d-release p{
+ font-size:12px;line-height:1.6;color:#d0dfe3;margin:0;
+}
+body.tb-wiki-stage-d .tb-d-source{
+ display:inline-block;color:#8fdef6;font-size:12px;font-weight:700;
+ text-decoration:underline;text-underline-offset:3px;width:fit-content;
+}
+body.tb-wiki-stage-d .tb-d-source:hover{color:#d3f5ff}
+body.tb-wiki-stage-d .tb-d-links{margin-top:14px}
+body.tb-wiki-stage-d .tb-d-switch{
+ padding:10px 14px;border:1px solid #386b82;border-radius:9px;
+ background:#1b3951;color:#d9f5ff;font:700 12px/1.4 Inter,"Segoe UI",sans-serif;
+ cursor:pointer;
+}
+body.tb-wiki-stage-d .tb-d-switch:hover{background:#28506b}
+body.tb-wiki-stage-d :is(.tb-d-switch,.tb-d-source):focus-visible{
+ outline:2px solid #8be5dc;outline-offset:3px;
+}
+@media(max-width:620px){
+ body.tb-wiki-stage-d .tb-d-summary{
+  padding:13px 14px;grid-template-columns:1fr;
+ }
+ body.tb-wiki-stage-d .tb-d-status{width:fit-content}
+ body.tb-wiki-stage-d .tb-d-panel{padding:14px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.tb-wiki-stage-d :is(.tb-d-switch,.tb-d-source){transition:none!important}
+}
