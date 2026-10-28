@@ -1,7 +1,8 @@
 /* TrainingBot Wiki V2 — evidence-first firearm profile C1–C6.
    Only the existing .tb-v145 weapon overlay. No layout changes elsewhere. */
 body.tb-wiki-stage-c .tb-v145{font-family:Inter,"Segoe UI",Arial,sans-serif}
-body.tb-wiki-stage-c .tb-v145 :is(.tb-v145-stats,.tb-v145-score-title,.tb-v145-score-note,.tb-v145-unknown){
+body.tb-wiki-stage-c .tb-v145 :is(.tb-v145-stats,.tb-v145-score-title,.tb-v145-score-note),
+body.tb-wiki-stage-c .tb-v145 .tb-v145-left > .tb-v145-unknown{
  display:none!important;
 }
 /* Legacy v144 uses generic score arrays for unrelated guns. They are
