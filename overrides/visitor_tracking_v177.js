@@ -4,8 +4,9 @@
 
   if(/^\/admin(?:\/|\.html|$)/i.test(location.pathname))return;
 
-  const VISITOR_KEY="tb-visitor-id-v1";
-  const SESSION_KEY="tb-session-id-v1";
+  const VISITOR_KEY="tb-visitor-id-v1"; // Keep existing anonymous IDs.
+  const VISIT_KEY="tb-shared-visit-v2";
+  const INACTIVITY_MS=30*60*1000;
 
   const makeId=()=>{
     try{
@@ -30,14 +31,32 @@
   };
 
   const visitorId=readOrCreate(localStorage,VISITOR_KEY);
-  const sessionId=readOrCreate(sessionStorage,SESSION_KEY);
+  function currentVisitId(){
+    const now=Date.now();
+    try{
+      let state;
+      try{state=JSON.parse(localStorage.getItem(VISIT_KEY)||"null");}catch{state=null;}
+      if(!state||!/^[A-Za-z0-9_-]{8,80}$/.test(state.id||"")||
+         !Number.isFinite(state.last)||now-state.last>INACTIVITY_MS||now<state.last-60000){
+        state={id:makeId(),last:now};
+      }
+      state.last=now;
+      localStorage.setItem(VISIT_KEY,JSON.stringify(state));
+      // Read back: another tab might have updated the shared visit concurrently.
+      const latest=JSON.parse(localStorage.getItem(VISIT_KEY)||"null");
+      return latest?.id||state.id;
+    }catch{
+      // Storage-disabled browsers cannot be reliably deduplicated across tabs.
+      return readOrCreate(sessionStorage,"tb-session-id-fallback-v2");
+    }
+  }
 
   const currentPath=()=>location.pathname||"/";
 
   function send(type,extra={}){
     const payload={
       visitorId,
-      sessionId,
+      sessionId:currentVisitId(),
       type,
       path:currentPath(),
       referrer:document.referrer||"",
