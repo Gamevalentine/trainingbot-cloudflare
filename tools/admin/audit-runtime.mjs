@@ -56,3 +56,14 @@ if(process.argv.includes("--extract")){
   console.log("Decoded local-only copy: .admin-audit-runtime/admin.decoded.html");
 }
 
+
+if(process.argv.includes("--states")){
+ const names=["function refreshGlobalData","async function refreshGlobalData","function runHealthCheck","async function runHealthCheck","function loadUsers","async function loadUsers","function loadInbox","async function loadInbox","function navigate","kpiUsers","healthScore","healthRing"];
+ const out=names.map(name=>{
+  const i=decoded.indexOf(name);
+  if(i<0)return {name,found:false};
+  const value=decoded.slice(i,i+900).replace(/\s+/g," ").replace(/Bearer [^\s"'<>]+/g,"Bearer [REDACTED]");
+  return {name,found:true,snippet:value};
+ });
+ console.log("ADM-01 STATE ROUTINE MAP "+JSON.stringify(out,null,2));
+}
