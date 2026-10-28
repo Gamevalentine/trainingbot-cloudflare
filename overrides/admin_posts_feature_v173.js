@@ -43,6 +43,7 @@
 
   document.addEventListener("click",event=>{const button=event.target.closest("button[data-feature-post]");if(button)toggle(button);});
   style();
+  document.addEventListener("tb:posts-loaded",load);
   const observer=new MutationObserver(()=>decorate());observer.observe(document.documentElement,{childList:true,subtree:true});
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load,{once:true});else load();
 })();
