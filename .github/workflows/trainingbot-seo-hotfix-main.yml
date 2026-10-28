@@ -1,0 +1,44 @@
+name: TrainingBot — SEO standalone hotfix QA (main base)
+on:
+  push:
+    branches:
+      - aion-trainingbot-seo-hotfix-main-20261029
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions:
+  contents: read
+jobs:
+  seo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build real Production-shaped static site without secrets
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          npm run build
+          node --check tools/seo/seo-recovery-qa.mjs
+          node --check functions/_middleware.js
+          node --check functions/sitemap-posts.xml.js
+      - name: SEO brand, sitemap, preview index isolation and D1 write guards
+        run: |
+          node tools/seo/seo-recovery-qa.mjs
+          node tools/qa/p1-seo.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
+      - name: Prove no unfinished Wiki V2 modules were added
+        run: |
+          ! grep -q wiki-stage-f-guides.js public/wiki.html
+          ! grep -q wiki-stage-h-perf.js public/wiki.html
+          ! grep -q admin-wiki-stage-g.js public/admin.html
+          test ! -f public/admin-demo.html
+      - name: Save technical SEO evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-seo-hotfix-qa
+          path: seo-recovery-artifacts/
+          retention-days: 14
+          if-no-files-found: ignore
