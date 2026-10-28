@@ -14,7 +14,7 @@ jobs:
       - name: Build Admin Preview locally (no deployment by this job)
         run: npm run build
       - name: Inspect baseline state handling
-        run: node tools/admin/audit-runtime.mjs --states --dashboard
+        run: node tools/admin/audit-runtime.mjs --states --dashboard --auth
       - name: Check Admin Scripts
         run: |
           node --check public/admin_beta_versions_v175.js
