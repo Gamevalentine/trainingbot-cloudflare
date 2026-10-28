@@ -27,9 +27,10 @@ const schema={"@context":"https://schema.org","@type":"CollectionPage","name":ti
 inject+='<script id="tbWikiHJsonLd" type="application/ld+json">'+JSON.stringify(schema).replace(/</g,"\\u003c")+'</script>\n';
 // Prevent visible layout jumps while layered legacy Wiki rewrites the grid.
 // A visible loading label replaces the unstable main content; hard fallback avoids blank pages on errors.
+inject+='<script id="tbHJSFlag">document.documentElement.classList.add("tb-h-js")</script>\\n';
 inject+='<style id="tbHLayoutStability">'+
-'body:not(.tb-h-layout-ready):not(.tb-h-reveal-fallback) main{visibility:hidden}'+
-'body:not(.tb-h-layout-ready):not(.tb-h-reveal-fallback)::after{content:"Đang chuẩn bị Wiki…";position:fixed;top:96px;left:0;right:0;text-align:center;z-index:5;color:#c0d8ed;font:600 13px/1.4 system-ui;pointer-events:none}'+
+'html.tb-h-js body:not(.tb-h-layout-ready):not(.tb-h-reveal-fallback) main{visibility:hidden}'+
+'html.tb-h-js body:not(.tb-h-layout-ready):not(.tb-h-reveal-fallback)::after{content:"Đang chuẩn bị Wiki…";position:fixed;top:96px;left:0;right:0;text-align:center;z-index:5;color:#c0d8ed;font:600 13px/1.4 system-ui;pointer-events:none}'+
 '</style>\\n';
 inject+='<script id="tbHRevealFallback">setTimeout(function(){document.body?.classList.add("tb-h-reveal-fallback")},3200)</script>\\n';
 h=h.replace("</head>",inject+"</head>");
