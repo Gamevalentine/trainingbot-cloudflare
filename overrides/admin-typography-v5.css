@@ -1,0 +1,101 @@
+/* TrainingBot Admin V5 — Vietnamese typography consistency.
+ * Preserve approved V5 layout; correct mixed inherited/button/display fonts.
+ * System-first stack: no remote request, no downloadable font, full vi support.
+ */
+body.tb-admin-six-groups{
+  --tb5-ui-font:"Segoe UI","Noto Sans",Arial,sans-serif;
+  font-family:var(--tb5-ui-font)!important;
+  font-kerning:normal;
+  font-synthesis:weight;
+  text-rendering:optimizeLegibility;
+}
+body.tb-admin-six-groups #adminApp,
+body.tb-admin-six-groups #adminApp :is(button,input,select,textarea,option){
+  font-family:var(--tb5-ui-font)!important;
+  font-kerning:normal;
+  text-rendering:optimizeLegibility;
+}
+body.tb-admin-six-groups #sidebar .tb5-categories,
+body.tb-admin-six-groups #tb5GroupHome,
+body.tb-admin-six-groups #tb5Breadcrumb,
+body.tb-admin-six-groups #pageTitle,
+body.tb-admin-six-groups #pageEyebrow{
+  font-family:var(--tb5-ui-font)!important;
+}
+body.tb-admin-six-groups :is(
+  #tb5GroupHome .tb5-hub-kicker,
+  #tb5GroupHome .tb5-hub-head h2,
+  #tb5GroupHome .tb5-hub-head p,
+  #tb5GroupHome .tb6-count-number,
+  #tb5GroupHome .tb6-count-caption,
+  #tb5GroupHome .tb6-section-heading h3,
+  #tb5GroupHome .tb6-section-heading p,
+  #tb5GroupHome .tb5-function-card strong,
+  #tb5GroupHome .tb5-card-description,
+  #tb5GroupHome .tb6-card-footer,
+  #tb5GroupHome .tb6-card-feature-label,
+  #tb5Categories .tb5-category-label,
+  #tb5Breadcrumb .tb5-crumb-back,
+  #tb5Breadcrumb #tb5CrumbPage
+){
+  font-family:var(--tb5-ui-font)!important;
+  font-style:normal!important;
+}
+body.tb-admin-six-groups #pageTitle,
+body.tb-admin-six-groups #tb5GroupHome .tb5-hub-head h2{
+  font-weight:750!important;
+  letter-spacing:-.02em!important;
+  line-height:1.22!important;
+}
+body.tb-admin-six-groups #tb5GroupHome .tb5-function-card strong{
+  font-weight:700!important;
+  letter-spacing:0!important;
+  line-height:1.42!important;
+}
+body.tb-admin-six-groups #tb5Categories .tb5-category-label{
+  font-weight:650!important;
+  letter-spacing:0!important;
+  line-height:1.42!important;
+  text-transform:none!important;
+}
+body.tb-admin-six-groups #tb5GroupHome .tb6-section-heading h3{
+  font-weight:700!important;
+  letter-spacing:0!important;
+  line-height:1.42!important;
+}
+body.tb-admin-six-groups #tb5GroupHome .tb6-count-number{
+  font-weight:750!important;letter-spacing:-.02em!important;
+}
+body.tb-admin-six-groups #tb5GroupHome .tb5-hub-kicker,
+body.tb-admin-six-groups #tb5Categories .tb5-sidebar-label,
+body.tb-admin-six-groups #tb5GroupHome .tb6-card-feature-label{
+  font-weight:700!important;
+  letter-spacing:.065em!important;
+  line-height:1.5!important;
+}
+body.tb-admin-six-groups #tb5GroupHome :is(
+ .tb5-hub-head p,.tb5-card-description,.tb6-section-heading p,
+ .tb6-count-caption,.tb6-card-footer
+){
+  font-weight:400!important;
+  letter-spacing:0!important;
+  line-height:1.58!important;
+}
+body.tb-admin-six-groups #tb5GroupHome .tb6-card-footer{
+  font-weight:650!important;
+}
+body.tb-admin-six-groups #tb5GroupHome .tb6-card-feature-label{
+  font-size:10px!important;
+}
+body.tb-admin-six-groups :is(#tb5Categories button,#tb5GroupHome button,#tb5Breadcrumb button){
+  font-family:var(--tb5-ui-font)!important;
+  font-variant-ligatures:normal;
+}
+@media(max-width:760px){
+  body.tb-admin-six-groups #tb5GroupHome .tb5-hub-head h2{
+    line-height:1.25!important;
+  }
+  body.tb-admin-six-groups #tb5GroupHome .tb5-card-description{
+    font-size:12.5px!important;
+  }
+}
