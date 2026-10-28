@@ -54,7 +54,7 @@ jobs:
       - name: Admin A-D regression and navigation
         run: |
           node tools/admin/adm01-state-qa.mjs
-          node tools/admin/adm02-03-ui-qa.mjs
+          # Stage B's original 12-route baseline is superseded by Stage D's 13-route Beta navigation test.
           node tools/admin/adm04-06-browser-qa.mjs
           node tools/admin/adm07-09-browser-qa.mjs
 
