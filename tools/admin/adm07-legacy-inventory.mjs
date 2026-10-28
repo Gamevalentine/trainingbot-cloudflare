@@ -12,7 +12,7 @@ function panel(name){
  const sub=raw.slice(i,Math.min(end>=0?end:raw.length,i+11000));
  return {name,found:true,identifiers:[...new Set([...sub.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]))].slice(0,65),
   buttons:[...new Set([...sub.matchAll(/<button\b[^>]*>[\s\S]*?<\/button>/g)].map(m=>m[0].replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim().slice(0,80)))].slice(0,30),
-  apiPaths:[...new Set([...sub.matchAll(/\/api\/[a-zA-Z0-9?&=_./-]+/g)].map(m=>m[0]))].slice(0,20)};
+  apiPaths:[...new Set([...sub.matchAll(/\/api\/[a-zA-Z0-9?&=_.\/-]+/g)].map(m=>m[0]))].slice(0,20)};
 }
 const functionHints=["loadMedia","renderMedia","loadUsers","loadInbox","renderUsers","renderInbox","renderAnalytics","loadAnalytics","runHealthCheck","checkService","loadSecurity","loadSystem","refreshGlobalData"];
 const functions=functionHints.map(name=>{
