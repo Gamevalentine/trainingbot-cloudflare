@@ -61,6 +61,7 @@ function revealAfterMount(){
  }));
 }
 revealAfterMount();
+state.reconcile=prepare;
 state.capture=()=>({metrics:{...metrics},imagesPrepared:state.imagesPrepared,
  navigation:performance.getEntriesByType("navigation").map(e=>({domContentLoaded:Math.round(e.domContentLoadedEventEnd),loadEvent:Math.round(e.loadEventEnd),transferSize:e.transferSize})),
  resources:performance.getEntriesByType("resource").length});
