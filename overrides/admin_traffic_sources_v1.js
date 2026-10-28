@@ -30,7 +30,7 @@
       <div class="tb-traffic-filter">
         <label>Nguồn<select id="tbTrafficSource"><option value="all">Tất cả nguồn</option></select></label>
         <label>Quốc gia<select id="tbTrafficCountry"><option value="ALL">Tất cả quốc gia</option></select></label>
-        <label>Hành vi<select id="tbTrafficActivity"><option value="all">Tất cả</option><option value="single_page">Mã khách mới chỉ xem một trang</option></select></label>
+        <label>Hành vi<select id="tbTrafficActivity"><option value="all">Tất cả</option><option value="single_page">Mã khách chỉ xem một trang</option></select></label>
       </div>
       <div id="tbTrafficCount" class="tb-traffic-small"></div>
       <div class="tb-audience-scroll"><table class="tb-audience-table tb-traffic-table">
@@ -103,7 +103,7 @@
       sourceBox.innerHTML='<option value="all">Tất cả nguồn</option>'+[...opts].map(([key,value])=>`<option value="${escape(key)}">${escape(value)}</option>`).join("");
       sourceBox.value=sourceValue;
       const countryBox=el("tbTrafficCountry"),countryValue=state.country;
-      const countries=[...new Set((data.visits||[]).map(v=>v.country).filter(Boolean))];
+      const countries=[...new Set((data.countries||[]).map(v=>v.country).filter(Boolean))];
       // Keep current country selection even when absent from this page.
       if(countryValue!=="ALL"&&!countries.includes(countryValue))countries.push(countryValue);
       countryBox.innerHTML='<option value="ALL">Tất cả quốc gia</option>'+countries.map(code=>`<option value="${escape(code)}">${escape(region(code))}</option>`).join("");
