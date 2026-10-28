@@ -110,3 +110,26 @@ body.tb-wiki-stage-c .tb-v145 :is(a,button,summary):focus-visible{
 @media(prefers-reduced-motion:reduce){
  body.tb-wiki-stage-c .tb-v145 .tb-c-sheet *{animation:none!important;transition:none!important}
 }
+
+
+/* C profile must not inherit fixed/min-content widths from the v145 overlay. */
+body.tb-wiki-stage-c .tb-v145,
+body.tb-wiki-stage-c .tb-v145 .tb-v145-wrap{
+ box-sizing:border-box!important;max-width:100vw!important;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-v145-left,
+body.tb-wiki-stage-c .tb-v145 .tb-v145-right{
+ min-width:0!important;max-width:100%!important;overflow-wrap:break-word;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-sheet{
+ box-sizing:border-box!important;max-width:100%!important;width:100%!important;min-width:0!important;
+}
+body.tb-wiki-stage-c .tb-v145 .tb-c-source{
+ overflow-wrap:anywhere;word-break:break-word;
+}
+@media(max-width:980px){
+ body.tb-wiki-stage-c .tb-v145 .tb-v145-wrap{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+  width:100%!important;padding-left:16px!important;padding-right:16px!important;
+ }
+}
