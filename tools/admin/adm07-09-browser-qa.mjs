@@ -63,7 +63,18 @@ async function testViewport(width){
    await page.locator(target).evaluate(el=>el.click());
    await page.waitForFunction(n=>document.querySelector('.view[data-view-panel="'+n+'"]')?.classList.contains("active"),name,{timeout:7500});
   }
-  for(const name of ["media","users","inbox","analytics","security","system"]){
+  // Stage B regression: navigation history and keyboard still restore panels
+  // after the 13th Beta item was added in Stage C.
+  await page.locator('#sidebar .nav-item[data-view="posts"]').evaluate(el=>el.click());
+  await page.locator('#sidebar .nav-item[data-view="media"]').evaluate(el=>el.click());
+  await page.evaluate(()=>history.back());
+  await page.waitForFunction(()=>location.hash==="#posts"&&document.querySelector('[data-view-panel="posts"]')?.classList.contains("active"),undefined,{timeout:7500});
+  await page.evaluate(()=>history.forward());
+  await page.waitForFunction(()=>location.hash==="#media"&&document.querySelector('[data-view-panel="media"]')?.classList.contains("active"),undefined,{timeout:7500});
+  await page.locator('#sidebar .nav-item[data-view="users"]').focus();
+  await page.keyboard.press("Enter");
+  await page.waitForFunction(()=>document.querySelector('[data-view-panel="users"]')?.classList.contains("active"),undefined,{timeout:7500});
+    for(const name of ["media","users","inbox","analytics","security","system"]){
    assert.equal(await page.locator('[data-admin-stage-d="'+name+'"]').count(),1,"Missing contextual status "+name);
   }
   assert((await page.locator('[data-admin-stage-d="media"]').innerText()).includes("trình duyệt"));
