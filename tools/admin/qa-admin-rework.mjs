@@ -40,7 +40,9 @@ try{
   await page.waitForSelector(".tb-admin-beta-panel #tbBetaForm",{state:"attached",timeout:12000});
   assert.equal(await page.locator('[data-view-panel="content"] #tbBetaForm').count(),0,"Beta form still on page content");
   assert.equal(await page.locator(".tb-admin-beta-editor:not([open])").count(),1,"Beta editor should start collapsed");
+  await page.waitForFunction(()=>document.getElementById("tbBetaStatus")?.textContent?.length>0,undefined,{timeout:5000}).catch(()=>{});
   const betaStatus=await page.locator("#tbBetaStatus").textContent();
+  console.log("ADM-01 initial status (no credentials):",JSON.stringify(betaStatus));
   assert(betaStatus.includes("Chưa đăng nhập"),"Missing session should not be described as expired");
   await page.evaluate(()=>{
    document.getElementById("adminApp")?.classList.remove("hidden");
