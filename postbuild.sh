@@ -78,3 +78,19 @@ html=html.replace(marker,"h=h.replace('</body>','<script defer src=\"/admin-stag
 fs.writeFileSync(path,html);
 NODE
 grep -q 'admin-stage-c-ui.js' public/admin.html
+
+
+# ADM-07: apply audited state fixes to *generated* Admin only, leaving packed source untouched.
+node --check tools/admin/adm07-runtime-state-transform.mjs
+node tools/admin/adm07-runtime-state-transform.mjs
+test -f public/admin-stage-d-ui.js
+node --check public/admin-stage-d-ui.js
+node <<'NODE'
+const fs=require('fs'),file='public/admin.html';let html=fs.readFileSync(file,'utf8');
+const marker='document.open();document.write(h);document.close()';
+if(!html.includes(marker)||!html.includes('admin-stage-c-ui.js'))throw Error('Stage D depends on completed Stage C loader');
+if(html.includes('admin-stage-d-ui.js'))throw Error('Stage D script unexpectedly duplicated');
+html=html.replace(marker,"h=h.replace('</body>','<script defer src=\"/admin-stage-d-ui.js?v=1\"><\\/script></body>');"+marker);
+fs.writeFileSync(file,html);
+NODE
+grep -q 'admin-stage-d-ui.js' public/admin.html
