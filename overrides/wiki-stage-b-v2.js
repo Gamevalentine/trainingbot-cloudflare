@@ -5,13 +5,16 @@
  */
 (()=>{
 "use strict";
+let bootAttempts=0;
+function start(){
 const root=document.querySelector(".tb-wiki-shell");
 const tabs=document.getElementById("tbWikiTabs");
 const grid=document.getElementById("tbWikiGrid");
 const filters=document.getElementById("tbWikiFilters");
 const search=document.getElementById("tbWikiSearch");
 const compare=document.getElementById("tbCompareBtn");
-if(!root||!tabs||!grid||!filters||!search||typeof DATA==="undefined"||root.dataset.tbStageB)return;
+if(!root||!tabs||!grid||!filters||!search||typeof DATA==="undefined"){if(++bootAttempts<160)setTimeout(start,85);return;}
+if(root.dataset.tbStageB)return;
 root.dataset.tbStageB="1";document.body.classList.add("tb-wiki-stage-b");
 const KINDS=["weapons","attachments","vehicles","maps"];
 const names={weapons:"Vũ khí",attachments:"Phụ kiện",vehicles:"Xe cộ",maps:"Bản đồ"};
@@ -202,4 +205,6 @@ document.addEventListener("keydown",event=>{
 schedule();
 window.addEventListener("load",schedule,{once:true});
 setTimeout(schedule,950);
+}
+start();
 })();
