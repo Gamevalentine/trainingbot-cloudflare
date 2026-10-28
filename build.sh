@@ -217,11 +217,9 @@ if ! grep -q 'wiki_theme_v143\.css' public/wiki.html; then
   sed -i 's#</head>#  <link rel="stylesheet" href="/wiki_theme_v143.css?v=143">\n</head>#' public/wiki.html
 fi
 
-for page in public/updates.html public/ban-cap-nhat.html public/wiki.html; do
-  if ! grep -q 'navigation_home_match_v149a\.css' "$page"; then
-    sed -i 's#</head>#  <link rel="stylesheet" href="/navigation_home_match_v149a.css?v=149a">\n</head>#' "$page"
-  fi
-done
+# Header 205: do not inject the older, two-page-only navigation stylesheet.
+# All six main pages use the Community markup and one shared header design
+# at the end of postbuild.sh, with preserved individual active states.
 
 # Render PUBG beta versions from Cloudflare D1 so Admin changes appear without code edits.
 test -f public/beta_versions_public_v175.js
