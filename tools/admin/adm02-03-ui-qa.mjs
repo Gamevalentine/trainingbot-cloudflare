@@ -73,6 +73,10 @@ async function viewportCheck(width){
   await page.locator('#loginForm button[type="submit"]').click();
   await page.waitForSelector("#adminApp:not(.hidden)",{timeout:13000});
   await page.waitForFunction(()=>document.getElementById("kpiUsers")?.textContent==="8",undefined,{timeout:9000});
+  if(width===390||width===1440){
+   fs.mkdirSync("admin-qa-screenshots",{recursive:true});
+   await page.screenshot({path:"admin-qa-screenshots/stage-b-dashboard-"+width+".png",animations:"disabled"});
+  }
 
   const menuToggle=page.locator("#openSidebar");
   if(await menuToggle.isVisible())await menuToggle.click();
@@ -110,6 +114,16 @@ async function viewportCheck(width){
   await page.waitForFunction(()=>document.getElementById("pageEyebrow")?.textContent==="CỘNG ĐỒNG",undefined,{timeout:5000});
   assert.equal(await page.locator("#pageEyebrow").textContent(),"CỘNG ĐỒNG");
 
+  // Exhaustively activate all 12 retained destinations (incl. two injected
+  // by legacy modules) using their ORIGINAL buttons and handlers.
+  for(const key of expected){
+   const selector=key==="visitor-tracking"?"#tbVisitorNav":'#sidebar .nav-item[data-view="'+key+'"]';
+   await page.locator(selector).evaluate(el=>el.click());
+   await page.waitForFunction(k=>document.querySelector('.view[data-view-panel="'+k+'"]')?.classList.contains("active"),key,{timeout:7000});
+   assert.equal(new URL(page.url()).hash,"#"+key,"Wrong hash for "+key);
+  }
+  await page.waitForFunction(()=>document.getElementById("pageTitle")?.textContent==="Hệ thống",undefined,{timeout:5000});
+
   // The accessible skip control moves focus without corrupting route hash.
   const oldHash=new URL(page.url()).hash;
   await page.locator("#tbAdminStageBSkip").evaluate(el=>el.click());
@@ -131,6 +145,17 @@ async function viewportCheck(width){
    body:document.body.scrollWidth
   }));
   assert(dims.document<=width+5,"Horizontal overflow "+width+": "+JSON.stringify(dims));
+  if(width===1440){
+   const direct=await context.newPage();
+   await direct.goto(HOST+"/admin.html#posts",{waitUntil:"domcontentloaded",timeout:18000});
+   await direct.waitForSelector("#loginForm",{state:"visible",timeout:15000});
+   await direct.locator("#adminToken").fill("LOCAL-ADMIN-B-STAGE-TEST");
+   await direct.locator('#loginForm button[type="submit"]').click();
+   await direct.waitForFunction(()=>document.querySelector('[data-view-panel="posts"]')?.classList.contains("active"),undefined,{timeout:12000});
+   await direct.waitForFunction(()=>document.getElementById("pageTitle")?.textContent==="Bài viết",undefined,{timeout:7000});
+   assert.equal(await direct.locator("#pageEyebrow").textContent(),"NỘI DUNG");
+   await direct.close();
+  }
   assert.equal(actions.networkWrites,0,"Stage B QA attempted a real mutation");
   assert(actions.apiReads>0,"Admin login did not use mocked GET");
   assert(!bad.length,"Browser errors "+JSON.stringify(bad));
