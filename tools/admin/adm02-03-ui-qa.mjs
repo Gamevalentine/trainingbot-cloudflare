@@ -102,7 +102,9 @@ async function viewportCheck(width){
   await page.waitForFunction(()=>location.hash==="#visitor-tracking"&&document.querySelector('[data-view-panel="visitor-tracking"]')?.classList.contains("active"),undefined,{timeout:7000});
 
   // Keyboard navigation through the same original button.
-  await page.locator('#sidebar .nav-item[data-view="users"]').evaluate(el=>el.focus());
+  if(await page.locator("#openSidebar").isVisible())await page.locator("#openSidebar").click();
+  await page.locator('#sidebar .nav-item[data-view="users"]').focus();
+  assert.equal(await page.locator('#sidebar .nav-item[data-view="users"]').evaluate(el=>document.activeElement===el),true,"Keyboard focus did not reach Users");
   await page.keyboard.press("Enter");
   await page.waitForFunction(()=>document.querySelector('[data-view-panel="users"]')?.classList.contains("active"),undefined,{timeout:7000});
   await page.waitForFunction(()=>document.getElementById("pageEyebrow")?.textContent==="CỘNG ĐỒNG",undefined,{timeout:5000});
