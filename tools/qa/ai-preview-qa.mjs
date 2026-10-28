@@ -18,6 +18,7 @@ const live=await onRequestGet({request:new Request(url+"/api/ai-preview/status")
 assert.equal(live.status,200);
 const status=await live.json();
 assert.equal(status.ready,false);assert.equal(status.identityVerified,false);
+assert.equal(status.anonymousVisitorReady,false);
 assert.deepEqual(status.surfaces,{visitor:false,admin:false});
 assert.equal((await onRequestGet({request:new Request("https://trainingbot.io.vn/api/ai-preview/status")})).status,404);
 for(const file of ["overrides/ai-preview.html","overrides/ai-admin-preview.html"]){
@@ -27,6 +28,12 @@ for(const file of ["overrides/ai-preview.html","overrides/ai-admin-preview.html"
 }
 const js=readFileSync("overrides/ai-preview.js","utf8");
 assert.doesNotMatch(js,/localStorage|sessionStorage|innerHTML|trainingbot-ai-staging\.ai-vn\.workers\.dev/);
-assert.match(js,/status\?\.identityVerified === true/);
+assert.match(js,/surface === "visitor" \? status\?\.anonymousVisitorReady === true : status\?\.identityVerified === true/);
 assert.match(js,/status\?\.surfaces\?\.\[surface\] === true/);
 console.log("Preview identity/chat isolation PASS: disabled until verified per-person server auth; Production untouched.");
+
+const visitorHtml=readFileSync("overrides/ai-preview.html","utf8");
+assert.match(visitorHtml,/Không cần đăng nhập|không cần đăng nhập/);
+assert.doesNotMatch(visitorHtml,/chờ kết nối đăng nhập|phiên đăng nhập máy chủ/i);
+const adminHtml=readFileSync("overrides/ai-admin-preview.html","utf8");
+assert.match(adminHtml,/tài khoản Admin/);

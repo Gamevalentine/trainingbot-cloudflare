@@ -30,20 +30,20 @@
       const response = await fetch("/api/ai-preview/status", {cache:"no-store",credentials:"same-origin",redirect:"error",headers:{"Accept":"application/json"}});
       const status = await response.json();
       // Readiness and roles come exclusively from the same-origin server, never local storage or user input.
-      ready = response.ok && status?.ready === true && status?.identityVerified === true &&
-        status?.surfaces?.[surface] === true;
+      ready = response.ok && status?.ready === true && status?.surfaces?.[surface] === true &&
+        (surface === "visitor" ? status?.anonymousVisitorReady === true : status?.identityVerified === true);
       if (!ready) throw Error("IDENTITY_BRIDGE_NOT_READY");
-      statusLabel.textContent = "Phiên đã xác minh";
-      renderStatus("Đã xác minh", "Máy chủ xác nhận phiên đăng nhập hợp lệ.");
+      statusLabel.textContent = surface === "admin" ? "Phiên Admin đã xác minh" : "Visitor AI sẵn sàng";
+      renderStatus("Dịch vụ đã sẵn sàng", surface === "admin" ? "Máy chủ đã xác minh tài khoản Admin." : "Bạn có thể trò chuyện mà không cần tài khoản.");
       prompt.disabled = false; submit.disabled = false;
       prompt.placeholder = "Nhập câu hỏi cho TrainingBot AI…";
-      help.textContent = "Đang dùng phiên máy chủ đã xác thực.";
+      help.textContent = surface === "admin" ? "Đang dùng tài khoản Admin đã xác thực." : "Không cần đăng nhập. Có giới hạn sử dụng để bảo vệ dịch vụ.";
     } catch {
       ready = false;
-      statusLabel.textContent = "Chưa xác thực";
-      renderStatus("Chưa kết nối đăng nhập cá nhân", surface === "admin" ?
+      statusLabel.textContent = surface === "admin" ? "Chưa xác thực" : "Chưa mở";
+      renderStatus(surface === "admin" ? "Chưa kết nối xác thực Admin" : "Visitor AI chưa mở", surface === "admin" ?
         "Cần xác thực quyền Admin riêng cho từng tài khoản. Không chấp nhận token quản trị dùng chung." :
-        "Chờ kết nối hệ thống đăng nhập TrainingBot từ máy chủ. Chat vẫn được khóa an toàn.");
+        "Không cần đăng nhập. Máy chủ còn thiếu cổng bảo vệ và giới hạn sử dụng dành cho khách.");
       prompt.disabled = true; submit.disabled = true;
       help.textContent = "Không nhập mật khẩu, cookie hoặc token vào ô chat.";
     }
@@ -65,7 +65,7 @@
       if(typeof result.reply!=="string" || result.reply.length>16000)throw Error("INVALID_REPLY");
       message("assistant",result.reply);
     } catch {
-      message("assistant","Phiên AI chưa sẵn sàng. Hãy thử lại sau khi kết nối đăng nhập được xác minh.");
+      message("assistant","Dịch vụ AI chưa sẵn sàng. Vui lòng thử lại khi máy chủ được mở.");
       await check();
     } finally {submit.disabled = !ready;}
   });

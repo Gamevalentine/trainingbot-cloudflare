@@ -21,24 +21,24 @@
     </nav>
     <section class="side-note">
       <strong>Phiên bản thử nghiệm</strong>
-      <p>Giao diện không sử dụng tài khoản hoặc dữ liệu Production. Quyền chat chỉ được mở sau khi máy chủ xác thực cá nhân.</p>
+      <p>Giao diện không sử dụng tài khoản hoặc dữ liệu Production. Visitor không cần tài khoản hay đăng nhập. Chat chỉ mở khi máy chủ có cơ chế giới hạn và chống lạm dụng an toàn.</p>
     </section>
     <a class="back" href="/">← Trở về TrainingBot</a>
   </aside>
   <section class="workspace" aria-label="Khu trò chuyện AI">
-    <header class="topbar"><div><span class="eyebrow">TRAININGBOT INTELLIGENCE</span><h1>Trợ lý TrainingBot AI</h1></div><span id="access-label" class="access-label">Chưa xác thực</span></header>
+    <header class="topbar"><div><span class="eyebrow">TRAININGBOT INTELLIGENCE</span><h1>Trợ lý TrainingBot AI</h1></div><span id="access-label" class="access-label">Chưa mở</span></header>
     <div class="thread" id="thread" role="log" aria-live="polite" aria-relevant="additions">
       <article class="welcome">
         <div class="orb" aria-hidden="true">✦</div>
         <h2>Chào mừng đến với TrainingBot AI</h2>
-        <p>Trợ lý chuyên hỗ trợ tìm hiểu PUBG Mobile, Wiki và các tính năng TrainingBot. Hiện tính năng hội thoại đang chờ kết nối đăng nhập an toàn.</p>
+        <p>Trợ lý chuyên hỗ trợ tìm hiểu PUBG Mobile, Wiki và các tính năng TrainingBot. Khách không cần đăng ký tài khoản hoặc đăng nhập. Hội thoại sẽ được mở khi dịch vụ công khai bảo đảm giới hạn sử dụng và chống lạm dụng.</p>
       </article>
     </div>
-    <section class="notice" id="readiness" role="status" aria-live="polite"><span class="notice-icon">◌</span><div><strong>Đang kiểm tra kết nối đăng nhập…</strong><p>Không nhập mật khẩu hoặc token quản trị vào ô chat.</p></div></section>
+    <section class="notice" id="readiness" role="status" aria-live="polite"><span class="notice-icon">◌</span><div><strong>Đang kiểm tra dịch vụ AI công khai…</strong><p>Không nhập mật khẩu hoặc token quản trị vào ô chat.</p></div></section>
     <form id="chat-form" class="composer" autocomplete="off">
       <label for="prompt" class="sr-only">Nhập tin nhắn</label>
       <textarea id="prompt" rows="2" maxlength="3000" placeholder="Chức năng chat chưa được mở trên Preview…" disabled></textarea>
-      <div class="compose-foot"><span id="composer-help">Chỉ mở khi có phiên đăng nhập máy chủ hợp lệ.</span><button id="send" type="submit" disabled aria-label="Gửi tin nhắn">Gửi <span aria-hidden="true">↗</span></button></div>
+      <div class="compose-foot"><span id="composer-help">Không cần đăng nhập. Chat chỉ mở sau khi máy chủ được nghiệm thu an toàn.</span><button id="send" type="submit" disabled aria-label="Gửi tin nhắn">Gửi <span aria-hidden="true">↗</span></button></div>
     </form>
     <footer>Staging AI là môi trường riêng. Dữ liệu Production không được liên kết.</footer>
   </section>
