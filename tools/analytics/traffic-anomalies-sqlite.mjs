@@ -22,7 +22,7 @@ const first=new Request(site+"/api/visitor-events",{
   method:"POST",headers:{Origin:site,"Content-Type":"application/json","User-Agent":"Mozilla/5.0 Chrome/140 (Windows NT 10.0)"},
   body:JSON.stringify({visitorId:"seed_visitor_123456",sessionId:"seed_session_123456",type:"page_view",path:"/wiki",referrer:"https://google.com"})
 });
-first.cf={country:"VN"};
+first.cf={country:"GB"};
 assert.equal((await track({request:first,env})).status,204,"ingestion must prepare real production schema");
 
 const add=(id,{date=fresh,country="US",path="/",device="Máy tính",os="Windows",browser="Chrome",source="unknown",legacy=0}={})=>{
