@@ -124,7 +124,18 @@ body.tb-community-header-unified > header.site-header button:focus-visible{
   display:none!important;
  }
  body.tb-community-header-unified > header.site-header .header-actions .menu-button{
-  display:flex!important;
+  display:flex!important;flex:0 0 39px!important;align-items:center!important;
+  justify-content:center!important;flex-direction:column!important;
+  width:39px!important;min-width:39px!important;height:39px!important;
+  min-height:39px!important;padding:8px!important;gap:4px!important;
+  border:1px solid #283249!important;border-radius:11px!important;
+  background:#0f1420!important;box-sizing:border-box!important;
+  cursor:pointer!important;color:#e5edfb!important;
+ }
+ body.tb-community-header-unified > header.site-header .header-actions .menu-button span{
+  display:block!important;flex:none!important;width:17px!important;
+  height:2px!important;margin:0!important;border-radius:3px!important;
+  background:currentColor!important;
  }
  /* Preserve existing navigation_v124.js mobile toggle state and DOM links. */
  body.tb-community-header-unified > header.site-header .mobile-nav.open,
