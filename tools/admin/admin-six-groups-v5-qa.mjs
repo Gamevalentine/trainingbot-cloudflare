@@ -19,7 +19,7 @@ try{
  browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_BIN||"/usr/bin/google-chrome",args:["--no-sandbox"]});
  for(const width of [390,768,1440]){
   const ctx=await browser.newContext({viewport:{width,height:900},reducedMotion:"reduce"});
-  const writes=[],outside=[],errors=[];
+  const writes=[],outside=[],errors=[],consoleErrors=[],assetResponses=[];
   await ctx.route("**/*",r=>{
    const req=r.request(),url=new URL(req.url()),path=url.pathname;
    const json=data=>r.fulfill({status:200,contentType:"application/json",body:JSON.stringify(data)});
@@ -37,6 +37,8 @@ try{
   });
   const page=await ctx.newPage();
   page.on("pageerror",e=>errors.push(e.message));
+  page.on("console",m=>{if(m.type()==="error"||m.type()==="warning")consoleErrors.push(m.text().slice(0,500))});
+  page.on("response",res=>{if(res.url().includes("six-groups"))assetResponses.push({status:res.status(),headers:res.headers()["content-type"],url:res.url()});});
   const click=selector=>page.evaluate(s=>{
    const el=document.querySelector(s);
    if(!el)throw Error("V5 button missing "+s);
@@ -62,7 +64,7 @@ try{
       resource:[...performance.getEntriesByType("resource")].filter(x=>x.name.includes("six-groups")).map(x=>({name:x.name,transfer:x.transferSize})),
       v5Css:!!document.getElementById("tb5CategoryStyle")
     })).catch(e=>({error:String(e)}));
-    console.log("V5 INIT DIAG",JSON.stringify({state,errors,outside}));
+    console.log("V5 INIT DIAG",JSON.stringify({state,errors,consoleErrors,outside,assetResponses}));
     throw error;
    }
    assert.equal(await page.locator("#adminApp.hidden").count(),1,"Admin must require login");
