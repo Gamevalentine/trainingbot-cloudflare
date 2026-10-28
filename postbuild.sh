@@ -261,7 +261,7 @@ NODE
 
 # Wiki V2 G — isolated Admin review workbench, gated to G Preview or local QA.
 # No release path: Production/Admin remain unchanged until separate approval.
-if [[ "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-wiki-stage-g-20261029" || "${TRAININGBOT_LOCAL_G_QA:-}" == "1" ]]; then
+if [[ "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-wiki-stage-g-20261029" || "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-wiki-stage-h-20261029" || "${TRAININGBOT_LOCAL_G_QA:-}" == "1" || "${TRAININGBOT_LOCAL_H_QA:-}" == "1" ]]; then
   for asset in wiki-stage-g-snapshot.js admin-wiki-stage-g.js admin-wiki-stage-g.css wiki-stage-f-guides.json; do
     test -f "public/$asset"
   done
@@ -285,4 +285,23 @@ if(w.includes('admin-wiki-stage-g.js')||h.includes('wiki-stage-g-snapshot.js'))t
 NODE
 else
   rm -f public/admin-wiki-stage-g.js public/admin-wiki-stage-g.css public/wiki-stage-g-snapshot.js
+fi
+
+# Wiki V2 H — only H branch or explicit QA flag; no Worker/D1/R2 writes.
+if [[ "${CF_PAGES_BRANCH:-}" == "aion-trainingbot-wiki-stage-h-20261029" || "${TRAININGBOT_LOCAL_H_QA:-}" == "1" ]]; then
+  test -f public/wiki-stage-h-perf.js
+  node --check public/wiki-stage-h-perf.js
+  node --check tools/wiki/stage-h-build.mjs
+  node tools/wiki/stage-h-build.mjs
+  node <<'NODE'
+const fs=require('node:fs'),p='public/wiki.html';
+let h=fs.readFileSync(p,'utf8');
+if(!h.includes('wiki-stage-f-guides.js')||!h.includes('wiki-stage-g-snapshot.js'))throw Error('Wiki H requires F and G Preview');
+if(h.includes('wiki-stage-h-perf.js'))throw Error('H loader duplicated');
+h=h.replace('</body>','<script defer src="/wiki-stage-h-perf.js?v=1"></script>\n</body>');
+fs.writeFileSync(p,h);
+if(fs.readFileSync('public/admin.html','utf8').includes('wiki-stage-h-perf.js'))throw Error('H leaked into Admin');
+NODE
+else
+  rm -f public/wiki-stage-h-perf.js
 fi
