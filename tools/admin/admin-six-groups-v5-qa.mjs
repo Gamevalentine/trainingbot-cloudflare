@@ -51,7 +51,16 @@ try{
       app:!!document.getElementById("adminApp"),stageB:document.body?.className,
       scripts:[...document.scripts].map(x=>x.src||"inline").slice(-17),
       nav:!!document.querySelector("#sidebar .side-nav"),
-      v5script:!!document.querySelector('script[src*="admin-six-groups"]')
+      v5script:!!document.querySelector('script[src*="admin-six-groups"]'),
+      elements:{
+        app:!!document.getElementById("adminApp"),
+        sidebar:!!document.getElementById("adminApp")?.querySelector("#sidebar"),
+        nav:!!document.getElementById("adminApp")?.querySelector("#sidebar .side-nav"),
+        area:!!document.getElementById("adminApp")?.querySelector(".content-area"),
+        hasCategories:!!document.getElementById("tb5Categories")
+      },
+      resource:[...performance.getEntriesByType("resource")].filter(x=>x.name.includes("six-groups")).map(x=>({name:x.name,transfer:x.transferSize})),
+      v5Css:!!document.getElementById("tb5CategoryStyle")
     })).catch(e=>({error:String(e)}));
     console.log("V5 INIT DIAG",JSON.stringify({state,errors,outside}));
     throw error;
