@@ -146,6 +146,5 @@
       get("tbVisitorPanel")?.classList.remove("tb-audience-ready");
     }
   }
-  let attempts=0;
-  const timer=setInterval(()=>{if(setup()||++attempts>120)clearInterval(timer);},250);
+  const timer=setInterval(()=>{if(setup())clearInterval(timer);},350);
 })();
