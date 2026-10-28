@@ -103,6 +103,12 @@ body.tb-admin-six-groups .tb5-function-grid{
  grid-template-columns:repeat(3,minmax(0,1fr))!important;
  gap:14px!important;align-items:stretch!important;
 }
+body.tb-admin-six-groups .tb5-function-grid[data-tb6-count="1"]{
+ grid-template-columns:minmax(0,500px)!important;
+}
+body.tb-admin-six-groups .tb5-function-grid[data-tb6-count="2"]{
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
 body.tb-admin-six-groups .tb5-function-card.tb6-function-card{
  --tb6-accent:#69d8ca;--tb6-tone:rgba(105,216,202,.12);--tb6-ring:rgba(105,216,202,.28);
  min-height:181px!important;
