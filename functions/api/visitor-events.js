@@ -1,4 +1,5 @@
 import {classifyAttribution,cleanUtm} from "../_lib/traffic-attribution.js";
+import {recordIngestRay} from "../_lib/traffic-ray-audit.js";
 const NO_STORE={"cache-control":"no-store","x-content-type-options":"nosniff"};
 
 function cleanText(value,max=180){
@@ -240,6 +241,14 @@ export async function onRequestPost({request,env}){
       );
     }
     await env.DB.batch(statements);
+    // Stage-only diagnostic; no change in live visits if Ray ID is missing or
+    // the optional debug table cannot be written. Never interpret a Ray as bot proof.
+    try{
+      await recordIngestRay({db:env.DB,env,request,eventType,
+        visitorId,visitId:canonicalVisitId,now});
+    }catch(rayError){
+      console.warn("Optional edge Ray audit unavailable",rayError?.name||"D1 error");
+    }
   }catch(error){
     console.error("visitor tracking",error);
   }
