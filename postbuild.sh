@@ -310,3 +310,6 @@ fi
 # Preserve original route, canonical metadata, site header/footer and JS.
 node --check tools/seo/seo-category-enhance.mjs
 node tools/seo/seo-category-enhance.mjs
+
+# SEO content hygiene — internal navigation must not point at the noindex /updates alias.
+node tools/seo/seo-legacy-links.mjs
