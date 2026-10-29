@@ -42,6 +42,8 @@ export async function onRequestGet({request,env}){
     const threshold=int(u.searchParams.get("min_visitors"),3,3,20);
     const desired=String(u.searchParams.get("country")||"ALL").toUpperCase();
     const country=/^(ALL|[A-Z]{2})$/.test(desired)?desired:"ALL";
+    const reviewFilter=["all","needs_review","verified_automated","verified_test","cleared"].includes(u.searchParams.get("review_filter"))
+      ?u.searchParams.get("review_filter"):"all";
     const schema=await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='tb_visitor_visits_v2'").all();
     if(!schema.results?.length){
       return respond({ok:true,ready:false,groups:[],scanned_window_days:days,bot_score_available:false,
@@ -50,6 +52,11 @@ export async function onRequestGet({request,env}){
     const adminSchema=await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='tb_admin_browsers_v1'").all();
     const noAdmin=adminSchema.results?.length
       ?" AND NOT EXISTS (SELECT 1 FROM tb_admin_browsers_v1 a WHERE a.visitor_id=v.visitor_id)":"";
+    const reviewTable=await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='tb_traffic_visit_reviews_v1'").all();
+    const hasReviews=Boolean(reviewTable.results?.length);
+    const reviewJoin=hasReviews
+      ?" LEFT JOIN tb_traffic_visit_reviews_v1 rv ON rv.visit_id=v.visit_id AND rv.visitor_id=v.visitor_id":"";
+    const statusExpr=hasReviews?"COALESCE(rv.status,'unresolved')":"'unresolved'";
     const attr=await env.DB.prepare("PRAGMA table_info(tb_visitor_visits_v2)").all();
     const cols=new Set((attr.results||[]).map(x=>x.name));
     const sourceLegacy=cols.has("attribution_version")
@@ -71,8 +78,9 @@ export async function onRequestGet({request,env}){
           (SELECT COUNT(*) FROM tb_visitor_events_v1 e
              WHERE e.visitor_id=v.visitor_id AND e.event_type='page_view') AS visitor_page_views,
           ${cols.has("attribution_version")?"v.attribution_version AS attribution_version":"0 AS attribution_version"},
-          ${cols.has("source_key")?"v.source_key AS source_key":"'' AS source_key"}
-        FROM tb_visitor_visits_v2 v
+          ${cols.has("source_key")?"v.source_key AS source_key":"'' AS source_key"},
+          ${statusExpr} AS review_status
+        FROM tb_visitor_visits_v2 v${reviewJoin}
         WHERE julianday(v.first_seen_at)>=julianday('now',?)
           AND (?='ALL' OR v.country=?) ${noAdmin}
       )
@@ -80,11 +88,18 @@ export async function onRequestGet({request,env}){
         COUNT(*) AS visits,COUNT(DISTINCT visitor_id) AS visitors,
         SUM(CASE WHEN visitor_page_views<=1 THEN 1 ELSE 0 END) AS single_page_visits,
         ${sourceLegacy.replaceAll("v.","")} AS legacy_visits,
-        ${missingSource.replaceAll("v.","")} AS missing_source_visits
+        ${missingSource.replaceAll("v.","")} AS missing_source_visits,
+        SUM(CASE WHEN review_status='verified_automated' THEN 1 ELSE 0 END) AS verified_automated_visits,
+        SUM(CASE WHEN review_status='verified_test' THEN 1 ELSE 0 END) AS verified_test_visits,
+        SUM(CASE WHEN review_status='cleared' THEN 1 ELSE 0 END) AS cleared_visits
       FROM recent
       WHERE window_start IS NOT NULL
       GROUP BY window_start,country,device,os,browser,entry_path
       HAVING COUNT(DISTINCT visitor_id)>=?
+        ${reviewFilter==="verified_automated"?" AND verified_automated_visits>0":
+          reviewFilter==="verified_test"?" AND verified_test_visits>0":
+          reviewFilter==="cleared"?" AND cleared_visits>0":
+          reviewFilter==="needs_review"?" AND (single_page_visits*10>=visits*7 AND (missing_source_visits+legacy_visits)*10>=visits*7) AND (visits-verified_automated_visits-verified_test_visits-cleared_visits)>0":""}
       ORDER BY visitors DESC,window_start DESC
       LIMIT 40`;
     // All visit buckets are counted, not only the 40 shown in the table.
@@ -95,7 +110,12 @@ export async function onRequestGet({request,env}){
       (missing_source_visits+legacy_visits)*10>=visits*7`;
     const summarySQL=`SELECT
       COALESCE(SUM(visits),0) AS total_visits,
-      COALESCE(SUM(CASE WHEN ${reviewCase} THEN visits ELSE 0 END),0) AS review_visits
+      COALESCE(SUM(CASE WHEN ${reviewCase} THEN
+        MAX(0,visits-verified_automated_visits-verified_test_visits-cleared_visits)
+        ELSE 0 END),0) AS review_visits,
+      COALESCE(SUM(verified_automated_visits),0) AS verified_automated_visits,
+      COALESCE(SUM(verified_test_visits),0) AS verified_test_visits,
+      COALESCE(SUM(cleared_visits),0) AS cleared_visits
       FROM (${groupSQL})`;
     const [result,rollup]=await Promise.all([
       env.DB.prepare(sql).bind(`-${days} day`,country,country,threshold).all(),
@@ -104,16 +124,23 @@ export async function onRequestGet({request,env}){
     const groups=(result.results||[]).map(reviewGroup);
     const totalVisits=Number(rollup?.total_visits||0);
     const reviewVisits=Number(rollup?.review_visits||0);
+    const autoVisits=Number(rollup?.verified_automated_visits||0);
+    const testVisits=Number(rollup?.verified_test_visits||0);
+    const clearedVisits=Number(rollup?.cleared_visits||0);
     return respond({
       ok:true,ready:true,generated_at:new Date().toISOString(),
-      scanned_window_days:days,window_minutes:5,min_visitors:threshold,country,
+      scanned_window_days:days,window_minutes:5,min_visitors:threshold,country,review_filter:reviewFilter,
+      review_table_available:hasReviews,
       groups,returned_groups:groups.length,limited_to:40,
       review_summary:{
         total_visits:totalVisits,
         review_visits:reviewVisits,
-        unflagged_visits:Math.max(0,totalVisits-reviewVisits),
+        verified_automated_visits:autoVisits,
+        verified_test_visits:testVisits,
+        cleared_visits:clearedVisits,
+        unflagged_visits:Math.max(0,totalVisits-reviewVisits-autoVisits-testVisits-clearedVisits),
         basis:"visit_not_human",
-        explanation:"Chỉ là lượt ghé trong khoảng thời gian đã chọn. Cần kiểm tra không có nghĩa bot; chưa bị gắn cờ không có nghĩa người thật."
+        explanation:"Chỉ là lượt ghé, không phải người thật. Nhãn xác minh do Admin nhập có bằng chứng cho đúng lượt; không suy diễn từ cùng quốc gia/thiết bị."
       },
       bot_score_available:false,
       bot_score_note:"D1 hiện không có Cloudflare Bot Score hoặc kết quả WAF đối chiếu. Chưa thể xác nhận đây là bot.",
