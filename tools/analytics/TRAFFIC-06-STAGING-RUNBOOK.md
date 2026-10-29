@@ -1,7 +1,7 @@
 # TRAFFIC-06 — Ray ID correlation Staging acceptance
 
 ## Scope and safety
-- This code is **disabled by default**. Production does not write to `tb_traffic_ingest_ray_audit_v1` unless `TRAFFIC_RAY_AUDIT_ENABLED=1` is deliberately set.
+- This code is **disabled by default**. Production does not write to `tb_traffic_ingest_ray_audit_v1` unless both `TRAFFIC_RAY_AUDIT_ENABLED=1` and `TRAFFIC_RAY_AUDIT_STAGE_HOST=<isolated-staging-host>` are deliberately set on an **isolated non-Production host**. Production and Pages Preview hosts are hard-denied.
 - The Ray comes from the **POST /api/visitor-events** request. It **does not identify the prior GET /** HTML request. A Cloudflare security challenge/block can prevent the POST entirely, so the lack of a Ray record cannot clear or condemn any traffic.
 - A Ray ID may be reused, and Security Events can be sampled. The Admin lookup explicitly returns `none`, `single` or `ambiguous`, never an automatic bot verdict.
 - This is optional debugging data: `ray_id, visitor_id, visit_id, created_at, request_path`; **no IP, full User-Agent, GPS, fingerprint, cookies, or authentication tokens**.
@@ -10,7 +10,7 @@
 
 ## Isolated live Staging preconditions
 1. Use a **separate Staging deployment** with a **separate D1 database** and Staging Admin token, not the public Production D1 binding.
-2. Set `TRAFFIC_RAY_AUDIT_ENABLED=1` **only in that Staging environment**. Leave it absent on Production.
+2. Set `TRAFFIC_RAY_AUDIT_ENABLED=1` **and** `TRAFFIC_RAY_AUDIT_STAGE_HOST=<your-staging-hostname>` only in that Staging environment. Code hard-denies `trainingbot.io.vn`, the canonical Pages host, and Pages branch previews even if the flag is accidentally enabled.
 3. IMPORTANT: TrainingBot's current Cloudflare Pages branch Preview middleware **blocks all POST /api/** routes. A plain branch Pages Preview is intentionally NOT a functional write-enabled Staging environment. Do not disable this protection or point Preview at Production D1.
 4. Arrange a separately isolated Staging Worker/Pages project if live Ray tests are required. The branch CI currently verifies code with SQLite without writing to Cloudflare.
 5. Do not use remote browser checks against the public homepage to simulate visitors; QA should occur on isolated Staging.
