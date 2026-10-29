@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import {DatabaseSync} from "node:sqlite";
 import {onRequestPost as track} from "../../functions/api/visitor-events.js";
 import {onRequestGet as lookup} from "../../functions/api/v72/admin/traffic-ray-audit.js";
-import {normalizeRay} from "../../functions/_lib/traffic-ray-audit.js";
+import {normalizeRay,rayAuditEnabled} from "../../functions/_lib/traffic-ray-audit.js";
 const sqlite=new DatabaseSync(":memory:");
 let statements=0;
 const DB={
@@ -12,7 +12,7 @@ const DB={
     async run(){statements++;return sqlite.prepare(sql).run(...this.args);}};},
   async batch(items){return items.map(x=>{statements++;return sqlite.prepare(x.sql).run(...x.args);});}
 };
-const site="https://trainingbot.io.vn",id="test_visitor_123456",visit="test_visit_123456",ray="123456abcdef1234-SJC";
+const site="https://traffic06-staging.example.test",id="test_visitor_123456",visit="test_visit_123456",ray="123456abcdef1234-SJC";
 const base={DB,ADMIN_TOKEN:"qa-secret-token"};
 const send=async(env,rayHeader=ray,type="page_view")=>{
   const h={"content-type":"application/json",Origin:site,"User-Agent":"Mozilla/5.0 Chrome/140 (Windows NT 10.0)"};
@@ -35,8 +35,14 @@ assert.equal((await get(base,ray)).status,404,"opt-in flag disabled");
 assert.equal((await send(base)).status,204);
 let table=sqlite.prepare("SELECT name FROM sqlite_master WHERE name='tb_traffic_ingest_ray_audit_v1'").get();
 assert.equal(table,undefined,"Production/default tracking must NOT create debug table");
-assert.equal((await get({...base,TRAFFIC_RAY_AUDIT_ENABLED:"1"},ray)).data.match,"none");
-const staging={...base,TRAFFIC_RAY_AUDIT_ENABLED:"1"};
+assert.equal((await get({...base,TRAFFIC_RAY_AUDIT_ENABLED:"1"},ray)).status,404,
+  "no configured staging host must stay disabled");
+const staging={...base,TRAFFIC_RAY_AUDIT_ENABLED:"1",TRAFFIC_RAY_AUDIT_STAGE_HOST:"traffic06-staging.example.test"};
+assert.equal(rayAuditEnabled(staging,new Request(site+"/api/visitor-events")),true);
+assert.equal(rayAuditEnabled(staging,new Request("https://trainingbot.io.vn/api/visitor-events")),false,
+  "even a misconfigured Production flag MUST NOT activate");
+assert.equal(rayAuditEnabled({...staging,TRAFFIC_RAY_AUDIT_STAGE_HOST:"trainingbot.io.vn"},
+  new Request("https://trainingbot.io.vn/api/visitor-events")),false,"production host prohibited");
 assert.equal((await send(staging,"invalid-ray")).status,204);
 assert.equal(sqlite.prepare("SELECT name FROM sqlite_master WHERE name='tb_traffic_ingest_ray_audit_v1'").get(),undefined,
   "untrusted Ray does not trigger D1 debug write");
