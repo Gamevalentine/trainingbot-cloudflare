@@ -50,3 +50,17 @@ Các công cụ trong hội thoại hiện cho phép sửa repo và kiểm thử
 - Các điều kiện bắt buộc vẫn là RS256, chữ ký hợp lệ, đúng issuer/audience/repository/workflow/nhánh `main`/sự kiện push và thời hạn JWT. Bộ khóa ghim **hết hiệu lực ngày 31/10/2026 20:20 UTC**; sau đó nếu không tải được JWKS sẽ từ chối xác thực. Không cho Preview sử dụng quyền Production.
 - Workflow trong PR #56 vẫn **chỉ GET**; có thêm retry hữu hạn để đợi bản Pages mới triển khai. Tuyệt đối không cho phép tự ghi hoặc rollback D1 trong bước kiểm thử này.
 - Chỉ chuyển sang migration riêng sau khi API Production đọc được trạng thái thật và các kiểm thử QA/SEO/Wiki/Preview qua hết. Cơ chế fallback công khai được giữ nguyên đến khi D1 thật có bản ghi đúng và bản sao lưu.
+
+## D1.3 — Quy trình ghi duy nhất sau khi D1.2 đã đọc được Production
+
+**Tiền điều kiện đã đo:** Signed GET nhánh main trả HTTP 200 trên Pages Production, `migration_state=not_applied`, `backup_exists=false`, `stored_correction=false`, `public_fallback_required=true`.
+
+Workflow D1.3 chỉ được merge sau khi kiểm thử offline/SEO/Wiki/Pages PASS. Khi chạy trên main, nó:
+
+1. Yêu cầu JWT mới từ GitHub OIDC và kiểm tra trạng thái D1 Production bằng GET.
+2. Nếu D1 đã áp dụng và có backup thì không ghi lại; nếu chưa áp dụng thì yêu cầu đúng `not_applied/false/false/true`, sai bất kỳ giá trị nào thì dừng.
+3. POST đúng `apply` cùng revision khóa `erangel-pc39-2-to-mobile47-20261029` đến hostname Pages Production. API D1 giới hạn đúng slug Erangel, lưu nguyên bản và ghi bản đính chính trong D1.batch có compare-and-set.
+4. Không retry POST mù quáng khi bị lỗi hoặc đứt kết nối. Sau phản hồi thành công, GET bằng token mới và chỉ chấp nhận `applied/true/true/false`.
+5. Xác minh bài công khai có tiêu đề đính chính, giữ nguyên fallback bảo vệ cho tới khi có quyết định khác.
+
+Không áp dụng thay đổi cho bài khác, không chạm R2, không xóa bản gốc và không chạy rollback trên Production để thử nghiệm.
