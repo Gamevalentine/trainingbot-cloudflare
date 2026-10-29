@@ -1,0 +1,50 @@
+name: TrainingBot — TRAFFIC-04 security evidence acceptance
+on:
+  push:
+    branches:
+      - traffic-04-evidence-review-20261029
+  pull_request:
+    paths:
+      - 'functions/api/v72/admin/traffic-visit-review.js'
+      - 'functions/api/v72/admin/traffic-anomalies.js'
+      - 'functions/api/v72/admin/traffic-sources.js'
+      - 'overrides/admin_traffic_anomalies_v1.js'
+      - 'overrides/admin_traffic_sources_v1.js'
+      - 'build.sh'
+      - 'tools/analytics/traffic-04-verified-evidence-qa.mjs'
+permissions:
+  contents: read
+jobs:
+  evidence-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax checks
+        run: |
+          bash -n build.sh postbuild.sh
+          node --check overrides/admin_traffic_anomalies_v1.js
+          node --check overrides/admin_traffic_sources_v1.js
+          node --input-type=module --check < functions/api/v72/admin/traffic-visit-review.js
+          node --input-type=module --check < functions/api/v72/admin/traffic-anomalies.js
+          node --input-type=module --check < functions/api/v72/admin/traffic-sources.js
+      - name: Build without external Production requests
+        run: npm run build
+      - name: Evidence-gated classification and audited SQLite verification
+        run: node --disable-warning=ExperimentalWarning tools/analytics/traffic-04-verified-evidence-qa.mjs
+      - name: Existing traffic statistics, online/Admin and source regressions
+        run: |
+          node --disable-warning=ExperimentalWarning tools/analytics/traffic-anomalies-sqlite.mjs
+          node tools/analytics/traffic-quality-qa.mjs
+          node --disable-warning=ExperimentalWarning tools/analytics/traffic-sources-sqlite.mjs
+          node tools/analytics/visitor-analytics-qa.mjs
+          node --disable-warning=ExperimentalWarning tools/analytics/visitor-analytics-sqlite.mjs
+          node --disable-warning=ExperimentalWarning tools/analytics/admin-browser-label-sqlite.mjs
+          node tools/analytics/visitor-online-ui-qa.mjs
+      - name: Public SEO and Preview isolation
+        run: |
+          node tools/qa/p1-seo.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
