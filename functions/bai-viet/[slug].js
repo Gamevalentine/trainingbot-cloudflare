@@ -167,6 +167,10 @@ function editorialArchiveContext(post){
       note:"Từ 'hôm nay' trong tiêu đề đề cập ngày đăng bài 08/09/2026, không phải thời điểm hiện tại. Bài lưu lại đợt cập nhật 4.6 để người đọc đối chiếu lịch sử.",
       refs:[["/news-pubg-mobile-4-6","Đọc hướng dẫn PUBG Mobile 4.6"],["/ban-cap-nhat","Xem trang Bản cập nhật"]]
     },
+    "pubg-mobile-one-punch-man-chinh-thuc-duoc-cong-bo-saitama-do-bo-erangel-tu-ngay-20-9":{
+      note:"Bài đề cập lịch sự kiện ngày 20/09/2026 tại thời điểm đăng. Không hiểu ngày trong tiêu đề là lịch sự kiện hiện tại; thông tin và khu vực phát hành nên đối chiếu với thông báo trong game.",
+      refs:[["/news-pubg-mobile-4-6-skins-events","Xem lịch sự kiện 4.6 đã lưu"],["/ban-cap-nhat","Xem trang Bản cập nhật"]]
+    },
     "pubg-mobile-xac-nhan-m416-glacier-switch-effect-gan-hoan-thien-viet-nam-van-cho-thong-tin":{
       note:"Trạng thái 'gần hoàn thiện' phản ánh thông tin tại thời điểm bài được đăng; bài chưa có liên kết gốc trực tiếp để xác minh ngày phát hành và khu vực áp dụng. Không xem đây là xác nhận hiệu ứng đã ra mắt tại Việt Nam.",
       refs:[["/news-featured","Xem các bài viết đã xuất bản"],["/ban-cap-nhat","Theo dõi bản cập nhật"]]
