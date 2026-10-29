@@ -197,20 +197,28 @@ const VERIFIED_EDITORIAL_SOURCES = {
 };
 const EDITORIAL_CORRECTION_SLUG = "battlegrounds-mo-rong-erangel-subzero-trong-pubg-mobile-bgmi-voi-ban-beta-4-7-2";
 const EDITORIAL_CORRECTION_TITLE = "ĐÍNH CHÍNH: Erangel Subzero của PUBG Mobile Beta 4.7 khác PUBG PC Update 39.2";
-const EDITORIAL_CORRECTION_BODY = "## Đính chính ngày 29/10/2026\n\nBài đăng trước đó đã gắn nhầm nội dung của PUBG: BATTLEGROUNDS (PC/console), bản 39.2 tháng 01/2026, vào tên PUBG Mobile/BGMI Beta 4.7.2. TrainingBot xin đính chính và không sử dụng các thông số PC này như thông số của PUBG Mobile.\n\n## Phần nào thuộc PUBG PC 39.2?\n\n- Satellite Crash xuất hiện bốn lần trong một trận, cầu Blue Zone 10 sát thương/giây; Frost Zone Bomb có bán kính tối đa 20 mét và gây 14 sát thương/giây; Thermal Protection Suit và các điều chỉnh thời tiết whiteout đều được ghi trong thông báo chính thức PUBG: BATTLEGROUNDS Update 39.2 ngày 06/01/2026.\n\n- Các chi tiết này không được phép mặc nhiên áp dụng cho PUBG Mobile hoặc BGMI dù có một số tên tính năng tương tự.\n\n## PUBG Mobile Beta Test 2 công bố điều gì?\n\n- Thông báo Beta Test 2 ngày 10/10/2026 giới thiệu chế độ Erangel Subzero dưới dạng Classic Mode spin-off, bối cảnh các vệ tinh Tythonic rơi xuống Erangel làm khí hậu lạnh đi.\n\n- Các mục được nêu gồm Stalber bị đóng băng, Liquid Nitrogen Tanks, Snow Mist Ammo, snowboard, snowmobile/snowbike, G36C và lốp chống trượt. Đây là dữ liệu Beta, có thể thay đổi trước khi phát hành.\n\n## Về tên phiên bản và nguồn\n\n- Nguồn chính thức đang đối chiếu gọi đợt này là V4.7 Beta Test 2; chưa có cơ sở xác nhận mọi chi tiết trong bài cũ thuộc một bản PUBG Mobile có tên chính thức 'Beta 4.7.2'.\n\n- Xem liên kết đến thông báo PUBG PC và PUBG Mobile trong mục Nguồn đối chiếu bên dưới.\n\n## Trách nhiệm biên tập\n\nTrainingBot giữ nguyên đường dẫn để người đọc và công cụ tìm kiếm truy cập thông tin đính chính, đồng thời tạm thời thay nội dung sai khi hiển thị. Bài gốc được giữ trong dữ liệu quản trị để đối chiếu lịch sử, không tiếp tục hiển thị như bản tin đã xác minh.";
+const EDITORIAL_CORRECTION_BODY = "## Đính chính ngày 29/10/2026\n\nBài đăng trước đó đã gắn nhầm nội dung của PUBG: BATTLEGROUNDS (PC/console), bản 39.2 tháng 01/2026, vào tên PUBG Mobile/BGMI Beta 4.7.2. TrainingBot xin đính chính và không sử dụng các thông số PC này như thông số của PUBG Mobile.\n\n## Phần nào thuộc PUBG PC 39.2?\n\n- Satellite Crash xuất hiện bốn lần trong một trận, cầu Blue Zone 10 sát thương/giây; Frost Zone Bomb có bán kính tối đa 20 mét và gây 14 sát thương/giây; Thermal Protection Suit và các điều chỉnh thời tiết whiteout đều được ghi trong thông báo chính thức PUBG: BATTLEGROUNDS Update 39.2 ngày 06/01/2026.\n\n- Các chi tiết này không được phép mặc nhiên áp dụng cho PUBG Mobile hoặc BGMI dù có một số tên tính năng tương tự.\n\n## PUBG Mobile Beta Test 2 công bố điều gì?\n\n- Thông báo Beta Test 2 ngày 10/10/2026 giới thiệu chế độ Erangel Subzero dưới dạng Classic Mode spin-off, bối cảnh các vệ tinh Tythonic rơi xuống Erangel làm khí hậu lạnh đi.\n\n- Các mục được nêu gồm Stalber bị đóng băng, Liquid Nitrogen Tanks, Snow Mist Ammo, snowboard, snowmobile/snowbike, G36C và lốp chống trượt. Đây là dữ liệu Beta, có thể thay đổi trước khi phát hành.\n\n## Về tên phiên bản và nguồn\n\n- Nguồn chính thức đang đối chiếu gọi đợt này là V4.7 Beta Test 2; chưa có cơ sở xác nhận mọi chi tiết trong bài cũ thuộc một bản PUBG Mobile có tên chính thức 'Beta 4.7.2'.\n\n- Xem liên kết đến thông báo PUBG PC và PUBG Mobile trong mục Nguồn đối chiếu bên dưới.\n\n## Trách nhiệm biên tập\n\nTrainingBot giữ nguyên đường dẫn để người đọc và công cụ tìm kiếm truy cập thông tin đính chính, đồng thời hiển thị bản đính chính thay cho nội dung sai. Bản gốc cần được lưu riêng để đối chiếu lịch sử và khôi phục khi có quyền quản trị.";
+export const ERANGEL_D1_CORRECTION = Object.freeze({
+ slug:EDITORIAL_CORRECTION_SLUG,
+ title:EDITORIAL_CORRECTION_TITLE,
+ summary:"Đính chính: các thông số Frost Zone Bomb, Satellite Crash và Thermal Protection Suit trong bài cũ thuộc PUBG PC Update 39.2. Xem riêng thông tin Beta PUBG Mobile 4.7.",
+ content:EDITORIAL_CORRECTION_BODY,
+ rich_content:"",
+ cover_url:""
+});
+export function isStoredErangelCorrection(post){
+ return !!post && String(post.slug)===ERANGEL_D1_CORRECTION.slug &&
+ post.title===ERANGEL_D1_CORRECTION.title &&
+ post.summary===ERANGEL_D1_CORRECTION.summary &&
+ post.content===ERANGEL_D1_CORRECTION.content &&
+ String(post.rich_content||"")==="" && String(post.cover_url||"")==="";
+}
 function verifiedArticleView(post){
  if(String(post.slug)!==EDITORIAL_CORRECTION_SLUG)return post;
- // Deliberately keep the original D1 row intact for audit/rollback.
- // The public view must not keep repeating PC-only patch notes as Mobile 4.7 data.
- return {
-   ...post,
-   title:EDITORIAL_CORRECTION_TITLE,
-   summary:"Đính chính: các thông số Frost Zone Bomb, Satellite Crash và Thermal Protection Suit trong bài cũ thuộc PUBG PC Update 39.2. Xem riêng thông tin Beta PUBG Mobile 4.7.",
-   content:EDITORIAL_CORRECTION_BODY,
-   rich_content:"",
-   cover_url:"",
-   updated_at:"2026-10-29"
- };
+ // No temporary content override after the verified correction reaches D1.
+ // Fail closed on unmigrated/rolled-back D1 rows: never re-publish PC patch notes as Mobile.
+ if(isStoredErangelCorrection(post))return post;
+ return {...post,...ERANGEL_D1_CORRECTION,updated_at:"2026-10-29"};
 }
 function verifiedSourcePanel(post){
  const audit=VERIFIED_EDITORIAL_SOURCES[String(post.slug)];
