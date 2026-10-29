@@ -87,7 +87,7 @@ export async function status(request,env){
  const isReady=r.status===200&&r.json?.ok===true&&r.json?.visitor===true;
  return safe(200,{preview:true,ready:isReady,identityVerified:false,
    anonymousVisitorReady:isReady,surfaces:{visitor:isReady,admin:false},
-   ...(!isReady?{reason:'STAGING_BRIDGE_UNAVAILABLE'}:{})});
+   ...(!isReady?{reason:'STAGING_BRIDGE_HTTP_'+String(r.status)+'_'+(r.status===200?'INVALID_STATUS':'NO_READY')}:{})});
 }
 export async function session(request,env){
  if(!previewHost(new URL(request.url)))return safe(404,{error:{code:'NOT_FOUND'}});
