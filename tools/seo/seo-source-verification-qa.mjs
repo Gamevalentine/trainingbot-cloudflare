@@ -30,7 +30,7 @@ for(const [kind,slug] of Object.entries(slugs)){
  const db={prepare(sql){
   if(/\bINSERT\b|\bCREATE\b|\bALTER\b|\bUPDATE\b|\bDELETE\b|\bDROP\b/i.test(sql)){writes++;throw Error("Forbidden D1 mutation "+sql)}
   reads++;
-  return {bind(){return {first:async()=>rawPost,all:async()=>({results:[]})}}}
+  return {bind(){return {first:async()=>rawPost,all:async()=>({results:kind==="beta"?[{slug:slugs.er,title:"BATTLEGROUNDS mở rộng Erangel: Subzero trong PUBG Mobile & BGMI với bản Beta 4.7.2"}]:[]})}}}
  }};
  const response=await onRequestGet({env:{DB:db},params:{slug}});
  assert.equal(response.status,200,"Article should remain indexable "+slug);
@@ -40,6 +40,7 @@ for(const [kind,slug] of Object.entries(slugs)){
  for(const expected of expectedSources[slug])assert(html.includes(expected.replace(/&/g,"&amp;")),"Evidence link missing "+slug+" -> "+expected);
  assert(html.includes('rel="noopener noreferrer"'),"Source links need no-opener protection");
  assert(!html.includes("Chưa có liên kết nguồn trực tiếp để đối chiếu"),"Unhelpful empty-source text still present "+slug);
+ if(kind==="beta"){assert(html.includes("ĐÍNH CHÍNH: Erangel Subzero của PUBG Mobile"),"Related link still has misleading original Erangel headline");assert(!html.includes("BATTLEGROUNDS mở rộng Erangel: Subzero trong PUBG Mobile"),"Retired Erangel headline still visible in related links");}
  assert.equal(JSON.stringify(rawPost),snapshot,"Must not mutate original D1 object "+slug);
  assert(!/<meta name="robots" content="noindex/i.test(html),"Published article wrongly noindexed "+slug);
  if(kind==="er"){
@@ -77,6 +78,7 @@ for(const slug of Object.values(slugs)){
 assert(sitemapXml.includes("<loc>https://trainingbot.io.vn/bai-viet/some-unmodified-old-post</loc><lastmod>2026-10-21</lastmod>"),
  "Unmodified articles must keep original DB lastmod");
 assert.equal(sitemapWrites,0);
+assert(fs.readFileSync("public/news-featured.html","utf8").includes("Đính chính Erangel Subzero: PUBG Mobile và PC"),"Featured card still promotes retracted article");
 const report={checkedAt:"2026-10-29",policy:"Keep canonical & original D1 data; explicitly retract the misattributed PUBG PC 39.2 article",
  cases,readOnlyD1:true,totalDBReads:reads,totalDBWrites:writes,
  outstanding:["Verify original publisher source of M416 post directly, if official URL becomes publicly available","Independently validate legacy 4.6 Android/iOS package sizes and exact hours; not supported by cited official release"],
