@@ -1,83 +1,69 @@
-name: TrainingBot Erangel D1 — GitHub OIDC one-time migration
+name: TrainingBot D1.2 — OIDC read-only preflight
 on:
   push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/trainingbot-erangel-d1-migrate.yml
-      - functions/api/v71/admin/erangel-correction.js
+    branches: [main, aion-trainingbot-d1-oidc-readonly-20261030]
+    paths: [.github/workflows/trainingbot-erangel-d1-migrate.yml, functions/api/v71/admin/erangel-correction.js]
 permissions:
   contents: read
   id-token: write
-concurrency:
-  group: trainingbot-erangel-oidc-migration
-  cancel-in-progress: false
 jobs:
-  migrate:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+  preflight:
     runs-on: ubuntu-latest
-    timeout-minutes: 18
+    timeout-minutes: 3
     steps:
-      - name: Read D1 status and apply guarded correction using GitHub signed identity
+      - name: Inspect OIDC claim conditions and read D1 state without changing data
         run: |
           node --input-type=module <<'NODE'
-          const endpoint="https://trainingbot-cloudflare.pages.dev/api/v71/admin/erangel-correction";
           const audience="trainingbot-erangel-d1-migration-v1";
-          const confirm="erangel-pc39-2-to-mobile47-20261029";
-          const nap=ms=>new Promise(r=>setTimeout(r,ms));
-          async function token(){
-            const url=new URL(process.env.ACTIONS_ID_TOKEN_REQUEST_URL);
-            url.searchParams.set("audience",audience);
-            const response=await fetch(url,{headers:{Authorization:"Bearer "+process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN}});
-            if(!response.ok)throw Error("GitHub OIDC token issue failed HTTP "+response.status);
-            const data=await response.json();
-            if(typeof data.value!=="string"||data.value.length<150)throw Error("GitHub OIDC token missing");
-            return data.value;
-          }
-          async function request(method,action){
-            const bearer=await token();
-            const response=await fetch(endpoint,{
-              method,
-              headers:{"authorization":"Bearer "+bearer,"accept":"application/json",
-                ...(method==="POST"?{"content-type":"application/json"}:{})},
-              ...(method==="POST"?{body:JSON.stringify({action,confirm})}:{})
-            });
-            const payload=await response.json().catch(()=>({}));
-            return {status:response.status,payload};
-          }
-          let state;
-          for(let attempt=1;attempt<=36;attempt++){
+          const url=new URL(process.env.ACTIONS_ID_TOKEN_REQUEST_URL);
+          url.searchParams.set("audience",audience);
+          const issued=await fetch(url,{headers:{Authorization:"Bearer "+process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN}});
+          if(!issued.ok)throw Error("OIDC issuance HTTP "+issued.status);
+          const {value:jwt}=await issued.json();
+          if(typeof jwt!=="string"||jwt.split(".").length!==3)throw Error("OIDC token missing");
+          const decode=s=>JSON.parse(Buffer.from(s,"base64url").toString("utf8"));
+          const parts=jwt.split("."),head=decode(parts[0]),claims=decode(parts[1]),now=Math.floor(Date.now()/1000);
+          const checks={
+            alg:head.alg==="RS256",
+            issuer:claims.iss==="https://token.actions.githubusercontent.com",
+            audience:claims.aud===audience,
+            repository:String(claims.repository||"").toLowerCase()==="gamevalentine/trainingbot-cloudflare",
+            workflow_ref:String(claims.workflow_ref||"").toLowerCase()==="gamevalentine/trainingbot-cloudflare/.github/workflows/trainingbot-erangel-d1-migrate.yml@refs/heads/main",
+            main_ref:claims.ref==="refs/heads/main",
+            push_event:claims.event_name==="push",
+            sha:typeof claims.sha==="string"&&/^[a-f0-9]{40}$/.test(claims.sha),
+            jti:typeof claims.jti==="string"&&claims.jti.length>0,
+            iat:Number.isInteger(claims.iat)&&claims.iat>=now-300&&claims.iat<=now+30,
+            exp:Number.isInteger(claims.exp)&&claims.exp>now&&claims.exp<=now+600,
+            nbf:claims.nbf===undefined||(Number.isInteger(claims.nbf)&&claims.nbf<=now+30)
+          };
+          console.log("OIDC claims match main-only policy (boolean values, no token)",JSON.stringify(checks));
+          const jwks=await fetch("https://token.actions.githubusercontent.com/.well-known/jwks");
+          console.log("GitHub JWKS accessible to runner",jwks.status===200);
+          let primary=null;
+          for(const host of ["https://trainingbot-cloudflare.pages.dev","https://trainingbot.io.vn"]){
             try{
-              const result=await request("GET");
-              if(result.status===200&&result.payload.ok===true){
-                state=result.payload;break;
-              }
-              if(result.status!==401&&result.status!==404&&result.status!==503){
-                throw Error("Unexpected Production status HTTP "+result.status);
-              }
-              console.log("Waiting for authenticated Production Pages Function; probe",attempt,"HTTP",result.status);
-            }catch(error){
-              if(String(error.message).startsWith("Unexpected Production status"))throw error;
-              console.log("Production status not available yet; probe",attempt);
-            }
-            if(attempt<36)await nap(20000);
+              const response=await fetch(host+"/api/v71/admin/erangel-correction",{
+                method:"GET",headers:{Authorization:"Bearer "+jwt,Accept:"application/json"},
+                signal:AbortSignal.timeout(12000),redirect:"manual"
+              });
+              const raw=await response.text();let data={};try{data=JSON.parse(raw)}catch{}
+              const info={host,method:"GET",status:response.status,content_type:response.headers.get("content-type"),
+                message:typeof data.message==="string"?data.message.slice(0,100):null,
+                ok:data.ok===true,
+                migration_state:["applied","restored","not_applied"].includes(data.migration_state)?data.migration_state:null,
+                backup_exists:typeof data.backup_exists==="boolean"?data.backup_exists:null,
+                stored_correction:typeof data.stored_correction==="boolean"?data.stored_correction:null,
+                public_fallback_required:typeof data.public_fallback_required==="boolean"?data.public_fallback_required:null};
+              console.log("GET_ONLY_PRODUCTION_DIAGNOSTIC",JSON.stringify(info));
+              if(host==="https://trainingbot-cloudflare.pages.dev")primary=info;
+            }catch(error){console.log("GET_ONLY_PRODUCTION_DIAGNOSTIC",JSON.stringify({host,error_class:error?.name||"Error"}))}
           }
-          if(!state)throw Error("Production OIDC endpoint not ready; D1 untouched");
-          if(state.migration_state==="applied"&&state.stored_correction===true&&state.backup_exists===true){
-            console.log("ERANGEL D1 PRODUCTION VERIFIED: already applied, backup exists");process.exit(0);
+          if(process.env.GITHUB_REF==="refs/heads/main"){
+            if(Object.values(checks).some(value=>value!==true))throw Error("Main OIDC claim mismatch, no D1 change");
+            if(primary?.status!==200||primary.ok!==true)throw Error("Main D1 read-only status failed, no D1 change");
+            console.log("PRODUCTION_D1_READ_VERIFIED; no data changed");
+          }else{
+            console.log("Diagnostic feature-branch token is intentionally untrusted in Production");
           }
-          if(state.migration_state!=="not_applied"||state.stored_correction!==false||state.backup_exists!==false)
-            throw Error("Unexpected Production D1 state; refusing migration");
-          const applied=await request("POST","apply");
-          if(applied.status!==200||applied.payload.ok!==true||
-             !["applied","already_applied"].includes(applied.payload.result)||
-             applied.payload.backup_exists!==true||applied.payload.stored_correction!==true)
-            throw Error("Migration rejected or failed HTTP "+applied.status+"; inspect before retry");
-          const checked=await request("GET");
-          const verified=checked.status===200&&checked.payload.ok===true&&
-            checked.payload.migration_state==="applied"&&
-            checked.payload.backup_exists===true&&checked.payload.stored_correction===true&&
-            checked.payload.public_fallback_required===false;
-          if(!verified)throw Error("D1 verification failed; retain public safety fallback");
-          console.log("ERANGEL D1 PRODUCTION VERIFIED: applied with private original backup, public fallback not required");
           NODE
