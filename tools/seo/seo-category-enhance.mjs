@@ -14,7 +14,7 @@ const items=[
   note:"Bài được chọn không có nghĩa thông tin Beta hoặc tin đồn đã được xác nhận cho phiên bản hiện tại.",
   links:[
    ["PUBG Mobile 4.7 Beta 1","Bài tổng hợp những điều chỉnh gameplay trong giai đoạn Beta 1.","/bai-viet/pubg-mobile-4-7-beta-1-chinh-thuc-khoi-dong-hang-loat-thay-doi-gameplay-dang-chu-y"],
-   ["Erangel Subzero và Beta 4.7.2","Nội dung về khu vực Erangel Subzero và những yếu tố bản thử nghiệm.","/bai-viet/battlegrounds-mo-rong-erangel-subzero-trong-pubg-mobile-bgmi-voi-ban-beta-4-7-2"],
+   ["Đính chính Erangel Subzero: PUBG Mobile và PC","Đọc bản đính chính: bài cũ đã nhầm thông số PUBG PC 39.2 thành PUBG Mobile Beta.","/bai-viet/battlegrounds-mo-rong-erangel-subzero-trong-pubg-mobile-bgmi-voi-ban-beta-4-7-2"],
    ["M416 Glacier Switch Effect","Bài về hiệu ứng M416 Glacier và thông tin dành cho Việt Nam.","/bai-viet/pubg-mobile-xac-nhan-m416-glacier-switch-effect-gan-hoan-thien-viet-nam-van-cho-thong-tin"]]},
  {file:"news-update.html",title:"Đóng góp câu chuyện cộng đồng",
   intro:"Chuyên mục dành cho chia sẻ trải nghiệm và phỏng vấn người chơi. Hiện TrainingBot chưa có bài phỏng vấn đã kiểm chứng được công bố tại đây; chúng mình không gán phát biểu cho bất kỳ người chơi hay đội tuyển nào khi chưa có nguồn xác nhận.",
