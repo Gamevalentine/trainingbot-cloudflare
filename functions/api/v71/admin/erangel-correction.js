@@ -67,14 +67,16 @@ export async function onRequestPost({request,env}){
    }
    if(!validOriginal(post))return reply({ok:false,message:"Unexpected source version; no article write"},409);
    const original=snapshot(post),now=new Date().toISOString();
-   // D1.batch guarantees a transactional group; if INSERT fails, UPDATE rolls back.
+   // D1.batch is transactional. The backup INSERT intentionally violates NOT NULL
+   // if the compare-and-set UPDATE did not produce the expected article row.
+   // This prevents a partially applied correction with no usable backup.
    // Compare-and-set prevents overwriting a concurrent Admin edit.
    const actions=[
     db.prepare("UPDATE tb_manual_posts_v1 SET title=?,summary=?,content=?,rich_content=?,cover_url=?,updated_at=? WHERE slug=? AND id=? AND updated_at=? AND title=? AND content=?")
      .bind(ERANGEL_D1_CORRECTION.title,ERANGEL_D1_CORRECTION.summary,ERANGEL_D1_CORRECTION.content,
        ERANGEL_D1_CORRECTION.rich_content,ERANGEL_D1_CORRECTION.cover_url,now,original.slug,
        original.id,original.updated_at,original.title,original.content),
-    db.prepare("INSERT INTO "+BACKUP_TABLE+" (slug,revision,original_json,original_updated_at,correction_updated_at,created_at,state) SELECT ?,?,?,?,?,?,'applied' WHERE EXISTS (SELECT 1 FROM tb_manual_posts_v1 WHERE slug=? AND id=? AND title=? AND content=? AND updated_at=?)")
+    db.prepare("INSERT INTO "+BACKUP_TABLE+" (slug,revision,original_json,original_updated_at,correction_updated_at,created_at,state) VALUES (?,?,?,?,?,?,CASE WHEN EXISTS (SELECT 1 FROM tb_manual_posts_v1 WHERE slug=? AND id=? AND title=? AND content=? AND updated_at=?) THEN 'applied' ELSE NULL END)")
      .bind(original.slug,REVISION,JSON.stringify(original),original.updated_at,now,now,
        original.slug,original.id,ERANGEL_D1_CORRECTION.title,ERANGEL_D1_CORRECTION.content,now)
    ];
@@ -101,8 +103,8 @@ export async function onRequestPost({request,env}){
     .bind(original.title,original.summary,original.content,original.rich_content,original.cover_url,
       original.updated_at,original.slug,original.id,ERANGEL_D1_CORRECTION.title,
       ERANGEL_D1_CORRECTION.content,backup.correction_updated_at),
-   db.prepare("UPDATE "+BACKUP_TABLE+" SET state='restored',restored_at=? WHERE slug=? AND revision=? AND state='applied' AND EXISTS (SELECT 1 FROM tb_manual_posts_v1 WHERE slug=? AND id=? AND title=? AND updated_at=?)")
-    .bind(new Date().toISOString(),original.slug,REVISION,original.slug,original.id,original.title,original.updated_at)
+   db.prepare("UPDATE "+BACKUP_TABLE+" SET state=CASE WHEN EXISTS (SELECT 1 FROM tb_manual_posts_v1 WHERE slug=? AND id=? AND title=? AND updated_at=?) THEN 'restored' ELSE NULL END,restored_at=? WHERE slug=? AND revision=? AND state='applied'")
+    .bind(original.slug,original.id,original.title,original.updated_at,new Date().toISOString(),original.slug,REVISION)
   ];
   const results=await db.batch(actions);
   if(!changed(results[0])||!changed(results[1]))
