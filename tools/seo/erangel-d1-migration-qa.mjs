@@ -227,6 +227,35 @@ try{
  assert.equal(prodAliasDB.backup.state,"applied");
  assert.deepEqual(JSON.parse(prodAliasDB.backup.original_json),old);
 
+ // The Cloudflare runtime may have no outbound fetch. Prove pinned keys still
+ // validate RSA signatures, while rejecting wrong claims and expired pins.
+ const injectPinned=controller.replace(
+  /const OIDC_PINNED_KEYS=Object\.freeze\(\[[^\n]*\]\);/,
+  "const OIDC_PINNED_KEYS=Object.freeze(["+JSON.stringify(publicJwk)+"]);"
+ );
+ assert.notEqual(injectPinned,controller,"Expected to inject QA RSA key into pin fixture");
+ globalThis.fetch=async()=>{throw new TypeError("Outbound JWKS blocked in QA")};
+ const offline=await import("data:text/javascript;base64,"+Buffer.from(injectPinned).toString("base64"));
+ const offlineStatus=await body(await offline.onRequestGet({
+  request:oidcReq("GET",valid,"", "trainingbot-cloudflare.pages.dev"),env:{DB:new MockD1(old)}
+ }));
+ assert.equal(offlineStatus.status,200,"Valid signed JWT with previously pinned key passes offline");
+ const offlineBad=await body(await offline.onRequestGet({
+  request:oidcReq("GET",signedJwt({repository:"attacker/repository"})),env:{DB:new MockD1(old)}
+ }));
+ assert.equal(offlineBad.status,401,"Offline verifier must still reject wrong repository");
+ const expiredSource=injectPinned.replace('Date.parse("2026-10-31T20:20:00Z")','Date.parse("1970-01-01T00:00:00Z")');
+ assert.notEqual(expiredSource,injectPinned,"Offline pin must have explicit expiry");
+ const expired=await import("data:text/javascript;base64,"+Buffer.from(expiredSource).toString("base64"));
+ const expiredStatus=await body(await expired.onRequestGet({
+  request:oidcReq("GET",valid),env:{DB:new MockD1(old)}
+ }));
+ assert.equal(expiredStatus.status,401,"Expired pinned key must fail closed");
+ globalThis.fetch=async uri=>{
+  if(String(uri)!==githubJwks)throw Error("Unexpected OIDC key source");
+  return Response.json({keys:[publicJwk]});
+ };
+
 }finally{
  globalThis.fetch=beforeFetch;
 }
@@ -237,6 +266,6 @@ fs.writeFileSync("seo-erangel-migration-artifacts/qa-report.json",JSON.stringify
   "unauthorized GET/POST rejected","preview writes rejected","original backup saved",
   "apply idempotent","restore exact row","refuse edited-record rollback",
   "restored original not served publicly","transaction failure atomicity",
-  "unexpected existing title rejected","concurrent Admin edit aborts D1 batch","signed GitHub OIDC workflow can apply migration on canonical Pages Production hostname","OIDC wrong audience/repo/workflow/branch/event/expiry/signature rejected"
+  "unexpected existing title rejected","concurrent Admin edit aborts D1 batch","signed GitHub OIDC workflow can apply migration on canonical Pages Production hostname","OIDC wrong audience/repo/workflow/branch/event/expiry/signature rejected","offline pinned JWT verification","offline wrong repository denied","expired pin denied"
  ],productionD1Migrated:false},null,2));
 console.log("ERANGEL D1 MIGRATION QA PASS: private backup, D1 transaction, exact rollback, public fail-closed fallback; remote Production migration NOT executed");

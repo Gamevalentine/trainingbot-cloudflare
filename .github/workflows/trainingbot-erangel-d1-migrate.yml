@@ -61,7 +61,23 @@ jobs:
           }
           if(process.env.GITHUB_REF==="refs/heads/main"){
             if(Object.values(checks).some(value=>value!==true))throw Error("Main OIDC claim mismatch, no D1 change");
-            if(primary?.status!==200||primary.ok!==true)throw Error("Main D1 read-only status failed, no D1 change");
+            // Cloudflare Pages may finish its deployment after GitHub Actions starts.
+            // Retry only signed GET for a bounded period; never perform a write.
+            for(let attempt=1;attempt<=15&&(primary?.status!==200||primary?.ok!==true);attempt++){
+              await new Promise(resolve=>setTimeout(resolve,10000));
+              try{
+                const response=await fetch("https://trainingbot-cloudflare.pages.dev/api/v71/admin/erangel-correction",{
+                  method:"GET",headers:{Authorization:"Bearer "+jwt,Accept:"application/json"},
+                  signal:AbortSignal.timeout(12000)
+                });
+                const data=await response.json().catch(()=>({}));
+                primary={status:response.status,ok:data.ok===true,
+                  migration_state:data.migration_state??null,backup_exists:data.backup_exists??null,
+                  stored_correction:data.stored_correction??null,public_fallback_required:data.public_fallback_required??null};
+                console.log("MAIN_PRODUCTION_GET_RETRY",JSON.stringify({attempt,...primary}));
+              }catch(error){console.log("MAIN_PRODUCTION_GET_RETRY",JSON.stringify({attempt,error_class:error?.name||"Error"}))}
+            }
+            if(primary?.status!==200||primary.ok!==true)throw Error("Main D1 read-only status failed after bounded retries; no D1 change");
             console.log("PRODUCTION_D1_READ_VERIFIED; no data changed");
           }else{
             console.log("Diagnostic feature-branch token is intentionally untrusted in Production");

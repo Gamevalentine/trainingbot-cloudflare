@@ -40,3 +40,13 @@ Các công cụ trong hội thoại hiện cho phép sửa repo và kiểm thử
 - Địa chỉ `trainingbot.io.vn` đang trả HTTP 403 trước API khi gọi từ GitHub Actions; địa chỉ Production gốc `trainingbot-cloudflare.pages.dev` trả HTTP 401 trực tiếp từ API. GitHub workflow dùng đúng hostname Production gốc để tránh lớp chặn không liên quan tới JWT.
 - Chỉ chấp nhận hai hostname chính xác cho thao tác bảo trì; nhánh Preview `*.trainingbot-cloudflare.pages.dev` vẫn bị từ chối, không sử dụng alias có tên nhánh.
 - **Không được coi migration đã chạy** nếu chưa thấy workflow Production có kết quả PASS với `migration_state=applied`, `stored_correction=true`, `backup_exists=true`.
+
+## D1.2 — Chẩn đoán mạng và xác thực ngày 30/10/2026
+
+- Cloudflare Pages đã báo triển khai `1be3ba7` thành công, nhưng hai lần migration OIDC ngày 29/10 vẫn dừng trước khi ghi D1.
+- Sau PR #56, GitHub Actions chạy nhánh `main` và kiểm tra 12 thuộc tính JWT đều khớp; API Production Pages trả 401 và tên miền tùy chỉnh trả 403.
+- QA thực tế trên Pages Preview: `fetch()` từ Function đến GitHub API, Cloudflare Docs, GitHub OIDC Discovery và GitHub JWKS đều ném `TypeError` ngay tại bước kết nối. Ngược lại, `crypto.subtle.importKey()` nhập được public RSA JWK chính thức do GitHub Actions cung cấp.
+- Phương án sửa trong PR riêng: ký xác thực JWT bằng bộ **khóa công khai** GH OIDC được GitHub runner tải trực tiếp từ issuer HTTPS và pin trong source, chỉ dùng nếu tải JWKS trực tiếp thất bại. Không pin private key, token, mật khẩu hoặc dữ liệu Admin.
+- Các điều kiện bắt buộc vẫn là RS256, chữ ký hợp lệ, đúng issuer/audience/repository/workflow/nhánh `main`/sự kiện push và thời hạn JWT. Bộ khóa ghim **hết hiệu lực ngày 31/10/2026 20:20 UTC**; sau đó nếu không tải được JWKS sẽ từ chối xác thực. Không cho Preview sử dụng quyền Production.
+- Workflow trong PR #56 vẫn **chỉ GET**; có thêm retry hữu hạn để đợi bản Pages mới triển khai. Tuyệt đối không cho phép tự ghi hoặc rollback D1 trong bước kiểm thử này.
+- Chỉ chuyển sang migration riêng sau khi API Production đọc được trạng thái thật và các kiểm thử QA/SEO/Wiki/Preview qua hết. Cơ chế fallback công khai được giữ nguyên đến khi D1 thật có bản ghi đúng và bản sao lưu.
