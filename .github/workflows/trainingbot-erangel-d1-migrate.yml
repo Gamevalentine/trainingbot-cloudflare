@@ -21,7 +21,7 @@ jobs:
       - name: Read D1 status and apply guarded correction using GitHub signed identity
         run: |
           node --input-type=module <<'NODE'
-          const endpoint="https://trainingbot.io.vn/api/v71/admin/erangel-correction";
+          const endpoint="https://trainingbot-cloudflare.pages.dev/api/v71/admin/erangel-correction";
           const audience="trainingbot-erangel-d1-migration-v1";
           const confirm="erangel-pc39-2-to-mobile47-20261029";
           const nap=ms=>new Promise(r=>setTimeout(r,ms));
