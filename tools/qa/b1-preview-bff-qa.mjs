@@ -14,6 +14,7 @@ const svc={
  async fetch(req){
   const url=new URL(req.url),method=req.method;
   assert.equal(url.origin,'https://trainingbot-ai-staging.ai-vn.workers.dev');
+  assert.equal(req.redirect,'manual','Cloudflare workerd rejects redirect:error; manual must stay fail-closed');
   assert.match(url.pathname,/^\/__preview_b1\/(?:status|session|chat)$/);
   assert.equal(req.headers.get('authorization'),null);
   assert.equal(req.headers.get('cookie'),null);
