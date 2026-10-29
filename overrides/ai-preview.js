@@ -15,13 +15,48 @@
     statusElement.querySelector("strong").textContent = message;
     statusElement.querySelector("p").textContent = detail;
   }
-  function message(role, content) {
+  function message(role, content, sources = []) {
     const item = document.createElement("article");
     const label = document.createElement("strong");
     label.textContent = role === "user" ? "Bạn" : "TrainingBot AI";
     const body = document.createElement("p");
     body.textContent = content;
     item.append(label, body);
+    // Source metadata is supplied by the server-only Worker bridge. Render only
+    // text nodes and allowlisted source URLs; never interpret model text as HTML.
+    if (role === "assistant" && Array.isArray(sources) && sources.length) {
+      const section = document.createElement("section");
+      section.setAttribute("aria-label", "Nguồn và trạng thái xác minh");
+      section.style.cssText = "border-top:1px solid #294563;padding-top:10px;font-size:.85em";
+      const head = document.createElement("strong");
+      head.textContent = "Nguồn tra cứu và phiên bản";
+      section.append(head);
+      const list = document.createElement("ul");
+      for (const source of sources.slice(0, 6)) {
+        if (!source || !["wiki_snapshot", "editorial_tactics"].includes(source.type)) continue;
+        const li = document.createElement("li");
+        const name = typeof source.title === "string" ? source.title.slice(0, 160) : "Nguồn nội bộ";
+        const validUrl = typeof source.url === "string" &&
+          /^https:\/\/github\.com\/Gamevalentine\/trainingbot-cloudflare\/blob\/[a-f0-9]{40}\/overrides\/wiki\.html$/.test(source.url);
+        if (validUrl && source.type === "wiki_snapshot") {
+          const anchor = document.createElement("a");
+          anchor.href = source.url;
+          anchor.target = "_blank";
+          anchor.rel = "noopener noreferrer";
+          anchor.textContent = name;
+          li.append(anchor);
+        } else {
+          li.textContent = name;
+        }
+        const note = document.createElement("span");
+        note.textContent = source.type === "editorial_tactics"
+          ? " — Gợi ý biên tập, không phải dữ kiện chính thức"
+          : " — Wiki nội bộ, chưa xác minh chính thức; phiên bản game chưa xác minh" +
+            (source.snapshotDate ? "; chụp " + source.snapshotDate : "");
+        li.append(note); list.append(li);
+      }
+      section.append(list); item.append(section);
+    }
     item.style.cssText = "border:1px solid #294563;background:#12233b;border-radius:14px;padding:12px 16px;white-space:pre-wrap";
     thread.append(item);
     item.scrollIntoView({block:"end",behavior:"smooth"});
@@ -74,7 +109,7 @@
       if(typeof result.reply!=="string" || result.reply.length>16000)throw Error("INVALID_REPLY");
       if(typeof result.conversationId === "string" && /^[A-Za-z0-9_-]{8,100}$/.test(result.conversationId))
         conversationId=result.conversationId;
-      message("assistant",result.reply);
+      message("assistant",result.reply,result.sources);
     } catch {
       message("assistant","Dịch vụ AI chưa sẵn sàng. Vui lòng thử lại khi máy chủ được mở.");
       conversationId = null;
