@@ -1,4 +1,4 @@
-> **B.1 update (2026-10-29):** Read the detailed [B1-visitor-preview-bff.md](B1-visitor-preview-bff.md). Preview BFF source and live Staging service protocol PASS; live Pages-to-Staging binding is not active because Cloudflare Pages project API returns HTTP 403. Previous A.1/A.7 notes below are historical.
+> B.1 update: Visitor Preview chat is now connected and verified end to end. Production remains unchanged. See B1-visitor-preview-bff.md for evidence. The older notes below are historical.
 
 # TrainingBot AI — A.1/A.7 Preview access requirements (corrected 2026-10-29)
 
