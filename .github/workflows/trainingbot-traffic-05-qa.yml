@@ -1,0 +1,61 @@
+name: TrainingBot — TRAFFIC-05 visitor data health and read-only canary
+on:
+  push:
+    branches:
+      - traffic-05-reports-health-20261029
+  pull_request:
+    paths:
+      - 'functions/api/v72/admin/traffic-health.js'
+      - 'overrides/admin_traffic_quality_v1.js'
+      - 'build.sh'
+      - 'tools/analytics/traffic-05*'
+  schedule:
+    - cron: '0 2 * * *' # 09:00 Asia/Bangkok daily
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  qa-d1-health:
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax checks and production-equivalent build (without deployment)
+        run: |
+          bash -n build.sh postbuild.sh
+          node --input-type=module --check < functions/api/v72/admin/traffic-health.js
+          node --check overrides/admin_traffic_quality_v1.js
+          node --check tools/analytics/traffic-05-health-sqlite.mjs
+          node --check tools/analytics/traffic-05-prod-readonly-smoke.mjs
+          npm run build
+      - name: Read-only D1 integrity and Admin diagnostic tests
+        run: node --disable-warning=ExperimentalWarning tools/analytics/traffic-05-health-sqlite.mjs
+      - name: Regression sources, automated indicators, Admin label and previous data
+        run: |
+          node --disable-warning=ExperimentalWarning tools/analytics/traffic-04-verified-evidence-qa.mjs
+          node --disable-warning=ExperimentalWarning tools/analytics/traffic-anomalies-sqlite.mjs
+          node --disable-warning=ExperimentalWarning tools/analytics/traffic-sources-sqlite.mjs
+          node tools/analytics/traffic-quality-qa.mjs
+          node --disable-warning=ExperimentalWarning tools/analytics/visitor-analytics-sqlite.mjs
+          node --disable-warning=ExperimentalWarning tools/analytics/admin-browser-label-sqlite.mjs
+          node tools/analytics/visitor-online-ui-qa.mjs
+          node tools/analytics/visitor-analytics-qa.mjs
+      - name: SEO and Cloudflare Preview isolation
+        run: |
+          node tools/qa/p1-seo.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
+  production-readonly-canary:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Inspect static assets and enforce authenticated API reads; never write visits
+        run: node tools/analytics/traffic-05-prod-readonly-smoke.mjs
