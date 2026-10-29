@@ -10,7 +10,17 @@ export const normalizeRay=value=>{
   const [id,pop]=ray.split("-");
   return id.toLowerCase()+(pop?"-"+pop.toUpperCase():"");
 };
-export const rayAuditEnabled=env=>env?.[ENABLE_FLAG]==="1";
+export const rayAuditEnabled=(env,request)=>{
+  if(env?.[ENABLE_FLAG]!=="1"||!request)return false;
+  const expected=String(env.TRAFFIC_RAY_AUDIT_STAGE_HOST||"").trim().toLowerCase();
+  let actual;
+  try{actual=new URL(request.url).hostname.toLowerCase();}catch{return false;}
+  // Require a distinct, expressly configured Staging host. A flag alone
+  // must never accidentally activate D1 diagnostics on Production/Pages.
+  return Boolean(expected)&&actual===expected&&
+    actual!=="trainingbot.io.vn"&&actual!=="trainingbot-cloudflare.pages.dev"&&
+    !actual.endsWith(".trainingbot-cloudflare.pages.dev");
+};
 export const rayAuditSQL={
   create:`CREATE TABLE IF NOT EXISTS tb_traffic_ingest_ray_audit_v1(
     ray_id TEXT NOT NULL,visitor_id TEXT NOT NULL,visit_id TEXT NOT NULL,
@@ -23,7 +33,7 @@ export const rayAuditSQL={
   prune:"DELETE FROM tb_traffic_ingest_ray_audit_v1 WHERE created_at<?"
 };
 export async function recordIngestRay({db,env,request,eventType,visitorId,visitId,now}){
-  if(!rayAuditEnabled(env)||eventType!=="page_view"||!db)return {recorded:false,reason:"disabled_or_not_pageview"};
+  if(!rayAuditEnabled(env,request)||eventType!=="page_view"||!db)return {recorded:false,reason:"disabled_or_not_pageview"};
   const ray=normalizeRay(request.headers.get("cf-ray"));
   if(!ray)return {recorded:false,reason:"no_valid_edge_ray"};
   // The Cf-Ray here belongs to the tracking POST, not necessarily the page GET.
