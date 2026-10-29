@@ -236,7 +236,7 @@ function articleRelated(rows){
  const posts=(rows||[]).filter(p=>/^[a-z0-9-]{1,110}$/.test(String(p.slug||""))).slice(0,3);
  if(!posts.length)return "";
  return '<aside class="tb-p1-box"><h2>Bài viết liên quan</h2><ul>'+
- posts.map(p=>'<li><a href="/bai-viet/'+encodeURIComponent(p.slug)+'">'+esc(p.title||"Bài viết")+'</a></li>').join("")+'</ul></aside>';
+ posts.map(p=>'<li><a href="/bai-viet/'+encodeURIComponent(p.slug)+'">'+esc(String(p.slug)===EDITORIAL_CORRECTION_SLUG?EDITORIAL_CORRECTION_TITLE:(p.title||"Bài viết"))+'</a></li>').join("")+'</ul></aside>';
 }
 function editorialVersionLinks(post){
   // Only a verified older Beta article gets a cross-version reading trail.
