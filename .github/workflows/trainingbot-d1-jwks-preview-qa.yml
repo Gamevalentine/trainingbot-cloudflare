@@ -25,7 +25,7 @@ jobs:
               console.log("PREVIEW_JWKS_PROBE",JSON.stringify({attempt:i,status,
                 ok:body.ok===true,jwks_http:body.jwks_http??null,
                 rsa_key_present:body.rsa_key_present===true,crypto_import_ok:body.crypto_import_ok===true,
-                error_class:body.error_class||null}));
+                failed_stage:body.failed_stage||null,error_class:body.error_class||null}));
               if(status===200&&body.ok===true&&body.crypto_import_ok===true){
                 console.log("PREVIEW_JWKS_AND_WEBCRYPTO_PASS; D1 not accessed");process.exit(0);
               }
