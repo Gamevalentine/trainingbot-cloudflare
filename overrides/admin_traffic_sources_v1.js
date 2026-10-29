@@ -34,13 +34,13 @@
       </div>
       <div id="tbTrafficCount" class="tb-traffic-small"></div>
       <div class="tb-audience-scroll"><table class="tb-audience-table tb-traffic-table">
-        <thead><tr><th>Khách</th><th>Nguồn / Bằng chứng</th><th>Quốc gia</th><th>Trang đầu</th><th>Trang giới thiệu</th><th>UTM</th><th>Lượt xem của mã khách</th><th>Lần ghé</th></tr></thead>
-        <tbody id="tbTrafficRows"><tr><td colspan="8">Chưa có dữ liệu.</td></tr></tbody>
+        <thead><tr><th>Khách</th><th>Nguồn / Bằng chứng</th><th>Quốc gia</th><th>Trang đầu</th><th>Trang giới thiệu</th><th>UTM</th><th>Lượt xem của mã khách</th><th>Lần ghé</th><th>Kiểm chứng từng lượt ghé</th></tr></thead>
+        <tbody id="tbTrafficRows"><tr><td colspan="9">Chưa có dữ liệu.</td></tr></tbody>
       </table></div>
       <div class="tb-audience-pages"><button type="button" id="tbTrafficPrev">← Trước</button><span id="tbTrafficPage">Trang 1</span><button type="button" id="tbTrafficNext">Sau →</button></div>
       <details class="tb-traffic-legacy"><summary>Referrer lịch sử đã lưu (không đồng nghĩa nguồn lần đầu)</summary>
         <div id="tbTrafficLegacy"></div></details>
-      <p class="tb-traffic-note">Chỉ xem một trang là tín hiệu cần kiểm tra, không chứng minh đó là bot. Trường "Lượt xem" tính theo toàn bộ lịch sử mã khách, không phải một lượt ghé. Các lượt ghé trước khi nâng cấp chưa thể khôi phục UTM.</p>`;
+      <p class="tb-traffic-note">Xác minh chỉ theo từng lượt ghé, có bằng chứng cụ thể và lưu lịch sử sửa nhãn; không suy đoán theo quốc gia, ASN hay thiết bị. Dữ liệu Cloudflare dạng tổng hợp không đủ để xác minh từng mã khách. Chỉ xem một trang không chứng minh bot. Lượt xem là số trang cả lịch sử mã khách.</p>`;
     const style=document.createElement("style");
     style.textContent=`
       .tb-traffic-panel{margin-top:14px}
@@ -57,6 +57,8 @@
       .tb-traffic-filter select{border:1px solid #344764;background:#111c30;color:#e4edf9;padding:9px;border-radius:9px;max-width:300px}
       .tb-traffic-table{min-width:1130px}.tb-traffic-table td{max-width:240px;overflow-wrap:anywhere}
       .tb-traffic-small{font-size:11px;color:#aabbd4;margin:9px 0}
+      .tb-traffic-mark{border:1px solid #34516e;background:#15283f;color:#dbedfb;padding:6px 9px;border-radius:8px;cursor:pointer;font-size:10px}
+      .tb-traffic-review-state{display:block;margin-bottom:6px;color:#a9bfe0;font-size:10px}
       .tb-traffic-legacy{margin-top:14px;color:#aabbd4;font-size:11px}
       .tb-traffic-legacy summary{cursor:pointer;color:#c4d4ea}
     `;
@@ -66,6 +68,10 @@
       el(id).addEventListener("change",event=>{state[field]=event.target.value;state.page=1;load();});
     }
     el("tbTrafficRefresh").addEventListener("click",load);
+    el("tbTrafficRows").addEventListener("click",event=>{
+      const button=event.target.closest("button.tb-traffic-mark");
+      if(button)void reviewVisit(button);
+    });
     el("tbTrafficPrev").addEventListener("click",()=>{if(state.page>1){state.page--;load();}});
     el("tbTrafficNext").addEventListener("click",()=>{state.page++;load();});
     const parent=el("tbVisitorPanel");
@@ -80,6 +86,41 @@
     setInterval(()=>{if(parent.classList.contains("active"))load();},30000);
     return true;
   }
+  async function reviewVisit(button){
+    const auth=token();
+    const visitId=button?.dataset?.visit,visitorId=button?.dataset?.visitor;
+    if(!auth||!visitId||!visitorId)return;
+    const kind=window.prompt("Phân loại: verified_test (kiểm thử đã đối chiếu) / verified_automated (tự động đã đối chiếu) / cleared (bỏ nghi vấn) / unresolved (chưa xác định)", "unresolved");
+    if(kind===null)return;
+    if(!["verified_test","verified_automated","cleared","unresolved"].includes(kind)){
+      window.alert("Loại xác minh không hợp lệ.");return;
+    }
+    const evidenceKind=window.prompt("Loại bằng chứng: cloudflare_request_log / controlled_test_run / server_request_log / other_document", "other_document");
+    if(evidenceKind===null)return;
+    if(!["cloudflare_request_log","controlled_test_run","server_request_log","other_document"].includes(evidenceKind)){
+      window.alert("Loại bằng chứng không hợp lệ.");return;
+    }
+    const reference=window.prompt("Mã tham chiếu cụ thể: Cloudflare Ray ID, ID lần chạy kiểm thử hoặc liên kết biên bản (tối thiểu 12 ký tự). Không điền IP cá nhân.", "");
+    if(reference===null)return;
+    const reason=window.prompt("Giải thích cách bằng chứng liên kết CHÍNH XÁC với lượt ghé này (tối thiểu 20 ký tự). Không suy đoán từ chỉ quốc gia hoặc một lần xem trang.", "");
+    if(reason===null)return;
+    if(reference.trim().length<12||reason.trim().length<20){window.alert("Chưa đủ thông tin bằng chứng.");return;}
+    if(!window.confirm("Xác nhận lưu nhãn có bằng chứng cho đúng lượt ghé này? Không thay đổi dữ liệu gốc hay chặn khách."))return;
+    button.disabled=true;
+    try{
+      const r=await fetch("/api/v72/admin/traffic-visit-review",{
+        method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+auth},
+        cache:"no-store",credentials:"same-origin",
+        body:JSON.stringify({visit_id:visitId,visitor_id:visitorId,status:kind,
+          evidence_kind:evidenceKind,evidence_ref:reference,reason})
+      });
+      const data=await r.json().catch(()=>({}));
+      if(!r.ok||!data.ok)throw Error(data.message||"Không lưu được bằng chứng.");
+      await load();
+      el("tbAnomalyRefresh")?.click();
+    }catch(error){window.alert(String(error.message||error));}
+    finally{button.disabled=false;}
+  }
   async function load(){
     const auth=token(),serial=++state.serial;
     if(!auth){el("tbTrafficStatus").textContent="Đăng nhập Admin để xem nguồn truy cập.";return;}
@@ -92,7 +133,7 @@
       if(!response.ok||!data.ok)throw Error(data.message||"API không trả dữ liệu nguồn truy cập.");
       if(!data.ready){
         el("tbTrafficStatus").textContent=data.message||"Chưa có dữ liệu nguồn.";
-        el("tbTrafficRows").innerHTML='<tr><td colspan="8">Chưa có dữ liệu UTM/referrer theo lượt ghé.</td></tr>';
+        el("tbTrafficRows").innerHTML='<tr><td colspan="9">Chưa có dữ liệu UTM/referrer theo lượt ghé.</td></tr>';
         return;
       }
       el("tbTrafficStatus").textContent="Cập nhật "+when(data.generated_at)+". Nguồn bắt đầu được ghi theo cơ chế mới kể từ khi phát hành.";
@@ -109,6 +150,7 @@
       countryBox.innerHTML='<option value="ALL">Tất cả quốc gia</option>'+countries.map(code=>`<option value="${escape(code)}">${escape(region(code))}</option>`).join("");
       countryBox.value=countryValue;
       const evidence=x=>x==="utm"?"UTM tự khai báo":x==="referrer"?"Referrer":"Không rõ";
+      const reviewLabels={unresolved:"Chưa xác minh",verified_test:"Đối chiếu: Kiểm thử",verified_automated:"Đối chiếu: Tự động",cleared:"Đã bỏ nghi vấn"};
       el("tbTrafficRows").innerHTML=(data.visits||[]).map(v=>`<tr>
         <td><code>#${escape(String(v.visitor_id||"").slice(0,10).toUpperCase())}</code></td>
         <td><strong>${escape(v.source_label||"Không rõ nguồn")}</strong><div class="tb-traffic-small">${escape(v.source_channel)} · ${escape(evidence(v.source_evidence))}</div></td>
@@ -118,7 +160,9 @@
         <td>${escape([v.utm_source,v.utm_medium,v.utm_campaign].filter(Boolean).join(" / ")||"—")}</td>
         <td>${fmt(v.visitor_page_views)}${Number(v.visitor_page_views)===1?' · Cần kiểm tra':""}</td>
         <td>${escape(when(v.first_seen_at))}</td>
-      </tr>`).join("")||'<tr><td colspan="8">Không có lượt ghé khớp bộ lọc.</td></tr>';
+        <td><span class="tb-traffic-review-state">${escape(reviewLabels[v.review_status]||"Chưa xác minh")}</span>
+          <button type="button" class="tb-traffic-mark" data-visit="${escape(v.visit_id)}" data-visitor="${escape(v.visitor_id)}">Đối chiếu</button></td>
+      </tr>`).join("")||'<tr><td colspan="9">Không có lượt ghé khớp bộ lọc.</td></tr>';
       el("tbTrafficCount").textContent=`Khớp bộ lọc: ${fmt(data.total)} lượt ghé · ${fmt(data.legacy_visit_count)} lượt ghé V2 cũ chưa có bằng chứng nguồn.`;
       el("tbTrafficPage").textContent="Trang "+data.page;
       el("tbTrafficPrev").disabled=data.page===1;

@@ -24,14 +24,20 @@ export async function onRequestGet({request,env}){
     const adminExclude=admin.results?.length
       ?" AND NOT EXISTS (SELECT 1 FROM tb_admin_browsers_v1 a WHERE a.visitor_id=v.visitor_id)"
       :"";
+    const reviews=await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='tb_traffic_visit_reviews_v1'").all();
+    const hasReviews=Boolean(reviews.results?.length);
+    const reviewJoin=hasReviews
+      ?" LEFT JOIN tb_traffic_visit_reviews_v1 rv ON rv.visit_id=v.visit_id AND rv.visitor_id=v.visitor_id":"";
+    const reviewStatus=hasReviews?"COALESCE(rv.status,'unresolved')":"'unresolved'";
     const visitorPages=`(SELECT COUNT(*) FROM tb_visitor_events_v1 e WHERE e.visitor_id=v.visitor_id AND e.event_type='page_view')`;
     const cte=`WITH attributed AS (
       SELECT v.visitor_id,v.visit_id,v.first_seen_at,v.last_seen_at,v.entry_path,v.current_path,
         v.country,v.device,v.os,v.browser,v.referrer,
         v.source_key,v.source_label,v.source_channel,v.source_evidence,
         v.utm_source,v.utm_medium,v.utm_campaign,v.utm_term,v.utm_content,
-        ${visitorPages} AS visitor_page_views
-      FROM tb_visitor_visits_v2 v WHERE v.attribution_version=1${adminExclude}
+        ${visitorPages} AS visitor_page_views,
+        ${reviewStatus} AS review_status
+      FROM tb_visitor_visits_v2 v ${reviewJoin} WHERE v.attribution_version=1${adminExclude}
     )`;
     const where=` WHERE (?='all' OR source_key=?) AND (?='ALL' OR country=?)
       AND (?='all' OR visitor_page_views<=1)`;

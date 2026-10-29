@@ -97,7 +97,7 @@ assert.equal(data.total,2);
 assert.ok(data.legacy_referrers.some(x=>x.referrer==="https://m.facebook.com"));
 
 const built=await fs.readFile("public/admin.html","utf8");
-assert.ok(built.includes("admin_traffic_sources_v1.js?v=1"),"production build includes sources panel");
+assert.ok(built.includes("admin_traffic_sources_v1.js?v=2"),"production build includes sources panel");
 assert.ok(built.includes("admin_browser_label_v1.js"),"Admin label retained");
 assert.ok(built.includes("admin_visitor_analytics_v2.js?v=4"),"online and visitor analytics retained");
 const client=await fs.readFile("public/visitor_tracking_v177.js","utf8");

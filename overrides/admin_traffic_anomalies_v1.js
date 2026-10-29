@@ -10,7 +10,7 @@
     return Number.isNaN(d.valueOf())?"—":new Intl.DateTimeFormat("vi-VN",{dateStyle:"short",timeStyle:"short",timeZone:"Asia/Ho_Chi_Minh"}).format(d);
   };
   const token=()=>{try{return KEYS.map(k=>sessionStorage.getItem(k)).find(Boolean)||"";}catch{return "";}};
-  const state={days:1,country:"ALL",serial:0};
+  const state={days:1,country:"ALL",reviewFilter:"all",serial:0};
   const region=code=>{
     if(!code||code==="ZZ")return "Chưa xác định";
     try{return new Intl.DisplayNames(["vi"],{type:"region"}).of(code)||code;}catch{return code;}
@@ -31,6 +31,13 @@
       <div class="tb-anomaly-controls">
         <label>Khoảng thời gian<select id="tbAnomalyDays"><option value="1">24 giờ qua</option><option value="7">7 ngày qua</option></select></label>
         <label>Quốc gia<select id="tbAnomalyCountry"><option value="ALL">Mọi quốc gia</option><option value="US">Hoa Kỳ</option><option value="VN">Việt Nam</option></select></label>
+        <label>Trạng thái xác minh<select id="tbAnomalyEvidence">
+          <option value="all">Tất cả</option>
+          <option value="needs_review">Cần kiểm tra</option>
+          <option value="verified_automated">Đối chiếu: tự động</option>
+          <option value="verified_test">Đối chiếu: kiểm thử</option>
+          <option value="cleared">Đã bỏ nghi vấn</option>
+        </select></label>
       </div>
       <div id="tbAnomalyStatus" role="status" aria-live="polite">Đang kiểm tra các đợt truy cập…</div>
       <div class="tb-anomaly-totals" aria-label="So sánh lưu lượng có dấu hiệu cần xem xét">
@@ -38,11 +45,12 @@
         <div><small>CẦN KIỂM TRA THÊM</small><strong id="tbAnomalyReview">—</strong></div>
         <div><small>CHƯA BỊ GẮN CỜ</small><strong id="tbAnomalyUnflagged">—</strong></div>
       </div>
-      <p class="tb-anomaly-foot">Đây là số <strong>lượt ghé</strong>, không phải số người. Nhóm “chưa bị gắn cờ” không đồng nghĩa độc giả thật; nhóm “cần kiểm tra” không đồng nghĩa bot. Số tổng khách trên Admin vẫn giữ nguyên.</p>
+      <div id="tbAnomalyReviewed" class="tb-anomaly-summary">Đang tải đối chiếu bằng chứng…</div>
+      <p class="tb-anomaly-foot">Số <strong>lượt ghé</strong>, không phải số người. “Cần kiểm tra” không đồng nghĩa bot; “chưa bị gắn cờ” không đồng nghĩa độc giả thật. Đã xác minh ở đây là Admin đánh dấu từng lượt có tham chiếu kiểm chứng; KHÔNG phải Cloudflare Bot Score. Không có bằng chứng nối được từng lượt thì để “Chưa xác minh”. Không tự xóa, không chặn.</p>
       <div class="tb-anomaly-summary" id="tbAnomalySummary"></div>
       <div class="tb-audience-scroll"><table class="tb-audience-table tb-anomaly-table">
-        <thead><tr><th>Thời điểm</th><th>Quốc gia / Mẫu truy cập</th><th>Mã khách / Lượt ghé</th><th>Thiếu bằng chứng nguồn</th><th>Chỉ 1 trang</th><th>Ưu tiên điều tra</th></tr></thead>
-        <tbody id="tbAnomalyRows"><tr><td colspan="6">Đang tải…</td></tr></tbody>
+        <thead><tr><th>Thời điểm</th><th>Quốc gia / Mẫu truy cập</th><th>Mã khách / Lượt ghé</th><th>Thiếu bằng chứng nguồn</th><th>Chỉ 1 trang</th><th>Đã đối chiếu</th><th>Ưu tiên điều tra</th></tr></thead>
+        <tbody id="tbAnomalyRows"><tr><td colspan="7">Đang tải…</td></tr></tbody>
       </table></div>
       <p class="tb-anomaly-foot">Mỗi nhóm chỉ là những <strong>đặc điểm giống nhau</strong> trong cùng 5 phút, không chứng minh cùng một người hay cùng bot. Cloudflare Bot Score/WAF chưa được kết nối để đối chiếu; không hiển thị điểm bot giả. Chỉ trả tối đa 40 nhóm để tránh truy vấn nặng.</p>`;
     const style=document.createElement("style");
@@ -74,6 +82,7 @@
     el("tbAnomalyRefresh").addEventListener("click",load);
     el("tbAnomalyDays").addEventListener("change",e=>{state.days=Number(e.target.value)===7?7:1;load();});
     el("tbAnomalyCountry").addEventListener("change",e=>{state.country=e.target.value;load();});
+    el("tbAnomalyEvidence").addEventListener("change",e=>{state.reviewFilter=e.target.value;load();});
     const panel=el("tbVisitorPanel");
     let wasActive=panel.classList.contains("active");
     const observer=new MutationObserver(()=>{
@@ -91,14 +100,14 @@
     if(!auth){el("tbAnomalyStatus").textContent="Đăng nhập Admin để xem phân tích.";return;}
     el("tbAnomalyStatus").textContent="Đang phân tích các đợt truy cập…";
     try{
-      const q=new URLSearchParams({days:String(state.days),country:state.country,min_visitors:"3"});
+      const q=new URLSearchParams({days:String(state.days),country:state.country,min_visitors:"3",review_filter:state.reviewFilter});
       const r=await fetch("/api/v72/admin/traffic-anomalies?"+q,{headers:{Authorization:"Bearer "+auth},cache:"no-store"});
       const data=await r.json().catch(()=>({}));
       if(n!==state.serial)return;
       if(!r.ok||!data.ok)throw Error(data.message||"Không đọc được báo cáo.");
       if(!data.ready){
         for(const id of ["tbAnomalyTotal","tbAnomalyReview","tbAnomalyUnflagged"])el(id).textContent="—";
-        el("tbAnomalyRows").innerHTML='<tr><td colspan="6">Chưa có dữ liệu để phân tích.</td></tr>';
+        el("tbAnomalyRows").innerHTML='<tr><td colspan="7">Chưa có dữ liệu để phân tích.</td></tr>';
         el("tbAnomalyStatus").textContent=data.message||"Chưa có lượt ghé.";
         return;
       }
@@ -111,6 +120,8 @@
       }else{
         for(const id of ["tbAnomalyTotal","tbAnomalyReview","tbAnomalyUnflagged"])el(id).textContent="—";
       }
+      const s=totals||{};
+      el("tbAnomalyReviewed").textContent=`Đã đối chiếu từng lượt: ${count(s.verified_automated_visits)} tự động · ${count(s.verified_test_visits)} kiểm thử · ${count(s.cleared_visits)} bỏ nghi vấn. Nếu đều bằng 0 thì chưa có chứng cứ đủ để gắn nhãn.`;
       const titles={observe:"Ghi nhận",review:"Cần kiểm tra",priority:"Ưu tiên kiểm tra"};
       el("tbAnomalyStatus").classList.remove("error");
       el("tbAnomalyStatus").textContent="Cập nhật "+formatDate(data.generated_at)+" · Mốc 5 phút · Không phải kết luận về bot.";
@@ -124,9 +135,12 @@
           <td><strong>${count(g.visitors)} mã khách</strong><small>${count(g.visits)} lượt ghé</small></td>
           <td>${count(Number(g.missing_source_visits)+Number(g.legacy_visits))} / ${count(g.visits)}<small>${count(g.legacy_visits)} lượt lịch sử chưa đo nguồn</small></td>
           <td>${count(g.single_page_visits)} / ${count(g.visits)}</td>
+          <td><small>Kiểm thử: ${count(g.verified_test_visits)}</small>
+            <small>Tự động: ${count(g.verified_automated_visits)}</small>
+            <small>Bỏ nghi vấn: ${count(g.cleared_visits)}</small></td>
           <td><span class="tb-anomaly-tag ${level}">${escape(titles[level])}</span><small>${why}</small></td>
         </tr>`;
-      }).join("")||'<tr><td colspan="6">Không thấy nhóm nào đạt ngưỡng 3 mã khách trong khoảng đã chọn.</td></tr>';
+      }).join("")||'<tr><td colspan="7">Không có nhóm nào đạt bộ lọc/nguồn bằng chứng đã chọn.</td></tr>';
     }catch(error){
       if(n!==state.serial)return;
       for(const id of ["tbAnomalyTotal","tbAnomalyReview","tbAnomalyUnflagged"])el(id).textContent="—";

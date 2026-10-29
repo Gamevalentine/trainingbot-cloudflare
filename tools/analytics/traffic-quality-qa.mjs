@@ -19,7 +19,7 @@ for(const marker of [
 ])assert.ok(admin.includes(marker),"Anomaly review UI missing safeguard "+marker);
 
 const built=await fs.readFile("public/admin.html","utf8");
-assert.ok(built.includes("admin_traffic_anomalies_v1.js?v=2"),"Admin must load cache-busted review count UI");
+assert.ok(built.includes("admin_traffic_anomalies_v1.js?v=3"),"Admin must load cache-busted review count UI");
 const publicTracker=await fs.readFile("public/visitor_tracking_v177.js","utf8");
 assert.ok(publicTracker.includes('tb_internal_qa'));
 const index=await fs.readFile("public/index.html","utf8");
