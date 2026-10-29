@@ -105,7 +105,7 @@ assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM tb_traffic_visit_review_a
 assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM tb_visitor_visits_v2").get().n,rawCount);
 const built=await fs.readFile("public/admin.html","utf8");
 assert.ok(built.includes("admin_traffic_anomalies_v1.js?v=3"));
-assert.ok(built.includes("admin_traffic_sources_v1.js?v=2"));
+assert.ok(built.includes("admin_traffic_sources_v1.js?v=3"));
 assert.ok(built.includes("admin_browser_label_v1.js"),"existing Admin label preserved");
 const reviewUI=await fs.readFile("overrides/admin_traffic_sources_v1.js","utf8");
 assert.ok(reviewUI.includes("evidence_ref")&&reviewUI.includes("tb-traffic-mark"));
