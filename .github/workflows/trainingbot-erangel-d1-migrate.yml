@@ -1,4 +1,4 @@
-name: TrainingBot D1.2 — OIDC read-only preflight
+name: TrainingBot D1.3 — guarded Erangel D1 one-time migration
 on:
   push:
     branches: [main, aion-trainingbot-d1-oidc-readonly-20261030]
@@ -78,7 +78,61 @@ jobs:
               }catch(error){console.log("MAIN_PRODUCTION_GET_RETRY",JSON.stringify({attempt,error_class:error?.name||"Error"}))}
             }
             if(primary?.status!==200||primary.ok!==true)throw Error("Main D1 read-only status failed after bounded retries; no D1 change");
-            console.log("PRODUCTION_D1_READ_VERIFIED; no data changed");
+            console.log("PRODUCTION_D1_READ_VERIFIED",JSON.stringify(primary));
+            // One-time migration only after signed D1 read and exact preconditions.
+            // Create a fresh short-lived signed identity for each authenticated call.
+            const issue=async()=>{
+              const reply=await fetch(url,{headers:{Authorization:"Bearer "+process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN}});
+              if(!reply.ok)throw Error("New GitHub OIDC issuance failed: HTTP "+reply.status);
+              const token=(await reply.json()).value;
+              if(typeof token!=="string")throw Error("Missing fresh signed identity");
+              return token;
+            };
+            const endpoint="https://trainingbot-cloudflare.pages.dev/api/v71/admin/erangel-correction";
+            const expectedApplied=state=>state?.migration_state==="applied"&&state.backup_exists===true&&
+              state.stored_correction===true&&state.public_fallback_required===false;
+            if(expectedApplied(primary)){
+              console.log("ERANGEL_D1_ALREADY_APPLIED_AND_BACKED_UP; no write needed");
+            }else{
+              if(!(primary.migration_state==="not_applied"&&primary.backup_exists===false&&
+                primary.stored_correction===false&&primary.public_fallback_required===true))
+                throw Error("Unexpected D1 pre-state; migration REFUSED");
+              const token=await issue();
+              const response=await fetch(endpoint,{
+                method:"POST",
+                headers:{Authorization:"Bearer "+token,Accept:"application/json","Content-Type":"application/json"},
+                body:JSON.stringify({action:"apply",confirm:"erangel-pc39-2-to-mobile47-20261029"}),
+                signal:AbortSignal.timeout(15000)
+              });
+              const outcome=await response.json().catch(()=>({}));
+              console.log("ERANGEL_D1_WRITE_OUTCOME",JSON.stringify({status:response.status,ok:outcome.ok===true,
+                result:outcome.result||null,backup_exists:outcome.backup_exists===true,
+                stored_correction:outcome.stored_correction===true}));
+              if(response.status!==200||outcome.ok!==true||
+                !["applied","already_applied"].includes(outcome.result)||
+                outcome.backup_exists!==true||outcome.stored_correction!==true)
+                throw Error("D1 apply not confirmed. No blind retry; inspect read-only state");
+            }
+            const verification=await fetch(endpoint,{
+              method:"GET",headers:{Authorization:"Bearer "+await issue(),Accept:"application/json"},
+              signal:AbortSignal.timeout(12000)
+            });
+            const observed=await verification.json().catch(()=>({}));
+            const result={status:verification.status,migration_state:observed.migration_state,
+              backup_exists:observed.backup_exists,stored_correction:observed.stored_correction,
+              public_fallback_required:observed.public_fallback_required};
+            console.log("ERANGEL_D1_AFTER_WRITE_VERIFICATION",JSON.stringify(result));
+            if(verification.status!==200||observed.ok!==true||!expectedApplied(observed))
+              throw Error("Production D1 not fully verified; retain safety fallback");
+            const slug="battlegrounds-mo-rong-erangel-subzero-trong-pubg-mobile-bgmi-voi-ban-beta-4-7-2";
+            const article=await fetch("https://trainingbot-cloudflare.pages.dev/bai-viet/"+slug,{
+              method:"GET",headers:{Accept:"text/html"},signal:AbortSignal.timeout(12000)
+            });
+            const html=await article.text();
+            const publicOK=article.status===200&&html.includes("ĐÍNH CHÍNH: Erangel Subzero của PUBG Mobile Beta 4.7 khác PUBG PC Update 39.2");
+            console.log("ERANGEL_PUBLIC_READ_CONFIRMATION",JSON.stringify({status:article.status,corrected_heading:publicOK}));
+            if(!publicOK)throw Error("D1 applied but public article verification needs review");
+            console.log("ERANGEL_D1_PRODUCTION_APPLIED_BACKED_UP_AND_PUBLICLY_VERIFIED");
           }else{
             console.log("Diagnostic feature-branch token is intentionally untrusted in Production");
           }
