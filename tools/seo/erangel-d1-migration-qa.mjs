@@ -42,7 +42,9 @@ class MockD1{
       db.table=true;return {meta:{changes:0}};
      }
      if(sql.startsWith("UPDATE tb_manual_posts_v1 SET title=?")){
-      const [title,summary,content,rich_content,cover_url,updated_at,recordSlug,id,prevUpdated,prevTitle,prevContent]=vals;
+      const [title,summary,content,rich_content,cover_url,updated_at,recordSlug,id,a,b,c]=vals;
+      const isRestore=sql.includes("WHERE slug=? AND id=? AND title=? AND content=? AND updated_at=?");
+      const [prevUpdated,prevTitle,prevContent]=isRestore?[c,a,b]:[a,b,c];
       const p=db.post;
       if(!p||p.slug!==recordSlug||p.id!==id||p.updated_at!==prevUpdated||p.title!==prevTitle||p.content!==prevContent)
        return {meta:{changes:0}};
