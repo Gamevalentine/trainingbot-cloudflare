@@ -38,6 +38,12 @@
         <tbody id="tbTrafficRows"><tr><td colspan="9">Chưa có dữ liệu.</td></tr></tbody>
       </table></div>
       <div class="tb-audience-pages"><button type="button" id="tbTrafficPrev">← Trước</button><span id="tbTrafficPage">Trang 1</span><button type="button" id="tbTrafficNext">Sau →</button></div>
+      <details class="tb-traffic-legacy"><summary>Lượt ghé V2 lịch sử — có thể đối chiếu bằng chứng (50 lượt gần nhất)</summary>
+        <p class="tb-traffic-note">Các lượt cũ chưa lưu UTM nên chưa biết nguồn. Không tự phân loại bot. Chỉ đánh dấu khi có bằng chứng kết nối chính xác từng lượt.</p>
+        <div class="tb-audience-scroll"><table class="tb-audience-table tb-traffic-table">
+          <thead><tr><th>Mã khách</th><th>Quốc gia</th><th>Trang đầu</th><th>Thiết bị</th><th>Lần ghé</th><th>Nhãn điều tra</th></tr></thead>
+          <tbody id="tbTrafficLegacyVisits"><tr><td colspan="6">Đang tải lịch sử…</td></tr></tbody>
+        </table></div></details>
       <details class="tb-traffic-legacy"><summary>Referrer lịch sử đã lưu (không đồng nghĩa nguồn lần đầu)</summary>
         <div id="tbTrafficLegacy"></div></details>
       <p class="tb-traffic-note">Xác minh chỉ theo từng lượt ghé, có bằng chứng cụ thể và lưu lịch sử sửa nhãn; không suy đoán theo quốc gia, ASN hay thiết bị. Dữ liệu Cloudflare dạng tổng hợp không đủ để xác minh từng mã khách. Chỉ xem một trang không chứng minh bot. Lượt xem là số trang cả lịch sử mã khách.</p>`;
@@ -68,10 +74,12 @@
       el(id).addEventListener("change",event=>{state[field]=event.target.value;state.page=1;load();});
     }
     el("tbTrafficRefresh").addEventListener("click",load);
-    el("tbTrafficRows").addEventListener("click",event=>{
-      const button=event.target.closest("button.tb-traffic-mark");
-      if(button)void reviewVisit(button);
-    });
+    for(const tbody of ["tbTrafficRows","tbTrafficLegacyVisits"]){
+      el(tbody).addEventListener("click",event=>{
+        const button=event.target.closest("button.tb-traffic-mark");
+        if(button)void reviewVisit(button);
+      });
+    }
     el("tbTrafficPrev").addEventListener("click",()=>{if(state.page>1){state.page--;load();}});
     el("tbTrafficNext").addEventListener("click",()=>{state.page++;load();});
     const parent=el("tbVisitorPanel");
@@ -167,6 +175,15 @@
       el("tbTrafficPage").textContent="Trang "+data.page;
       el("tbTrafficPrev").disabled=data.page===1;
       el("tbTrafficNext").disabled=!data.has_more;
+      el("tbTrafficLegacyVisits").innerHTML=(data.legacy_review_candidates||[]).map(v=>`<tr>
+        <td><code>#${escape(String(v.visitor_id).slice(0,10).toUpperCase())}</code></td>
+        <td>${escape(region(v.country))}</td>
+        <td><code>${escape(v.entry_path||"/")}</code></td>
+        <td>${escape(v.device)} · ${escape(v.os)}</td>
+        <td>${escape(when(v.first_seen_at))}</td>
+        <td><span class="tb-traffic-review-state">${escape(reviewLabels[v.review_status]||"Chưa xác minh")}</span>
+          <button type="button" class="tb-traffic-mark" data-visit="${escape(v.visit_id)}" data-visitor="${escape(v.visitor_id)}">Đối chiếu</button></td>
+      </tr>`).join("")||'<tr><td colspan="6">Không có lượt ghé V2 lịch sử cần xem.</td></tr>';
       el("tbTrafficLegacy").innerHTML=(data.legacy_referrers||[]).length
         ?(data.legacy_referrers||[]).map(x=>`<div>${escape(x.referrer)} · ${fmt(x.visitors)} mã khách từng có referrer này</div>`).join("")
         :"Không có referrer lịch sử nào được lưu.";

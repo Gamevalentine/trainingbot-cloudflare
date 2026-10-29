@@ -87,9 +87,25 @@ assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM tb_traffic_visit_review_a
 assert.equal(sqlite.prepare("SELECT status FROM tb_traffic_visit_reviews_v1 WHERE visit_id=?").get(ids[0].visit_id).status,"unresolved");
 assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM tb_visitor_visits_v2").get().n,rawCount,"raw visit count unchanged");
 assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM tb_visitor_events_v1").get().n,1,"original events remain");
+
+// Historical V2 attribution_version=0 visits MUST remain inspectable in the Admin UI.
+sqlite.prepare("UPDATE tb_visitor_visits_v2 SET attribution_version=0 WHERE visit_id=?").run(ids[4].visit_id);
+let historic=await read(sourceReport,"/api/v72/admin/traffic-sources?country=US");
+assert.ok(historic.legacy_review_candidates.some(x=>x.visit_id===ids[4].visit_id),
+  "old V2 visit with no UTM must be available for exact evidence matching");
+assert.equal(historic.legacy_review_candidates.find(x=>x.visit_id===ids[4].visit_id).review_status,"unresolved");
+const savedHistoric=await reviewPost({
+  request:make("/api/v72/admin/traffic-visit-review",reviewBody(ids[4],"verified_test")),env
+});
+assert.equal(savedHistoric.status,200);
+historic=await read(sourceReport,"/api/v72/admin/traffic-sources");
+assert.equal(historic.legacy_review_candidates.find(x=>x.visit_id===ids[4].visit_id).review_status,"verified_test",
+  "legacy V2 status reflects the exact visit review");
+assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM tb_traffic_visit_review_audit_v1").get().n,5);
+assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM tb_visitor_visits_v2").get().n,rawCount);
 const built=await fs.readFile("public/admin.html","utf8");
 assert.ok(built.includes("admin_traffic_anomalies_v1.js?v=3"));
-assert.ok(built.includes("admin_traffic_sources_v1.js?v=2"));
+assert.ok(built.includes("admin_traffic_sources_v1.js?v=3"));
 assert.ok(built.includes("admin_browser_label_v1.js"),"existing Admin label preserved");
 const reviewUI=await fs.readFile("overrides/admin_traffic_sources_v1.js","utf8");
 assert.ok(reviewUI.includes("evidence_ref")&&reviewUI.includes("tb-traffic-mark"));
