@@ -46,7 +46,7 @@
         <div><small>CHƯA BỊ GẮN CỜ</small><strong id="tbAnomalyUnflagged">—</strong></div>
       </div>
       <div id="tbAnomalyReviewed" class="tb-anomaly-summary">Đang tải đối chiếu bằng chứng…</div>
-      <p class="tb-anomaly-foot">Số <strong>lượt ghé</strong>, không phải số người. Đã xác minh ở đây là Admin đánh dấu từng lượt có tham chiếu kiểm chứng; KHÔNG phải Cloudflare Bot Score. Không có bằng chứng nối được từng lượt thì để “Chưa xác minh”. Không tự xóa, không chặn.</p>
+      <p class="tb-anomaly-foot">Số <strong>lượt ghé</strong>, không phải số người. “Cần kiểm tra” không đồng nghĩa bot; “chưa bị gắn cờ” không đồng nghĩa độc giả thật. Đã xác minh ở đây là Admin đánh dấu từng lượt có tham chiếu kiểm chứng; KHÔNG phải Cloudflare Bot Score. Không có bằng chứng nối được từng lượt thì để “Chưa xác minh”. Không tự xóa, không chặn.</p>
       <div class="tb-anomaly-summary" id="tbAnomalySummary"></div>
       <div class="tb-audience-scroll"><table class="tb-audience-table tb-anomaly-table">
         <thead><tr><th>Thời điểm</th><th>Quốc gia / Mẫu truy cập</th><th>Mã khách / Lượt ghé</th><th>Thiếu bằng chứng nguồn</th><th>Chỉ 1 trang</th><th>Đã đối chiếu</th><th>Ưu tiên điều tra</th></tr></thead>
