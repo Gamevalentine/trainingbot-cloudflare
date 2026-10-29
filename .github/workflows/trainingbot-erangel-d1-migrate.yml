@@ -1,0 +1,83 @@
+name: TrainingBot Erangel D1 — GitHub OIDC one-time migration
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/trainingbot-erangel-d1-migrate.yml
+      - functions/api/v71/admin/erangel-correction.js
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: trainingbot-erangel-oidc-migration
+  cancel-in-progress: false
+jobs:
+  migrate:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Read D1 status and apply guarded correction using GitHub signed identity
+        run: |
+          node --input-type=module <<'NODE'
+          const endpoint="https://trainingbot.io.vn/api/v71/admin/erangel-correction";
+          const audience="trainingbot-erangel-d1-migration-v1";
+          const confirm="erangel-pc39-2-to-mobile47-20261029";
+          const nap=ms=>new Promise(r=>setTimeout(r,ms));
+          async function token(){
+            const url=new URL(process.env.ACTIONS_ID_TOKEN_REQUEST_URL);
+            url.searchParams.set("audience",audience);
+            const response=await fetch(url,{headers:{Authorization:"Bearer "+process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN}});
+            if(!response.ok)throw Error("GitHub OIDC token issue failed HTTP "+response.status);
+            const data=await response.json();
+            if(typeof data.value!=="string"||data.value.length<150)throw Error("GitHub OIDC token missing");
+            return data.value;
+          }
+          async function request(method,action){
+            const bearer=await token();
+            const response=await fetch(endpoint,{
+              method,
+              headers:{"authorization":"Bearer "+bearer,"accept":"application/json",
+                ...(method==="POST"?{"content-type":"application/json"}:{})},
+              ...(method==="POST"?{body:JSON.stringify({action,confirm})}:{})
+            });
+            const payload=await response.json().catch(()=>({}));
+            return {status:response.status,payload};
+          }
+          let state;
+          for(let attempt=1;attempt<=36;attempt++){
+            try{
+              const result=await request("GET");
+              if(result.status===200&&result.payload.ok===true){
+                state=result.payload;break;
+              }
+              if(result.status!==401&&result.status!==404&&result.status!==503){
+                throw Error("Unexpected Production status HTTP "+result.status);
+              }
+              console.log("Waiting for authenticated Production Pages Function; probe",attempt,"HTTP",result.status);
+            }catch(error){
+              if(String(error.message).startsWith("Unexpected Production status"))throw error;
+              console.log("Production status not available yet; probe",attempt);
+            }
+            if(attempt<36)await nap(20000);
+          }
+          if(!state)throw Error("Production OIDC endpoint not ready; D1 untouched");
+          if(state.migration_state==="applied"&&state.stored_correction===true&&state.backup_exists===true){
+            console.log("ERANGEL D1 PRODUCTION VERIFIED: already applied, backup exists");process.exit(0);
+          }
+          if(state.migration_state!=="not_applied"||state.stored_correction!==false||state.backup_exists!==false)
+            throw Error("Unexpected Production D1 state; refusing migration");
+          const applied=await request("POST","apply");
+          if(applied.status!==200||applied.payload.ok!==true||
+             !["applied","already_applied"].includes(applied.payload.result)||
+             applied.payload.backup_exists!==true||applied.payload.stored_correction!==true)
+            throw Error("Migration rejected or failed HTTP "+applied.status+"; inspect before retry");
+          const checked=await request("GET");
+          const verified=checked.status===200&&checked.payload.ok===true&&
+            checked.payload.migration_state==="applied"&&
+            checked.payload.backup_exists===true&&checked.payload.stored_correction===true&&
+            checked.payload.public_fallback_required===false;
+          if(!verified)throw Error("D1 verification failed; retain public safety fallback");
+          console.log("ERANGEL D1 PRODUCTION VERIFIED: applied with private original backup, public fallback not required");
+          NODE
