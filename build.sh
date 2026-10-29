@@ -121,8 +121,10 @@ test -f public/admin_visitor_tracking_v177.js
 test -f public/admin_visitor_analytics_v2.js
 test -f public/admin_traffic_sources_v1.js
 test -f public/admin_traffic_anomalies_v1.js
+test -f public/admin_traffic_quality_v1.js
 test -f public/admin_browser_label_v1.js
 node --check public/admin_traffic_anomalies_v1.js
+node --check public/admin_traffic_quality_v1.js
 node --check public/admin_traffic_sources_v1.js
 node --check public/admin_browser_label_v1.js
 node --check public/admin_visitor_tracking_v177.js >/dev/null
@@ -134,7 +136,7 @@ let source=fs.readFileSync(file,'utf8');
 if(!source.includes('admin_visitor_tracking_v177.js')){
   const marker='document.open();document.write(h);document.close()';
   if(!source.includes(marker))throw new Error('Admin V2 loader marker not found for visitor tracking');
-  const patch=`h=h.replace('</body>','<script defer src="/admin_visitor_tracking_v177.js?v=180"><\\/script><script defer src="/admin_visitor_analytics_v2.js?v=4"><\\/script><script defer src="/admin_traffic_sources_v1.js?v=3"><\\/script><script defer src="/admin_traffic_anomalies_v1.js?v=3"><\\/script><script defer src="/admin_browser_label_v1.js?v=1"><\\/script></body>');${marker}`;
+  const patch=`h=h.replace('</body>','<script defer src="/admin_visitor_tracking_v177.js?v=180"><\\/script><script defer src="/admin_visitor_analytics_v2.js?v=4"><\\/script><script defer src="/admin_traffic_sources_v1.js?v=3"><\\/script><script defer src="/admin_traffic_anomalies_v1.js?v=3"><\\/script><script defer src="/admin_traffic_quality_v1.js?v=1"><\\/script><script defer src="/admin_browser_label_v1.js?v=1"><\\/script></body>');${marker}`;
   source=source.replace(marker,patch);
   fs.writeFileSync(file,source);
 }
