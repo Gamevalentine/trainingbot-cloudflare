@@ -230,7 +230,7 @@ try{
  // The Cloudflare runtime may have no outbound fetch. Prove pinned keys still
  // validate RSA signatures, while rejecting wrong claims and expired pins.
  const injectPinned=controller.replace(
-  /const OIDC_PINNED_KEYS=Object\\.freeze\\(\\[[^\\n]*\\]\\);/,
+  /const OIDC_PINNED_KEYS=Object\.freeze\(\[[^\n]*\]\);/,
   "const OIDC_PINNED_KEYS=Object.freeze(["+JSON.stringify(publicJwk)+"]);"
  );
  assert.notEqual(injectPinned,controller,"Expected to inject QA RSA key into pin fixture");
