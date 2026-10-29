@@ -33,3 +33,10 @@ Chỉ triển khai PR thứ hai xóa `verifiedArticleView` override **sau khi**:
 ## Giới hạn công cụ
 
 Các công cụ trong hội thoại hiện cho phép sửa repo và kiểm thử GitHub Actions/Cloudflare Preview, **không có phiên được ủy quyền đọc/ghi trực tiếp D1 Production hoặc token Admin**. Remote Desktop của chủ trang không online. Vì thế có thể triển khai API, QA và cơ chế rollback, nhưng không được tuyên bố đã viết D1 cho đến khi API Production phản hồi xác nhận.
+
+## Ghi chú sau PR #54 — truy cập D1 không cần đăng nhập Cloudflare
+
+- Xác thực bổ sung bằng JWT RS256 của GitHub Actions OIDC: kiểm chữ ký theo JWKS chính thức, issuer, audience, repository, workflow, nhánh main, sự kiện push và thời hạn. Không lưu API token dài hạn.
+- Địa chỉ `trainingbot.io.vn` đang trả HTTP 403 trước API khi gọi từ GitHub Actions; địa chỉ Production gốc `trainingbot-cloudflare.pages.dev` trả HTTP 401 trực tiếp từ API. GitHub workflow dùng đúng hostname Production gốc để tránh lớp chặn không liên quan tới JWT.
+- Chỉ chấp nhận hai hostname chính xác cho thao tác bảo trì; nhánh Preview `*.trainingbot-cloudflare.pages.dev` vẫn bị từ chối, không sử dụng alias có tên nhánh.
+- **Không được coi migration đã chạy** nếu chưa thấy workflow Production có kết quả PASS với `migration_state=applied`, `stored_correction=true`, `backup_exists=true`.
