@@ -1,0 +1,48 @@
+name: TrainingBot — Traffic QA separation and review counts
+on:
+  push:
+    branches:
+      - aion-trainingbot-quality-review-counts-20261029
+  pull_request:
+    paths:
+      - 'functions/api/v72/admin/traffic-anomalies.js'
+      - 'overrides/admin_traffic_anomalies_v1.js'
+      - 'overrides/visitor_tracking_v177.js'
+      - 'build.sh'
+      - 'tools/analytics/traffic-quality-qa.mjs'
+      - 'tools/analytics/traffic-anomalies-sqlite.mjs'
+permissions:
+  contents: read
+jobs:
+  quality-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax
+        run: |
+          bash -n build.sh postbuild.sh
+          node --check overrides/admin_traffic_anomalies_v1.js
+          node --check overrides/visitor_tracking_v177.js
+          node --check tools/analytics/traffic-quality-qa.mjs
+          node --input-type=module --check < functions/api/v72/admin/traffic-anomalies.js
+      - name: Build actual website without production page hits
+        run: npm run build
+      - name: Test review metrics and QA-only opt-out
+        run: |
+          node --disable-warning=ExperimentalWarning tools/analytics/traffic-anomalies-sqlite.mjs
+          node tools/analytics/traffic-quality-qa.mjs
+      - name: Regression visitor analytics, Admin identity and real sqlite
+        run: |
+          node --disable-warning=ExperimentalWarning tools/analytics/traffic-sources-sqlite.mjs
+          node tools/analytics/visitor-analytics-qa.mjs
+          node --disable-warning=ExperimentalWarning tools/analytics/visitor-analytics-sqlite.mjs
+          node --disable-warning=ExperimentalWarning tools/analytics/admin-browser-label-sqlite.mjs
+          node tools/analytics/visitor-online-ui-qa.mjs
+      - name: SEO and Preview isolation
+        run: |
+          node tools/qa/p1-seo.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs

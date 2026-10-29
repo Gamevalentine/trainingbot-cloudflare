@@ -33,6 +33,12 @@
         <label>Quốc gia<select id="tbAnomalyCountry"><option value="ALL">Mọi quốc gia</option><option value="US">Hoa Kỳ</option><option value="VN">Việt Nam</option></select></label>
       </div>
       <div id="tbAnomalyStatus" role="status" aria-live="polite">Đang kiểm tra các đợt truy cập…</div>
+      <div class="tb-anomaly-totals" aria-label="So sánh lưu lượng có dấu hiệu cần xem xét">
+        <div><small>TẤT CẢ LƯỢT GHÉ</small><strong id="tbAnomalyTotal">—</strong></div>
+        <div><small>CẦN KIỂM TRA THÊM</small><strong id="tbAnomalyReview">—</strong></div>
+        <div><small>CHƯA BỊ GẮN CỜ</small><strong id="tbAnomalyUnflagged">—</strong></div>
+      </div>
+      <p class="tb-anomaly-foot">Đây là số <strong>lượt ghé</strong>, không phải số người. Nhóm “chưa bị gắn cờ” không đồng nghĩa độc giả thật; nhóm “cần kiểm tra” không đồng nghĩa bot. Số tổng khách trên Admin vẫn giữ nguyên.</p>
       <div class="tb-anomaly-summary" id="tbAnomalySummary"></div>
       <div class="tb-audience-scroll"><table class="tb-audience-table tb-anomaly-table">
         <thead><tr><th>Thời điểm</th><th>Quốc gia / Mẫu truy cập</th><th>Mã khách / Lượt ghé</th><th>Thiếu bằng chứng nguồn</th><th>Chỉ 1 trang</th><th>Ưu tiên điều tra</th></tr></thead>
@@ -50,6 +56,12 @@
       #tbAnomalyStatus{color:#a9bbce;font-size:11px;margin:10px 0}
       #tbAnomalyStatus.error{color:#ffb4b4}
       .tb-anomaly-summary{font-size:11px;color:#aabbd4;margin:10px 0}
+      .tb-anomaly-totals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+      .tb-anomaly-totals>div{border:1px solid #273a55;border-radius:11px;padding:12px;background:#101d32;min-width:0}
+      .tb-anomaly-totals small{display:block;color:#99afc6;font-size:10px}
+      .tb-anomaly-totals strong{display:block;color:#e5eefb;font-size:22px;margin-top:6px;font-variant-numeric:tabular-nums}
+      .tb-anomaly-totals>div:nth-child(2) strong{color:#ffd596}
+      @media(max-width:650px){.tb-anomaly-totals{grid-template-columns:1fr}}
       .tb-anomaly-table{min-width:950px}
       .tb-anomaly-table td{max-width:280px;overflow-wrap:anywhere}
       .tb-anomaly-table small{display:block;font-size:10px;color:#97a9bf;line-height:1.6;margin-top:4px}
@@ -85,11 +97,20 @@
       if(n!==state.serial)return;
       if(!r.ok||!data.ok)throw Error(data.message||"Không đọc được báo cáo.");
       if(!data.ready){
+        for(const id of ["tbAnomalyTotal","tbAnomalyReview","tbAnomalyUnflagged"])el(id).textContent="—";
         el("tbAnomalyRows").innerHTML='<tr><td colspan="6">Chưa có dữ liệu để phân tích.</td></tr>';
         el("tbAnomalyStatus").textContent=data.message||"Chưa có lượt ghé.";
         return;
       }
       const groups=data.groups||[];
+      const totals=data.review_summary;
+      if(totals&&totals.basis==="visit_not_human"){
+        el("tbAnomalyTotal").textContent=count(totals.total_visits);
+        el("tbAnomalyReview").textContent=count(totals.review_visits);
+        el("tbAnomalyUnflagged").textContent=count(totals.unflagged_visits);
+      }else{
+        for(const id of ["tbAnomalyTotal","tbAnomalyReview","tbAnomalyUnflagged"])el(id).textContent="—";
+      }
       const titles={observe:"Ghi nhận",review:"Cần kiểm tra",priority:"Ưu tiên kiểm tra"};
       el("tbAnomalyStatus").classList.remove("error");
       el("tbAnomalyStatus").textContent="Cập nhật "+formatDate(data.generated_at)+" · Mốc 5 phút · Không phải kết luận về bot.";
@@ -108,6 +129,7 @@
       }).join("")||'<tr><td colspan="6">Không thấy nhóm nào đạt ngưỡng 3 mã khách trong khoảng đã chọn.</td></tr>';
     }catch(error){
       if(n!==state.serial)return;
+      for(const id of ["tbAnomalyTotal","tbAnomalyReview","tbAnomalyUnflagged"])el(id).textContent="—";
       el("tbAnomalyStatus").classList.add("error");
       el("tbAnomalyStatus").textContent=String(error.message||error)+" — chưa có kết quả xác minh.";
     }
