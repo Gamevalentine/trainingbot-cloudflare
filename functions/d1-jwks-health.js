@@ -7,15 +7,18 @@ export async function onRequestGet({request}){
   if(!host.endsWith(".trainingbot-cloudflare.pages.dev"))
     return reply({ok:false,message:"Preview only"},404);
   const url="https://token.actions.githubusercontent.com/.well-known/jwks";
+  let stage="fetch-jwks";
   try{
     const response=await fetch(url,{headers:{Accept:"application/json"},redirect:"error"});
     if(!response.ok)return reply({ok:false,jwks_http:response.status,crypto_import_ok:false},503);
+    stage="parse-jwks";
     const doc=await response.json();
     const key=Array.isArray(doc.keys)?doc.keys.find(x=>x.kty==="RSA"&&x.alg==="RS256"&&x.use==="sig"&&typeof x.kid==="string"):null;
     if(!key)return reply({ok:false,jwks_http:200,rsa_key_present:false,crypto_import_ok:false},503);
+    stage="import-rsa";
     const imported=await crypto.subtle.importKey("jwk",key,{name:"RSASSA-PKCS1-v1_5",hash:"SHA-256"},false,["verify"]);
     return reply({ok:imported.type==="public",jwks_http:200,rsa_key_present:true,crypto_import_ok:imported.type==="public"});
   }catch(error){
-    return reply({ok:false,jwks_http:null,crypto_import_ok:false,error_class:String(error?.name||"Error").slice(0,64)},503);
+    return reply({ok:false,jwks_http:null,crypto_import_ok:false,failed_stage:stage,error_class:String(error?.name||"Error").slice(0,64)},503);
   }
 }
