@@ -1,0 +1,45 @@
+name: TrainingBot TRAFFIC-06 — Ray correlation Staging QA
+on:
+  push:
+    branches:
+      - traffic-06-ray-correlation-staging-20261029
+  pull_request:
+    paths:
+      - 'functions/_lib/traffic-ray-audit.js'
+      - 'functions/api/visitor-events.js'
+      - 'functions/api/v72/admin/traffic-ray-audit.js'
+      - 'tools/analytics/traffic-06-ray-staging-sqlite.mjs'
+permissions:
+  contents: read
+jobs:
+  stage-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax check and production-equivalent build (no deployment)
+        run: |
+          bash -n build.sh postbuild.sh
+          node --input-type=module --check < functions/_lib/traffic-ray-audit.js
+          node --input-type=module --check < functions/api/visitor-events.js
+          node --input-type=module --check < functions/api/v72/admin/traffic-ray-audit.js
+          node --check tools/analytics/traffic-06-ray-staging-sqlite.mjs
+          npm run build
+      - name: Test staging-only Ray correlation with real SQLite
+        run: node --disable-warning=ExperimentalWarning tools/analytics/traffic-06-ray-staging-sqlite.mjs
+      - name: Regress analytics, data quality and Preview D1 isolation
+        run: |
+          node --disable-warning=ExperimentalWarning tools/analytics/traffic-05-health-sqlite.mjs
+          node --disable-warning=ExperimentalWarning tools/analytics/traffic-04-verified-evidence-qa.mjs
+          node --disable-warning=ExperimentalWarning tools/analytics/traffic-anomalies-sqlite.mjs
+          node --disable-warning=ExperimentalWarning tools/analytics/traffic-sources-sqlite.mjs
+          node --disable-warning=ExperimentalWarning tools/analytics/visitor-analytics-sqlite.mjs
+          node --disable-warning=ExperimentalWarning tools/analytics/admin-browser-label-sqlite.mjs
+          node tools/analytics/traffic-quality-qa.mjs
+          node tools/analytics/visitor-online-ui-qa.mjs
+          node tools/analytics/visitor-analytics-qa.mjs
+          node tools/qa/p3-1-d1-preview-isolation.mjs
+          node tools/qa/p1-seo.mjs
