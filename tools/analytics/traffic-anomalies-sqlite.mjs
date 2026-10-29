@@ -94,7 +94,7 @@ const adminRows=db0.prepare("SELECT COUNT(*) AS n FROM tb_admin_browsers_v1").ge
 assert.equal(adminRows,1,"Admin designation retained");
 const html=await fs.readFile("public/admin.html","utf8");
 assert.ok(html.includes("admin_traffic_anomalies_v1.js?v=3"),"real Admin includes anomaly panel");
-assert.ok(html.includes("admin_traffic_sources_v1.js?v=1"),"source report remains");
+assert.ok(html.includes("admin_traffic_sources_v1.js?v=2"),"source report remains");
 assert.ok(html.includes("admin_visitor_analytics_v2.js?v=4"),"online badges remain");
 const frontend=await fs.readFile("overrides/admin_traffic_anomalies_v1.js","utf8");
 assert.ok(frontend.includes("không chứng minh là bot"));
