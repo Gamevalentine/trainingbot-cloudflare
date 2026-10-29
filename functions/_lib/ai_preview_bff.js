@@ -57,7 +57,10 @@ async function stage(ctx,route,method,data){
   return {status:res.status,json:JSON.parse(body),category:'UPSTREAM_HTTP'};
  }catch(e){
   const type=['TypeError','RangeError','NotSupportedError','Error','DOMException'].includes(e?.name)?e.name:'Other';
-  return {status:503,category:'EXCEPTION_'+step+'_'+type};
+  const safeMessage=String(e?.message||'UNSPECIFIED')
+    .replace(/https?:\/\/[^\s]+/g,'URL').replace(/[A-Za-z0-9_-]{24,}/g,'REDACTED')
+    .replace(/[^A-Za-z0-9 ,.:_-]/g,'_').slice(0,110);
+  return {status:503,category:'EXCEPTION_'+step+'_'+type+'_'+safeMessage};
  }
 }
 function goodPost(req,ctx){
