@@ -6,7 +6,7 @@ export async function onRequestGet({request,env}){
   const token=String(env.ADMIN_TOKEN||"");
   if(!token||request.headers.get("Authorization")!==`Bearer ${token}`)
     return json({ok:false,message:"Unauthorized"},401);
-  if(!rayAuditEnabled(env))return json({ok:false,message:"Ray debug is disabled in this deployment."},404);
+  if(!rayAuditEnabled(env,request))return json({ok:false,message:"Ray debug is disabled in this deployment."},404);
   if(!env.DB)return json({ok:false,message:"D1 unavailable"},503);
   const ray=normalizeRay(new URL(request.url).searchParams.get("ray"));
   if(!ray)return json({ok:false,message:"Invalid Ray ID"},400);
