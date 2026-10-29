@@ -95,8 +95,18 @@ export async function status(request,env){
   anonymousVisitorReady:false,surfaces:{visitor:false,admin:false},reason:'PREVIEW_BFF_NOT_CONFIGURED'});
  const r=await stage(ctx,'/__preview_b1/status','GET');
  const isReady=r.status===200&&r.json?.ok===true&&r.json?.visitor===true;
+ const knowledge=r.json?.knowledge;
+ const validatedKnowledge=isReady&&knowledge?.coverage==='static_baseline_only'&&
+  typeof knowledge.sourceCommit==='string'&&/^[a-f0-9]{40}$/.test(knowledge.sourceCommit)&&
+  typeof knowledge.snapshotDate==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(knowledge.snapshotDate)&&
+  knowledge.officialVerifiedRecords===0&&
+  knowledge.counts?.weapons===56&&knowledge.counts?.attachments===49&&
+  knowledge.counts?.vehicles===26&&knowledge.counts?.maps===8;
  return safe(200,{preview:true,ready:isReady,identityVerified:false,
    anonymousVisitorReady:isReady,surfaces:{visitor:isReady,admin:false},
+   ...(validatedKnowledge?{knowledge:{sourceCommit:knowledge.sourceCommit,
+     snapshotDate:knowledge.snapshotDate,coverage:knowledge.coverage,
+     counts:knowledge.counts,officialVerifiedRecords:0}}:{}),
    ...(!isReady?{reason:'STAGING_BRIDGE_UNAVAILABLE'}:{})});
 }
 export async function session(request,env){
