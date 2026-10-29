@@ -58,6 +58,25 @@ for(const [kind,slug] of Object.entries(slugs)){
 }
 assert.equal(writes,0);
 assert.equal(reads,10,"Expected two SELECTs per article");
+const sitemapSource=fs.readFileSync("functions/sitemap-posts.xml.js","utf8");
+const {onRequestGet: sitemapGet}=await import("data:text/javascript;base64,"+Buffer.from(sitemapSource).toString("base64"));
+const sitemapRows=Object.values(slugs).map(slug=>({slug,updated_at:"2026-10-21",published_at:"2026-09-20"}));
+sitemapRows.push({slug:"some-unmodified-old-post",updated_at:"2026-10-21",published_at:"2026-09-20"});
+let sitemapWrites=0;
+const sitemapDB={prepare(sql){
+ if(/\bCREATE\b|\bALTER\b|\bINSERT\b|\bDELETE\b|\bUPDATE\b/.test(sql)){sitemapWrites++;throw Error("Sitemap read attempted D1 write")}
+ return {all:async()=>({results:sitemapRows})};
+}};
+const sitemapResponse=await sitemapGet({env:{DB:sitemapDB}});
+assert.equal(sitemapResponse.status,200);
+const sitemapXml=await sitemapResponse.text();
+for(const slug of Object.values(slugs)){
+ assert(sitemapXml.includes("<loc>https://trainingbot.io.vn/bai-viet/"+slug+"</loc><lastmod>2026-10-29</lastmod>"),
+  "Public article correction/provenance should update sitemap lastmod "+slug);
+}
+assert(sitemapXml.includes("<loc>https://trainingbot.io.vn/bai-viet/some-unmodified-old-post</loc><lastmod>2026-10-21</lastmod>"),
+ "Unmodified articles must keep original DB lastmod");
+assert.equal(sitemapWrites,0);
 const report={checkedAt:"2026-10-29",policy:"Keep canonical & original D1 data; explicitly retract the misattributed PUBG PC 39.2 article",
  cases,readOnlyD1:true,totalDBReads:reads,totalDBWrites:writes,
  outstanding:["Verify original publisher source of M416 post directly, if official URL becomes publicly available","Independently validate legacy 4.6 Android/iOS package sizes and exact hours; not supported by cited official release"],
