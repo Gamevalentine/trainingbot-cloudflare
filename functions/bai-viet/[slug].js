@@ -1,31 +1,5 @@
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
 
-async function setup(db){
-  await db.prepare(`CREATE TABLE IF NOT EXISTS tb_manual_posts_v1 (
-    id TEXT PRIMARY KEY,
-    slug TEXT NOT NULL UNIQUE,
-    title TEXT NOT NULL,
-    summary TEXT NOT NULL DEFAULT '',
-    content TEXT NOT NULL,
-    rich_content TEXT NOT NULL DEFAULT '',
-    category TEXT NOT NULL DEFAULT 'Tin mới',
-    cover_url TEXT NOT NULL DEFAULT '',
-    status TEXT NOT NULL DEFAULT 'published',
-    featured_at TEXT NOT NULL DEFAULT '',
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL,
-    published_at TEXT NOT NULL
-  )`).run();
-  const columns=await db.prepare("PRAGMA table_info(tb_manual_posts_v1)").all();
-  const names=new Set((columns.results||[]).map(column=>column.name));
-  if(!names.has("featured_at")){
-    await db.prepare("ALTER TABLE tb_manual_posts_v1 ADD COLUMN featured_at TEXT NOT NULL DEFAULT ''").run();
-  }
-  if(!names.has("rich_content")){
-    await db.prepare("ALTER TABLE tb_manual_posts_v1 ADD COLUMN rich_content TEXT NOT NULL DEFAULT ''").run();
-  }
-}
-
 function inline(value){
   return esc(value).replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>");
 }
@@ -170,6 +144,17 @@ function articleRelated(rows){
  return '<aside class="tb-p1-box"><h2>Bài viết liên quan</h2><ul>'+
  posts.map(p=>'<li><a href="/bai-viet/'+encodeURIComponent(p.slug)+'">'+esc(p.title||"Bài viết")+'</a></li>').join("")+'</ul></aside>';
 }
+function editorialVersionLinks(post){
+  // Only a verified older Beta article gets a cross-version reading trail.
+  // Do not imply that an old test build is currently the live game version.
+  if(post.slug!=="pubg-mobile-4-7-beta-1-chinh-thuc-khoi-dong-hang-loat-thay-doi-gameplay-dang-chu-y")return "";
+  return '<aside class="tb-p1-box" aria-label="Đọc tiếp theo phiên bản">'+
+   '<h2>Đọc tiếp theo phiên bản</h2>'+
+   '<p>Bài này ghi nhận thông tin ở giai đoạn Beta 1; nội dung thử nghiệm có thể thay đổi. Đối chiếu thêm nguồn và ngày đăng trước khi áp dụng cho phiên bản hiện tại.</p>'+
+   '<ul><li><a href="/news-pubg-mobile-4-6-skins-events">Lịch trang phục và sự kiện PUBG Mobile 4.6 (tham khảo lịch cũ)</a></li>'+
+   '<li><a href="/ban-cap-nhat">Xem trang Bản cập nhật TrainingBot</a></li>'+
+   '<li><a href="/wiki">Tra cứu Wiki với nhãn xác minh theo nguồn</a></li></ul></aside>';
+}
 function articleHasHeading(post){
  return /<h2\b/i.test(String(post.rich_content||""))||/^##\s/m.test(String(post.content||""));
 }
@@ -226,7 +211,7 @@ ${modified?`<meta property="article:modified_time" content="${esc(modified)}">`:
 </head>
 <body>
 <header class="site-header"><div class="container header-inner"><a class="brand" href="/"><span class="brand-logo"></span><span>TRAININGBOT<small>Gaming Knowledge Hub</small></span></a><nav class="desktop-nav" aria-label="Điều hướng chính"><a class="nav-link" href="/">Trang chủ</a><a class="nav-link" href="/ban-cap-nhat">Bản cập nhật</a><a class="nav-link active" href="/news">Tin tức</a><a class="nav-link" href="/wiki">Wiki</a><a class="nav-link" href="/community">Cộng đồng</a><a class="nav-link" href="/contact">Liên hệ</a></nav><div class="header-actions"><button class="icon-button" aria-label="Tìm kiếm"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3-3"></path></svg></button><button class="menu-button" aria-label="Mở menu" aria-expanded="false"><span></span><span></span><span></span></button></div></div><nav class="mobile-nav" aria-label="Điều hướng di động"></nav></header>
-<main class="tb-user-article"><article class="container tb-user-wrap"><span class="tb-user-tag">${esc(post.category)}</span><h1>${esc(post.title)}</h1><p class="tb-user-lead">${esc(excerpt)}</p><div class="tb-user-meta">${dateVi(post.published_at)} · TrainingBot</div>${cover}<div class="tb-user-story">${articleHasHeading(post)?"":"<h2>Nội dung bài viết</h2>"}${post.rich_content?sanitizeRich(post.rich_content):renderContent(post.content)}</div>${articleSources(post)}${articleRelated(related)}<a class="tb-back" href="/news">← Quay lại Tin tức</a></article></main>
+<main class="tb-user-article"><article class="container tb-user-wrap"><span class="tb-user-tag">${esc(post.category)}</span><h1>${esc(post.title)}</h1><p class="tb-user-lead">${esc(excerpt)}</p><div class="tb-user-meta">${dateVi(post.published_at)} · TrainingBot</div>${cover}<div class="tb-user-story">${articleHasHeading(post)?"":"<h2>Nội dung bài viết</h2>"}${post.rich_content?sanitizeRich(post.rich_content):renderContent(post.content)}</div>${articleSources(post)}${editorialVersionLinks(post)}${articleRelated(related)}<a class="tb-back" href="/news">← Quay lại Tin tức</a></article></main>
 <footer><div class="container footer-inner"><span>© 2026 TrainingBot.</span><div class="footer-links"><a href="/contact">Điều khoản</a><a href="/contact">Quyền riêng tư</a></div></div></footer>
 <script defer src="/navigation_v124.js?v=124"></script>
 <script defer src="/header_search_v152.js?v=182"></script>
@@ -237,7 +222,6 @@ ${modified?`<meta property="article:modified_time" content="${esc(modified)}">`:
 
 export async function onRequestGet({env,params}){
   if(!env.DB)return new Response("Dữ liệu bài viết chưa sẵn sàng.",{status:503});
-  await setup(env.DB);
   const slug=String(params.slug||"").toLowerCase();
   if(!/^[a-z0-9-]{1,110}$/.test(slug))return new Response("Không tìm thấy bài viết.",{status:404});
   const post=await env.DB.prepare("SELECT slug,title,summary,content,rich_content,category,cover_url,published_at,updated_at FROM tb_manual_posts_v1 WHERE slug=? AND status='published' LIMIT 1").bind(slug).first();
