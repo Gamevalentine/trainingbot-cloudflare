@@ -3,6 +3,9 @@
   "use strict";
 
   if(/^\/admin(?:\/|\.html|$)/i.test(location.pathname))return;
+  // Opt-out ONLY when a developer intentionally opens a marked QA URL.
+  // This is not bot detection, and it cannot identify earlier test traffic.
+  if(new URLSearchParams(location.search||"").get("tb_internal_qa")==="1")return;
 
   const VISITOR_KEY="tb-visitor-id-v1"; // Keep existing anonymous IDs.
   const VISIT_KEY="tb-shared-visit-v2";
