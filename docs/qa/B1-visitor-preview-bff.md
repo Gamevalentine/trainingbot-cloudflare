@@ -21,23 +21,19 @@
 5. Read-only live Preview smoke: HTML/JS BFF bootstrap PASS; `/api/ai-preview/status` returns `ready:false` as required until service binding/secret configured; [evidence](https://github.com/Gamevalentine/trainingbot-ai-core/actions/runs/40789293275).
 6. Cloudflare Pages project metadata API via the currently provisioned AI Core `CLOUDFLARE_API_TOKEN`: **HTTP 403** (no Pages access). [read-only inventory](https://github.com/Gamevalentine/trainingbot-ai-core/actions/runs/40788541903).
 
-## Exact missing configuration — NOT DONE
-1. A **Cloudflare Pages Preview-only** Service Binding named `TRAININGBOT_AI_STAGE_WORKER` pointing to `trainingbot-ai-staging` (NEVER an existing TrainingBot Production Worker).
-2. A 256-bit secret `TRAININGBOT_AI_PREVIEW_BRIDGE_SECRET`, matching on **Pages Preview only** and **AI Staging Worker only**. It must be generated and installed through a secure server-side deployment workflow, not emailed/pasted/chat.
-3. Verify the Pages project belongs to the expected Cloudflare account and is exactly `trainingbot-cloudflare`; verify production_branch `main` and that Preview and Production deployment configs are separate. Preserve all existing bindings and vars (do not PATCH blindly).
-4. Require a credential with Cloudflare **Pages Read/Edit** permission for this account. Current read-only inventory returns HTTP 403; user action is required to authorize Pages settings access before the assistant can configure them. No secret should be pasted in chat.
+## B.1 configuration and acceptance — PASS, Preview only
 
-**Owner action when ready:** Create an account-scoped Cloudflare API token with Cloudflare Pages Edit permission, and save it as **`CLOUDFLARE_PAGES_PREVIEW_TOKEN`** under GitHub repository `Gamevalentine/trainingbot-ai-core` → Settings → Secrets and variables → Actions. Do not replace `CLOUDFLARE_API_TOKEN`, which is used for isolated AI Staging only. Token need not grant D1/Production edit. This connection requires the owner's explicit action and may be restricted by Cloudflare account permissions.
+- The owner granted a scoped Pages token in GitHub Actions and the Pages API returned HTTP 200.
+- The first-party Pages Preview service binding `TRAININGBOT_AI_STAGE_WORKER` points only to `trainingbot-ai-staging`.
+- A fresh 256-bit signing secret `TRAININGBOT_AI_PREVIEW_BRIDGE_SECRET` was installed in Pages **Preview** and isolated AI Staging, not website Production. Secret values are never in this repository.
+- Production environment config was compared before and after the Pages API update and found **unchanged**. [Configuration workflow PASS](https://github.com/Gamevalentine/trainingbot-ai-core/actions/runs/40790752075).
+- After a Preview-only redeployment, `/api/ai-preview/status` returns Visitor ready and Admin false.
+- Actual live Pages GET/POST QA proved: no-account guest session, signed HttpOnly cookie, first AI answer, second message with the same conversation ID, guest role spoofing denial, cross-origin rejection, missing cookie denial, and legacy Admin mutation 403. [Live first-party Preview E2E PASS](https://github.com/Gamevalentine/trainingbot-ai-core/actions/runs/40791116172).
+- Cloudflare Workers does not implement `redirect: "error"`. A runtime TypeError was found and fixed with `redirect: "manual"`; every non-allowlisted response (including HTTP 3xx) continues to be rejected. The regression has automated coverage.
+- [Source/build/Preview middleware CI](https://github.com/Gamevalentine/trainingbot-cloudflare/pull/26) remains on a **Draft, unmerged** pull request.
 
-## QA/release constraints
-- Never treat no service binding as success; in the deployed Preview status `ready:false` currently.
-- A successful Worker-side Staging test alone is **not** an actual Pages-to-Staging service-binding test.
-- After Preview-only binding is configured, run browser/real network E2E to confirm anonymous Visitor chat. Then move to B.2. Admin remains separate for B.4.
-- Production release and AI widget activation on `trainingbot.io.vn` require independent owner approval and security/cost/abuse checks.
+## B.1 decision and next steps
 
-## B.1 acceptance
-**Source + real independent Staging Worker protocol PASS. Live first-party Preview-to-Staging binding NOT VERIFIED / BLOCKED BY PAGES PERMISSION.** Do not claim B.1 end-to-end completion until Preview binds are installed and live Pages session/chat passes.
+**B.1 Preview Visitor AI integration: PASS.** Live website `trainingbot.io.vn` still uses the existing Production resources; nothing was merged or released there.
 
-## Follow-up
-
-The Preview connection settings were added in Cloudflare; verify with an updated Preview deployment before accepting B.1.
+Next **B.2**: improve chat UI, reset/clear conversation, readable error and limit states, loading behavior, PC/mobile layout, and run browser QA. Admin login and Admin AI are separately gated; do not open them as part of Visitor B.2. Before publishing Production, complete abuse/cost controls, vendor/license review and obtain explicit approval.
