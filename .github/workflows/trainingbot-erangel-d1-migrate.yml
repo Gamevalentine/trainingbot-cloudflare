@@ -1,139 +1,57 @@
-name: TrainingBot D1.3 — guarded Erangel D1 one-time migration
+name: TrainingBot Erangel D1 — final read-only verification
 on:
   push:
-    branches: [main, aion-trainingbot-d1-oidc-readonly-20261030]
-    paths: [.github/workflows/trainingbot-erangel-d1-migrate.yml, functions/api/v71/admin/erangel-correction.js]
+    branches: [main]
+    paths: [.github/workflows/trainingbot-erangel-d1-migrate.yml]
 permissions:
   contents: read
   id-token: write
 jobs:
-  preflight:
+  verify:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 4
     steps:
-      - name: Inspect OIDC claim conditions and read D1 state without changing data
+      - name: Verify completed D1 record and original backup; no write operations
         run: |
           node --input-type=module <<'NODE'
-          const audience="trainingbot-erangel-d1-migration-v1";
-          const url=new URL(process.env.ACTIONS_ID_TOKEN_REQUEST_URL);
-          url.searchParams.set("audience",audience);
-          const issued=await fetch(url,{headers:{Authorization:"Bearer "+process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN}});
-          if(!issued.ok)throw Error("OIDC issuance HTTP "+issued.status);
-          const {value:jwt}=await issued.json();
-          if(typeof jwt!=="string"||jwt.split(".").length!==3)throw Error("OIDC token missing");
-          const decode=s=>JSON.parse(Buffer.from(s,"base64url").toString("utf8"));
-          const parts=jwt.split("."),head=decode(parts[0]),claims=decode(parts[1]),now=Math.floor(Date.now()/1000);
-          const checks={
-            alg:head.alg==="RS256",
-            issuer:claims.iss==="https://token.actions.githubusercontent.com",
-            audience:claims.aud===audience,
-            repository:String(claims.repository||"").toLowerCase()==="gamevalentine/trainingbot-cloudflare",
-            workflow_ref:String(claims.workflow_ref||"").toLowerCase()==="gamevalentine/trainingbot-cloudflare/.github/workflows/trainingbot-erangel-d1-migrate.yml@refs/heads/main",
-            main_ref:claims.ref==="refs/heads/main",
-            push_event:claims.event_name==="push",
-            sha:typeof claims.sha==="string"&&/^[a-f0-9]{40}$/.test(claims.sha),
-            jti:typeof claims.jti==="string"&&claims.jti.length>0,
-            iat:Number.isInteger(claims.iat)&&claims.iat>=now-300&&claims.iat<=now+30,
-            exp:Number.isInteger(claims.exp)&&claims.exp>now&&claims.exp<=now+600,
-            nbf:claims.nbf===undefined||(Number.isInteger(claims.nbf)&&claims.nbf<=now+30)
+          const oidc=new URL(process.env.ACTIONS_ID_TOKEN_REQUEST_URL);
+          oidc.searchParams.set("audience","trainingbot-erangel-d1-migration-v1");
+          const issue=async()=>{
+            const response=await fetch(oidc,{headers:{Authorization:"Bearer "+process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN}});
+            if(!response.ok)throw Error("GitHub OIDC issue failed: HTTP "+response.status);
+            const token=(await response.json()).value;
+            if(typeof token!=="string"||token.split(".").length!==3)throw Error("OIDC token unavailable");
+            return token;
           };
-          console.log("OIDC claims match main-only policy (boolean values, no token)",JSON.stringify(checks));
-          const jwks=await fetch("https://token.actions.githubusercontent.com/.well-known/jwks");
-          console.log("GitHub JWKS accessible to runner",jwks.status===200);
-          let primary=null;
-          for(const host of ["https://trainingbot-cloudflare.pages.dev","https://trainingbot.io.vn"]){
-            try{
-              const response=await fetch(host+"/api/v71/admin/erangel-correction",{
-                method:"GET",headers:{Authorization:"Bearer "+jwt,Accept:"application/json"},
-                signal:AbortSignal.timeout(12000),redirect:"manual"
-              });
-              const raw=await response.text();let data={};try{data=JSON.parse(raw)}catch{}
-              const info={host,method:"GET",status:response.status,content_type:response.headers.get("content-type"),
-                message:typeof data.message==="string"?data.message.slice(0,100):null,
-                ok:data.ok===true,
-                migration_state:["applied","restored","not_applied"].includes(data.migration_state)?data.migration_state:null,
-                backup_exists:typeof data.backup_exists==="boolean"?data.backup_exists:null,
-                stored_correction:typeof data.stored_correction==="boolean"?data.stored_correction:null,
-                public_fallback_required:typeof data.public_fallback_required==="boolean"?data.public_fallback_required:null};
-              console.log("GET_ONLY_PRODUCTION_DIAGNOSTIC",JSON.stringify(info));
-              if(host==="https://trainingbot-cloudflare.pages.dev")primary=info;
-            }catch(error){console.log("GET_ONLY_PRODUCTION_DIAGNOSTIC",JSON.stringify({host,error_class:error?.name||"Error"}))}
-          }
-          if(process.env.GITHUB_REF==="refs/heads/main"){
-            if(Object.values(checks).some(value=>value!==true))throw Error("Main OIDC claim mismatch, no D1 change");
-            // Cloudflare Pages may finish its deployment after GitHub Actions starts.
-            // Retry only signed GET for a bounded period; never perform a write.
-            for(let attempt=1;attempt<=15&&(primary?.status!==200||primary?.ok!==true);attempt++){
-              await new Promise(resolve=>setTimeout(resolve,10000));
-              try{
-                const response=await fetch("https://trainingbot-cloudflare.pages.dev/api/v71/admin/erangel-correction",{
-                  method:"GET",headers:{Authorization:"Bearer "+jwt,Accept:"application/json"},
-                  signal:AbortSignal.timeout(12000)
-                });
-                const data=await response.json().catch(()=>({}));
-                primary={status:response.status,ok:data.ok===true,
-                  migration_state:data.migration_state??null,backup_exists:data.backup_exists??null,
-                  stored_correction:data.stored_correction??null,public_fallback_required:data.public_fallback_required??null};
-                console.log("MAIN_PRODUCTION_GET_RETRY",JSON.stringify({attempt,...primary}));
-              }catch(error){console.log("MAIN_PRODUCTION_GET_RETRY",JSON.stringify({attempt,error_class:error?.name||"Error"}))}
-            }
-            if(primary?.status!==200||primary.ok!==true)throw Error("Main D1 read-only status failed after bounded retries; no D1 change");
-            console.log("PRODUCTION_D1_READ_VERIFIED",JSON.stringify(primary));
-            // One-time migration only after signed D1 read and exact preconditions.
-            // Create a fresh short-lived signed identity for each authenticated call.
-            const issue=async()=>{
-              const reply=await fetch(url,{headers:{Authorization:"Bearer "+process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN}});
-              if(!reply.ok)throw Error("New GitHub OIDC issuance failed: HTTP "+reply.status);
-              const token=(await reply.json()).value;
-              if(typeof token!=="string")throw Error("Missing fresh signed identity");
-              return token;
-            };
-            const endpoint="https://trainingbot-cloudflare.pages.dev/api/v71/admin/erangel-correction";
-            const expectedApplied=state=>state?.migration_state==="applied"&&state.backup_exists===true&&
+          const endpoint="https://trainingbot-cloudflare.pages.dev/api/v71/admin/erangel-correction";
+          const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+          let confirmed=false;
+          for(let attempt=1;attempt<=12;attempt++){
+            const response=await fetch(endpoint,{method:"GET",headers:{
+              Authorization:"Bearer "+await issue(),Accept:"application/json"
+            },signal:AbortSignal.timeout(12000)});
+            const state=await response.json().catch(()=>({}));
+            const ok=response.status===200&&state.ok===true&&
+              state.migration_state==="applied"&&state.backup_exists===true&&
               state.stored_correction===true&&state.public_fallback_required===false;
-            if(expectedApplied(primary)){
-              console.log("ERANGEL_D1_ALREADY_APPLIED_AND_BACKED_UP; no write needed");
-            }else{
-              if(!(primary.migration_state==="not_applied"&&primary.backup_exists===false&&
-                primary.stored_correction===false&&primary.public_fallback_required===true))
-                throw Error("Unexpected D1 pre-state; migration REFUSED");
-              const token=await issue();
-              const response=await fetch(endpoint,{
-                method:"POST",
-                headers:{Authorization:"Bearer "+token,Accept:"application/json","Content-Type":"application/json"},
-                body:JSON.stringify({action:"apply",confirm:"erangel-pc39-2-to-mobile47-20261029"}),
-                signal:AbortSignal.timeout(15000)
-              });
-              const outcome=await response.json().catch(()=>({}));
-              console.log("ERANGEL_D1_WRITE_OUTCOME",JSON.stringify({status:response.status,ok:outcome.ok===true,
-                result:outcome.result||null,backup_exists:outcome.backup_exists===true,
-                stored_correction:outcome.stored_correction===true}));
-              if(response.status!==200||outcome.ok!==true||
-                !["applied","already_applied"].includes(outcome.result)||
-                outcome.backup_exists!==true||outcome.stored_correction!==true)
-                throw Error("D1 apply not confirmed. No blind retry; inspect read-only state");
-            }
-            const verification=await fetch(endpoint,{
-              method:"GET",headers:{Authorization:"Bearer "+await issue(),Accept:"application/json"},
-              signal:AbortSignal.timeout(12000)
-            });
-            const observed=await verification.json().catch(()=>({}));
-            const result={status:verification.status,migration_state:observed.migration_state,
-              backup_exists:observed.backup_exists,stored_correction:observed.stored_correction,
-              public_fallback_required:observed.public_fallback_required};
-            console.log("ERANGEL_D1_AFTER_WRITE_VERIFICATION",JSON.stringify(result));
-            if(verification.status!==200||observed.ok!==true||!expectedApplied(observed))
-              throw Error("Production D1 not fully verified; retain safety fallback");
-            const slug="battlegrounds-mo-rong-erangel-subzero-trong-pubg-mobile-bgmi-voi-ban-beta-4-7-2";
-            const article=await fetch("https://trainingbot-cloudflare.pages.dev/bai-viet/"+slug,{
-              method:"GET",headers:{Accept:"text/html"},signal:AbortSignal.timeout(12000)
-            });
-            const html=await article.text();
-            const publicOK=article.status===200&&html.includes("ĐÍNH CHÍNH: Erangel Subzero của PUBG Mobile Beta 4.7 khác PUBG PC Update 39.2");
-            console.log("ERANGEL_PUBLIC_READ_CONFIRMATION",JSON.stringify({status:article.status,corrected_heading:publicOK}));
-            if(!publicOK)throw Error("D1 applied but public article verification needs review");
-            console.log("ERANGEL_D1_PRODUCTION_APPLIED_BACKED_UP_AND_PUBLICLY_VERIFIED");
-          }else{
-            console.log("Diagnostic feature-branch token is intentionally untrusted in Production");
+            console.log("ERANGEL_D1_POST_RELEASE_READ_ONLY",JSON.stringify({attempt,status:response.status,
+              migration_state:state.migration_state||null,backup_exists:state.backup_exists===true,
+              stored_correction:state.stored_correction===true,
+              public_fallback_required:state.public_fallback_required??null,verified:ok}));
+            if(ok){confirmed=true;break}
+            if(response.status===200)throw Error("Unexpected D1 state after migration; no change attempted");
+            if(![401,503].includes(response.status))throw Error("Unexpected status; no D1 change attempted");
+            if(attempt<12)await sleep(8000);
           }
+          if(!confirmed)throw Error("Cannot verify D1 after migration; no change attempted");
+          const slug="battlegrounds-mo-rong-erangel-subzero-trong-pubg-mobile-bgmi-voi-ban-beta-4-7-2";
+          const article=await fetch("https://trainingbot-cloudflare.pages.dev/bai-viet/"+slug,{
+            method:"GET",headers:{Accept:"text/html"},signal:AbortSignal.timeout(12000)});
+          const html=await article.text();
+          const corrected=article.status===200&&
+            html.includes("ĐÍNH CHÍNH: Erangel Subzero của PUBG Mobile Beta 4.7 khác PUBG PC Update 39.2");
+          console.log("ERANGEL_PUBLIC_AFTER_RELEASE",JSON.stringify({status:article.status,corrected_heading:corrected}));
+          if(!corrected)throw Error("Public article needs review; D1 was not modified");
+          console.log("ERANGEL_D1_MIGRATION_FINAL_VERIFIED; backup retained, no writes");
           NODE
