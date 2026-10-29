@@ -1,6 +1,7 @@
 // Self-contained Cloudflare D1 contract test: no real secrets and no Production writes.
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import {generateKeyPairSync,createSign} from "node:crypto";
 const articleSource=fs.readFileSync("functions/bai-viet/[slug].js","utf8");
 const articleUrl="data:text/javascript;base64,"+Buffer.from(articleSource).toString("base64");
 const article=await import(articleUrl);
@@ -162,12 +163,71 @@ assert.equal(concurrencyDb.backup,null,"No backup can claim success after an abo
 assert.equal(concurrencyDb.post.content,old.content,"Concurrent update must not be overwritten");
 
 
+// GitHub OIDC authentication contract: fake key pair, no real tokens or network.
+const {publicKey,privateKey}=generateKeyPairSync("rsa",{modulusLength:2048});
+const publicJwk={...publicKey.export({format:"jwk"}),kid:"trainingbot-qa-key",alg:"RS256",use:"sig"};
+const githubJwks="https://token.actions.githubusercontent.com/.well-known/jwks";
+const beforeFetch=globalThis.fetch;
+globalThis.fetch=async uri=>{
+ if(String(uri)!==githubJwks)throw Error("Unexpected OIDC key source");
+ return Response.json({keys:[publicJwk]});
+};
+const now=Math.floor(Date.now()/1000);
+const signedJwt=(claims={})=>{
+ const header=Buffer.from(JSON.stringify({alg:"RS256",typ:"JWT",kid:publicJwk.kid})).toString("base64url");
+ const payload=Buffer.from(JSON.stringify({
+  iss:"https://token.actions.githubusercontent.com",
+  aud:"trainingbot-erangel-d1-migration-v1",
+  repository:"Gamevalentine/trainingbot-cloudflare",
+  workflow_ref:"Gamevalentine/trainingbot-cloudflare/.github/workflows/trainingbot-erangel-d1-migrate.yml@refs/heads/main",
+  ref:"refs/heads/main",event_name:"push",sha:"a".repeat(40),jti:"qa-test",
+  iat:now,nbf:now-1,exp:now+240,...claims
+ })).toString("base64url");
+ const signed=header+"."+payload;
+ return signed+"."+createSign("RSA-SHA256").update(signed).sign(privateKey).toString("base64url");
+};
+const oidcReq=(method,jwt,action,host="trainingbot.io.vn")=>new Request(
+ "https://"+host+"/api/v71/admin/erangel-correction",{
+ method,headers:{"authorization":"Bearer "+jwt,"content-type":"application/json"},
+ ...(method==="POST"?{body:JSON.stringify({action,confirm:revision})}:{})
+ });
+try{
+ const oidcDB=new MockD1(old),oidcEnv={DB:oidcDB};
+ const valid=signedJwt();
+ const st=await body(await onRequestGet({request:oidcReq("GET",valid),env:oidcEnv}));
+ assert.equal(st.status,200,"Signed, correct GitHub OIDC workflow can read D1 migration status");
+ const badCases=[
+  signedJwt({aud:"wrong-audience"}),
+  signedJwt({workflow_ref:"OtherOwner/other/.github/workflows/trainingbot-erangel-d1-migrate.yml@refs/heads/main"}),
+  signedJwt({event_name:"pull_request"}),
+  signedJwt({ref:"refs/heads/feature"}),
+  signedJwt({exp:now-1}),
+  signedJwt({repository:"attacker/repository"}),
+  valid.slice(0,-4)+"zzzz"
+ ];
+ for(const bad of badCases){
+  const rejected=await body(await onRequestPost({request:oidcReq("POST",bad,"apply"),env:oidcEnv}));
+  assert.equal(rejected.status,401,"Reject non-matching or tampered OIDC identity");
+ }
+ assert.equal(oidcDB.backup,null,"Bad OIDC tokens never write D1 backup");
+ const blockedPreview=await body(await onRequestPost({
+  request:oidcReq("POST",valid,"apply","preview.trainingbot-cloudflare.pages.dev"),env:oidcEnv}));
+ assert.equal(blockedPreview.status,401,"Reject GitHub OIDC on Pages Preview");
+ const applied=await body(await onRequestPost({request:oidcReq("POST",valid,"apply"),env:oidcEnv}));
+ assert.equal(applied.status,200);
+ assert.equal(applied.result,"applied");
+ assert.equal(oidcDB.backup.state,"applied");
+ assert.deepEqual(JSON.parse(oidcDB.backup.original_json),old);
+}finally{
+ globalThis.fetch=beforeFetch;
+}
+
 fs.mkdirSync("seo-erangel-migration-artifacts",{recursive:true});
 fs.writeFileSync("seo-erangel-migration-artifacts/qa-report.json",JSON.stringify({
  checked:"2026-10-29",scope:"Mock D1 only",operations:[
   "unauthorized GET/POST rejected","preview writes rejected","original backup saved",
   "apply idempotent","restore exact row","refuse edited-record rollback",
   "restored original not served publicly","transaction failure atomicity",
-  "unexpected existing title rejected","concurrent Admin edit aborts D1 batch"
+  "unexpected existing title rejected","concurrent Admin edit aborts D1 batch","signed GitHub OIDC workflow can apply migration","OIDC wrong audience/repo/workflow/branch/event/expiry/signature rejected"
  ],productionD1Migrated:false},null,2));
 console.log("ERANGEL D1 MIGRATION QA PASS: private backup, D1 transaction, exact rollback, public fail-closed fallback; remote Production migration NOT executed");

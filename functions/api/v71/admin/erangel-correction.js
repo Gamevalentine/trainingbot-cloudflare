@@ -6,9 +6,58 @@ const HEADERS={"content-type":"application/json; charset=UTF-8","cache-control":
 const reply=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:HEADERS});
 const FIELDS=["id","slug","title","summary","content","rich_content","category","cover_url","status","featured_at","created_at","updated_at","published_at"];
 const createBackup="CREATE TABLE IF NOT EXISTS "+BACKUP_TABLE+" (slug TEXT PRIMARY KEY, revision TEXT NOT NULL, original_json TEXT NOT NULL, original_updated_at TEXT NOT NULL, correction_updated_at TEXT NOT NULL, created_at TEXT NOT NULL, state TEXT NOT NULL CHECK(state IN ('applied','restored')), restored_at TEXT NOT NULL DEFAULT '')";
-function authorized(request,env){
+// GitHub Actions OIDC: a short-lived, signed workload identity for this single
+// production editorial migration. No human Cloudflare login or shared API key.
+const OIDC_ISSUER="https://token.actions.githubusercontent.com";
+const OIDC_JWKS=OIDC_ISSUER+"/.well-known/jwks";
+const OIDC_AUDIENCE="trainingbot-erangel-d1-migration-v1";
+const OIDC_REPOSITORY="gamevalentine/trainingbot-cloudflare";
+const OIDC_WORKFLOW=OIDC_REPOSITORY+"/.github/workflows/trainingbot-erangel-d1-migrate.yml@refs/heads/main";
+function decodeBase64Url(value){
+ if(!/^[a-zA-Z0-9_-]+$/.test(value))throw new Error("Invalid base64url");
+ const raw=atob(value.replace(/-/g,"+").replace(/_/g,"/").padEnd(Math.ceil(value.length/4)*4,"="));
+ return Uint8Array.from(raw,c=>c.charCodeAt(0));
+}
+async function verifiedGithubOidc(request){
+ if(!isProduction(request))return false;
+ const header=request.headers.get("Authorization")||"";
+ if(!header.startsWith("Bearer ")||header.length>9000)return false;
+ const token=header.slice(7),parts=token.split(".");
+ if(parts.length!==3)return false;
+ try{
+  const jwtHeader=JSON.parse(new TextDecoder().decode(decodeBase64Url(parts[0])));
+  if(jwtHeader.alg!=="RS256"||typeof jwtHeader.kid!=="string"||jwtHeader.kid.length>200)return false;
+  const jwksResponse=await fetch(OIDC_JWKS,{headers:{Accept:"application/json"},redirect:"error"});
+  if(!jwksResponse.ok)return false;
+  const jwks=await jwksResponse.json();
+  const publicJwk=(jwks.keys||[]).find(key=>key.kid===jwtHeader.kid&&key.kty==="RSA"&&
+    (!key.alg||key.alg==="RS256")&&(!key.use||key.use==="sig"));
+  if(!publicJwk)return false;
+  const key=await crypto.subtle.importKey("jwk",publicJwk,
+    {name:"RSASSA-PKCS1-v1_5",hash:"SHA-256"},false,["verify"]);
+  const signed=await crypto.subtle.verify("RSASSA-PKCS1-v1_5",key,
+    decodeBase64Url(parts[2]),new TextEncoder().encode(parts[0]+"."+parts[1]));
+  if(!signed)return false;
+  const jwt=JSON.parse(new TextDecoder().decode(decodeBase64Url(parts[1])));
+  const now=Math.floor(Date.now()/1000);
+  return jwt.iss===OIDC_ISSUER&&jwt.aud===OIDC_AUDIENCE&&
+   String(jwt.repository||"").toLowerCase()===OIDC_REPOSITORY&&
+   String(jwt.workflow_ref||"").toLowerCase()===OIDC_WORKFLOW&&
+   jwt.ref==="refs/heads/main"&&jwt.event_name==="push"&&
+   typeof jwt.sha==="string"&&/^[a-f0-9]{40}$/.test(jwt.sha)&&
+   typeof jwt.jti==="string"&&jwt.jti.length>0&&
+   Number.isInteger(jwt.iat)&&jwt.iat>=now-300&&jwt.iat<=now+30&&
+   Number.isInteger(jwt.exp)&&jwt.exp>now&&jwt.exp<=now+600&&
+   (jwt.nbf===undefined||(Number.isInteger(jwt.nbf)&&jwt.nbf<=now+30));
+ }catch(error){
+  console.warn("GitHub OIDC verification unavailable");
+  return false;
+ }
+}
+async function authorized(request,env){
  const expected=String(env.ADMIN_TOKEN||"");
- return expected.length>=16 && request.headers.get("Authorization")==="Bearer "+expected;
+ if(expected.length>=16&&request.headers.get("Authorization")==="Bearer "+expected)return true;
+ return verifiedGithubOidc(request);
 }
 function isProduction(request){
  try{return new URL(request.url).hostname==="trainingbot.io.vn"}catch{return false}
@@ -34,7 +83,7 @@ async function getBackup(db){
 }
 const changed=result=>Number(result?.meta?.changes??-1)===1;
 export async function onRequestGet({request,env}){
- if(!authorized(request,env))return reply({ok:false,message:"Unauthorized"},401);
+ if(!await authorized(request,env))return reply({ok:false,message:"Unauthorized"},401);
  if(!env.DB)return reply({ok:false,message:"D1 binding unavailable"},503);
  try{
   const [post,backup]=await Promise.all([getPost(env.DB),getBackup(env.DB)]);
@@ -47,7 +96,7 @@ export async function onRequestGet({request,env}){
  }catch(error){console.error("Erangel D1 status",error);return reply({ok:false,message:"Could not read D1 state"},500)}
 }
 export async function onRequestPost({request,env}){
- if(!authorized(request,env))return reply({ok:false,message:"Unauthorized"},401);
+ if(!await authorized(request,env))return reply({ok:false,message:"Unauthorized"},401);
  if(!isProduction(request))return reply({ok:false,message:"Maintenance writes require the production hostname"},403);
  if(!env.DB || typeof env.DB.batch!=="function")return reply({ok:false,message:"Transactional D1 binding unavailable"},503);
  let input;
