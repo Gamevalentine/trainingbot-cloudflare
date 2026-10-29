@@ -135,6 +135,20 @@ export async function chat(request,env){
  if(result.status===429)return safe(429,{error:{code:'RATE_LIMITED'}});
  if(result.status!==200||typeof result.json?.reply!=='string'||result.json.reply.length>16000)
   return safe(result.status===401?401:503,{error:{code:'AI_UNAVAILABLE'}});
+ // Accept only compact structured provenance supplied by the authenticated Staging Worker.
+ // Client-supplied citations and arbitrary URLs are never forwarded to this response.
+ const sources=Array.isArray(result.json.sources)?result.json.sources.slice(0,6)
+  .filter(x=>x&&typeof x==='object'&&['wiki_snapshot','editorial_tactics'].includes(x.type)
+   &&typeof x.title==='string'&&x.title.length<=160)
+  .map(x=>({
+    type:x.type,title:x.title,
+    sourceStatus:x.type==='wiki_snapshot'?'internal_unverified':'editorial_suggestion',
+    gameVersion:null,
+    ...(x.type==='wiki_snapshot'&&typeof x.url==='string'&&
+      /^https:\/\/github\.com\/Gamevalentine\/trainingbot-cloudflare\/blob\/[a-f0-9]{40}\/overrides\/wiki\.html$/.test(x.url)
+       ?{url:x.url}:{}),
+    ...(typeof x.snapshotDate==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x.snapshotDate)?{snapshotDate:x.snapshotDate}:{})
+  })):[];
  return safe(200,{reply:result.json.reply,conversationId:result.json.conversationId,
-   revision:result.json.revision});
+   revision:result.json.revision,sources});
 }
