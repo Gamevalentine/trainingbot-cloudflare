@@ -64,3 +64,15 @@ Workflow D1.3 chỉ được merge sau khi kiểm thử offline/SEO/Wiki/Pages P
 5. Xác minh bài công khai có tiêu đề đính chính, giữ nguyên fallback bảo vệ cho tới khi có quyết định khác.
 
 Không áp dụng thay đổi cho bài khác, không chạm R2, không xóa bản gốc và không chạy rollback trên Production để thử nghiệm.
+
+## D1.3 — Bằng chứng nghiệm thu Production (30/10/2026, 03:29 ICT)
+
+- GitHub Actions run: https://github.com/Gamevalentine/trainingbot-cloudflare/actions/runs/40949400778
+- Mã phát hành `414f077f4728dbd54173f07e99aaee0ad35f5ed4` — workflow hoàn thành `success`.
+- GET tiền kiểm: HTTP 200, `not_applied / false / false / true`.
+- POST có bảo vệ: HTTP 200, `result=applied`, `backup_exists=true`, `stored_correction=true`.
+- GET hậu kiểm: HTTP 200, `applied / true / true / false`.
+- GET bài công khai từ Pages Production: HTTP 200, có tiêu đề “ĐÍNH CHÍNH: Erangel Subzero của PUBG Mobile Beta 4.7 khác PUBG PC Update 39.2”.
+- Chỉ bài Erangel đúng slug và các trường biên tập xác định được thay, còn `id`, `slug`, danh mục và ngày xuất bản được giữ nguyên theo API migration.
+- Bảng backup `tb_editorial_erangel_backup_v1` được xác nhận tồn tại bằng trạng thái API; không xóa snapshot hoặc gọi rollback thật.
+- Trạng thái cuối: **D1 Production đã chuyển đổi xong và đã nghiệm thu**. Workflow viết một lần được thay bằng workflow GET hậu kiểm, không còn tự gửi lệnh apply từ các lần push tiếp theo.
