@@ -38,7 +38,7 @@ while IFS= read -r -d '' page; do
       ;;
   esac
   # Cache-bust shared client scripts so a normal browser refresh receives the latest behavior.
-  sed -i 's#footer_v135\.js?v=[0-9]*#footer_v135.js?v=178#g; s#header_search_v152\.js?v=[0-9]*#header_search_v152.js?v=182#g; s#visitor_tracking_v177\.js?v=[0-9]*#visitor_tracking_v177.js?v=186#g' "$page"
+  sed -i 's#footer_v135\.js?v=[0-9]*#footer_v135.js?v=178#g; s#header_search_v152\.js?v=[0-9]*#header_search_v152.js?v=182#g; s#visitor_tracking_v177\.js?v=[0-9]*#visitor_tracking_v177.js?v=187#g' "$page"
   if ! grep -q 'footer_v135\.js' "$page"; then
     sed -i 's#</body>#  <script defer src="/footer_v135.js?v=178"></script>\n</body>#' "$page"
   fi
@@ -58,7 +58,7 @@ while IFS= read -r -d '' page; do
       ;;
     *)
       if ! grep -q 'visitor_tracking_v177\.js' "$page"; then
-        sed -i 's#</body>#  <script defer src="/visitor_tracking_v177.js?v=186"></script>\n</body>#' "$page"
+        sed -i 's#</body>#  <script defer src="/visitor_tracking_v177.js?v=187"></script>\n</body>#' "$page"
       fi
       ;;
   esac
@@ -134,7 +134,7 @@ let source=fs.readFileSync(file,'utf8');
 if(!source.includes('admin_visitor_tracking_v177.js')){
   const marker='document.open();document.write(h);document.close()';
   if(!source.includes(marker))throw new Error('Admin V2 loader marker not found for visitor tracking');
-  const patch=`h=h.replace('</body>','<script defer src="/admin_visitor_tracking_v177.js?v=180"><\\/script><script defer src="/admin_visitor_analytics_v2.js?v=4"><\\/script><script defer src="/admin_traffic_sources_v1.js?v=1"><\\/script><script defer src="/admin_traffic_anomalies_v1.js?v=1"><\\/script><script defer src="/admin_browser_label_v1.js?v=1"><\\/script></body>');${marker}`;
+  const patch=`h=h.replace('</body>','<script defer src="/admin_visitor_tracking_v177.js?v=180"><\\/script><script defer src="/admin_visitor_analytics_v2.js?v=4"><\\/script><script defer src="/admin_traffic_sources_v1.js?v=1"><\\/script><script defer src="/admin_traffic_anomalies_v1.js?v=2"><\\/script><script defer src="/admin_browser_label_v1.js?v=1"><\\/script></body>');${marker}`;
   source=source.replace(marker,patch);
   fs.writeFileSync(file,source);
 }
