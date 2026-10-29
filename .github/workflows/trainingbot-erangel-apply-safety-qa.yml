@@ -1,0 +1,39 @@
+name: TrainingBot D1.3 — offline migration safety & syntax QA
+on:
+  push:
+    branches: [aion-trainingbot-d1-erangel-apply-20261030]
+    paths: [.github/workflows/trainingbot-erangel-d1-migrate.yml, .github/workflows/trainingbot-erangel-apply-safety-qa.yml]
+permissions:
+  contents: read
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract and syntax-check migration script without executing it
+        run: |
+          node --input-type=module <<'JS'
+          import fs from "node:fs";
+          const yaml=fs.readFileSync(".github/workflows/trainingbot-erangel-d1-migrate.yml","utf8");
+          const match=yaml.match(/node --input-type=module <<'NODE'\n([\s\S]*?)^\s+NODE\s*$/m);
+          if(!match)throw Error("Missing bounded migration script");
+          const script=match[1].split("\n").map(x=>x.startsWith("          ")?x.slice(10):x).join("\n");
+          fs.writeFileSync("/tmp/trainingbot-d1-apply-guard.mjs",script);
+          for(const condition of [
+            'primary.migration_state==="not_applied"',
+            'primary.backup_exists===false',
+            'primary.stored_correction===false',
+            'primary.public_fallback_required===true',
+            'confirm:"erangel-pc39-2-to-mobile47-20261029"',
+            'ERANGEL_D1_AFTER_WRITE_VERIFICATION',
+            'ERANGEL_D1_PRODUCTION_APPLIED_BACKED_UP_AND_PUBLICLY_VERIFIED'
+          ]){
+            if(!script.includes(condition))throw Error("Missing mandatory release guard: "+condition);
+          }
+          if(script.includes('action:"rollback"')||script.includes('DELETE FROM'))
+            throw Error("Unsafe migration instruction detected");
+          console.log("D1.3 migration safety guards verified statically; Production was NOT accessed");
+          JS
+          node --check /tmp/trainingbot-d1-apply-guard.mjs
+          node tools/seo/erangel-d1-migration-qa.mjs
