@@ -218,6 +218,15 @@ try{
  assert.equal(applied.result,"applied");
  assert.equal(oidcDB.backup.state,"applied");
  assert.deepEqual(JSON.parse(oidcDB.backup.original_json),old);
+ const prodAliasDB=new MockD1(old);
+ const prodAlias=await body(await onRequestPost({
+  request:oidcReq("POST",valid,"apply","trainingbot-cloudflare.pages.dev"),
+  env:{DB:prodAliasDB}
+ }));
+ assert.equal(prodAlias.status,200,"Canonical Pages production hostname must be permitted for signed OIDC migration");
+ assert.equal(prodAliasDB.backup.state,"applied");
+ assert.deepEqual(JSON.parse(prodAliasDB.backup.original_json),old);
+
 }finally{
  globalThis.fetch=beforeFetch;
 }
@@ -228,6 +237,6 @@ fs.writeFileSync("seo-erangel-migration-artifacts/qa-report.json",JSON.stringify
   "unauthorized GET/POST rejected","preview writes rejected","original backup saved",
   "apply idempotent","restore exact row","refuse edited-record rollback",
   "restored original not served publicly","transaction failure atomicity",
-  "unexpected existing title rejected","concurrent Admin edit aborts D1 batch","signed GitHub OIDC workflow can apply migration","OIDC wrong audience/repo/workflow/branch/event/expiry/signature rejected"
+  "unexpected existing title rejected","concurrent Admin edit aborts D1 batch","signed GitHub OIDC workflow can apply migration on canonical Pages Production hostname","OIDC wrong audience/repo/workflow/branch/event/expiry/signature rejected"
  ],productionD1Migrated:false},null,2));
 console.log("ERANGEL D1 MIGRATION QA PASS: private backup, D1 transaction, exact rollback, public fail-closed fallback; remote Production migration NOT executed");
