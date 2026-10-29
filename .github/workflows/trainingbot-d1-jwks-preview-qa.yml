@@ -1,4 +1,4 @@
-name: TrainingBot D1.2 — isolated Pages Preview JWKS runtime QA
+name: TrainingBot D1.2 — isolate Preview JWKS egress and crypto
 on:
   push:
     branches: [aion-trainingbot-d1-jwks-preview-20261030]
@@ -8,35 +8,41 @@ permissions:
 jobs:
   preview-jwks:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 4
     steps:
-      - name: Probe Cloudflare Preview WebCrypto and GitHub JWKS without D1 or credentials
+      - name: Compare Cloudflare outbound requests with local RSA public-key import
         run: |
           node --input-type=module <<'NODE'
-          const address="https://aion-trainingbot-d1-jwks-pre.trainingbot-cloudflare.pages.dev/d1-jwks-health";
+          const base="https://aion-trainingbot-d1-jwks-pre.trainingbot-cloudflare.pages.dev/d1-jwks-health";
           const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-          for(let i=1;i<=15;i++){
-            let status=null;
+          let control;
+          for(let i=1;i<=18;i++){
             try{
-              const res=await fetch(address,{method:"GET",headers:{Accept:"application/json"},
-                signal:AbortSignal.timeout(10000)});
-              status=res.status;
-              const body=await res.json().catch(()=>({}));
-              console.log("PREVIEW_JWKS_PROBE",JSON.stringify({attempt:i,status,
-                ok:body.ok===true,jwks_http:body.jwks_http??null,
-                rsa_key_present:body.rsa_key_present===true,crypto_import_ok:body.crypto_import_ok===true,
-                failed_stage:body.failed_stage||null,error_class:body.error_class||null}));
-              if(status===200&&body.ok===true&&body.crypto_import_ok===true){
-                console.log("PREVIEW_JWKS_AND_WEBCRYPTO_PASS; D1 not accessed");process.exit(0);
+              const r=await fetch(base+"?mode=control",{method:"GET",signal:AbortSignal.timeout(25000)});
+              const body=await r.json().catch(()=>({}));
+              if(r.status===200&&body.diagnostic_version==="d1-20261030-control"){
+                control=body;break;
               }
-              if(status===503 && body.crypto_import_ok===false){
-                throw Error("Preview Cloudflare runtime cannot access JWKS or import signing key");
-              }
-            }catch(error){
-              if(String(error.message).includes("cannot access JWKS"))throw error;
-              console.log("Transient Preview probe:",error?.name||"Error");
-            }
-            if(i<15)await sleep(6000);
+              console.log("Waiting for current Preview diagnostics; attempt",i,"HTTP",r.status);
+            }catch(error){console.log("Preview not ready; attempt",i,error?.name||"Error")}
+            if(i<18)await sleep(6000);
           }
-          throw Error("Preview JWKS/WebCrypto test never passed");
+          if(!control)throw Error("Preview control endpoint did not deploy");
+          console.log("PAGES_RUNTIME_EGRESS",JSON.stringify(control.checks));
+          const official=await fetch("https://token.actions.githubusercontent.com/.well-known/jwks");
+          if(!official.ok)throw Error("Official JWKS not accessible from GitHub runner");
+          const data=await official.json();
+          const key=data.keys.find(x=>x.kty==="RSA"&&x.alg==="RS256"&&x.use==="sig"&&x.n&&x.e);
+          if(!key)throw Error("No official RSA signing key");
+          const publicKey=Buffer.from(JSON.stringify({kty:key.kty,alg:key.alg,use:key.use,kid:key.kid,n:key.n,e:key.e})).toString("base64url");
+          const probe=await fetch(base+"?mode=import&jwk="+publicKey,{method:"GET",signal:AbortSignal.timeout(15000)});
+          const result=await probe.json().catch(()=>({}));
+          console.log("PAGES_RUNTIME_CRYPTO",JSON.stringify({
+            status:probe.status,ok:result.ok===true,
+            stage:result.stage||null,crypto_import_ok:result.crypto_import_ok===true,
+            error_class:result.error_class||null
+          }));
+          if(probe.status!==200||result.crypto_import_ok!==true)
+            throw Error("Preview WebCrypto cannot import GitHub public key; no D1 change");
+          console.log("PREVIEW_PUBLIC_RSA_IMPORT_PASS; no credentials and no D1 access");
           NODE
