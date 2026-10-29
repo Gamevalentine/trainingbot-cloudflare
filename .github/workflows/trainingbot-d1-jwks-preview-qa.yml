@@ -1,0 +1,42 @@
+name: TrainingBot D1.2 — isolated Pages Preview JWKS runtime QA
+on:
+  push:
+    branches: [aion-trainingbot-d1-jwks-preview-20261030]
+    paths: [functions/d1-jwks-health.js, .github/workflows/trainingbot-d1-jwks-preview-qa.yml]
+permissions:
+  contents: read
+jobs:
+  preview-jwks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Probe Cloudflare Preview WebCrypto and GitHub JWKS without D1 or credentials
+        run: |
+          node --input-type=module <<'NODE'
+          const address="https://aion-trainingbot-d1-jwks-pre.trainingbot-cloudflare.pages.dev/d1-jwks-health";
+          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+          for(let i=1;i<=15;i++){
+            let status=null;
+            try{
+              const res=await fetch(address,{method:"GET",headers:{Accept:"application/json"},
+                signal:AbortSignal.timeout(10000)});
+              status=res.status;
+              const body=await res.json().catch(()=>({}));
+              console.log("PREVIEW_JWKS_PROBE",JSON.stringify({attempt:i,status,
+                ok:body.ok===true,jwks_http:body.jwks_http??null,
+                rsa_key_present:body.rsa_key_present===true,crypto_import_ok:body.crypto_import_ok===true,
+                error_class:body.error_class||null}));
+              if(status===200&&body.ok===true&&body.crypto_import_ok===true){
+                console.log("PREVIEW_JWKS_AND_WEBCRYPTO_PASS; D1 not accessed");process.exit(0);
+              }
+              if(status===503 && body.crypto_import_ok===false){
+                throw Error("Preview Cloudflare runtime cannot access JWKS or import signing key");
+              }
+            }catch(error){
+              if(String(error.message).includes("cannot access JWKS"))throw error;
+              console.log("Transient Preview probe:",error?.name||"Error");
+            }
+            if(i<15)await sleep(6000);
+          }
+          throw Error("Preview JWKS/WebCrypto test never passed");
+          NODE
