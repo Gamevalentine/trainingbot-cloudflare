@@ -29,6 +29,7 @@ jobs:
         run: |
           node tools/seo/seo-recovery-qa.mjs
           node tools/seo/seo-organic-qa.mjs
+          node tools/seo/seo-editorial-audit.mjs
           node tools/seo/seo-06-10-qa.mjs
           node tools/qa/p1-seo.mjs
           node tools/qa/p3-1-d1-preview-isolation.mjs
@@ -51,5 +52,6 @@ jobs:
             seo-recovery-artifacts/
             seo-06-10-artifacts/
             seo-organic-artifacts/
+            seo-editorial-artifacts/
           retention-days: 14
           if-no-files-found: ignore

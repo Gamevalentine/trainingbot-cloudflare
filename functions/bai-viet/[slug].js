@@ -155,6 +155,33 @@ function editorialVersionLinks(post){
    '<li><a href="/ban-cap-nhat">Xem trang Bản cập nhật TrainingBot</a></li>'+
    '<li><a href="/wiki">Tra cứu Wiki với nhãn xác minh theo nguồn</a></li></ul></aside>';
 }
+function editorialArchiveContext(post){
+  // Editorial navigation is tied to known archived story slugs, not guessed releases.
+  // Do not assert that earlier Beta notes are the live version.
+  const links={
+    "battlegrounds-mo-rong-erangel-subzero-trong-pubg-mobile-bgmi-voi-ban-beta-4-7-2":{
+      note:"Bài này phản ánh thông tin được đăng về bản thử nghiệm Beta 4.7.2; chi tiết có thể thay đổi và hiện bài chưa dẫn liên kết nguồn trực tiếp. Không xem các thông số trong bài là dữ liệu đã xác minh cho phiên bản hiện hành.",
+      refs:[["/bai-viet/pubg-mobile-4-7-beta-1-chinh-thuc-khoi-dong-hang-loat-thay-doi-gameplay-dang-chu-y","Đọc lại thông tin Beta 4.7 giai đoạn 1"],["/wiki","Tra cứu Wiki và tình trạng xác minh dữ liệu"]]
+    },
+    "pubg-mobile-4-6-chinh-thuc-cap-nhat-hom-nay-midnight-hunters-da-den-tay-nguoi-choi":{
+      note:"Từ 'hôm nay' trong tiêu đề đề cập ngày đăng bài 08/09/2026, không phải thời điểm hiện tại. Bài lưu lại đợt cập nhật 4.6 để người đọc đối chiếu lịch sử.",
+      refs:[["/news-pubg-mobile-4-6","Đọc hướng dẫn PUBG Mobile 4.6"],["/ban-cap-nhat","Xem trang Bản cập nhật"]]
+    },
+    "pubg-mobile-one-punch-man-chinh-thuc-duoc-cong-bo-saitama-do-bo-erangel-tu-ngay-20-9":{
+      note:"Bài đề cập lịch sự kiện ngày 20/09/2026 tại thời điểm đăng. Không hiểu ngày trong tiêu đề là lịch sự kiện hiện tại; thông tin và khu vực phát hành nên đối chiếu với thông báo trong game.",
+      refs:[["/news-pubg-mobile-4-6-skins-events","Xem lịch sự kiện 4.6 đã lưu"],["/ban-cap-nhat","Xem trang Bản cập nhật"]]
+    },
+    "pubg-mobile-xac-nhan-m416-glacier-switch-effect-gan-hoan-thien-viet-nam-van-cho-thong-tin":{
+      note:"Trạng thái 'gần hoàn thiện' phản ánh thông tin tại thời điểm bài được đăng; bài chưa có liên kết gốc trực tiếp để xác minh ngày phát hành và khu vực áp dụng. Không xem đây là xác nhận hiệu ứng đã ra mắt tại Việt Nam.",
+      refs:[["/news-featured","Xem các bài viết đã xuất bản"],["/ban-cap-nhat","Theo dõi bản cập nhật"]]
+    }
+  };
+  const item=links[String(post.slug||"")];
+  if(!item)return "";
+  return '<aside class="tb-p1-box" aria-label="Bối cảnh lịch sử và bài liên quan"><h2>Bối cảnh bài viết</h2><p>'+esc(item.note)+'</p><ul>'+
+    item.refs.map(([url,label])=>'<li><a href="'+esc(url)+'">'+esc(label)+'</a></li>').join("")+
+    '</ul></aside>';
+}
 function articleHasHeading(post){
  return /<h2\b/i.test(String(post.rich_content||""))||/^##\s/m.test(String(post.content||""));
 }
@@ -211,8 +238,8 @@ ${modified?`<meta property="article:modified_time" content="${esc(modified)}">`:
 </head>
 <body>
 <header class="site-header"><div class="container header-inner"><a class="brand" href="/"><span class="brand-logo"></span><span>TRAININGBOT<small>Gaming Knowledge Hub</small></span></a><nav class="desktop-nav" aria-label="Điều hướng chính"><a class="nav-link" href="/">Trang chủ</a><a class="nav-link" href="/ban-cap-nhat">Bản cập nhật</a><a class="nav-link active" href="/news">Tin tức</a><a class="nav-link" href="/wiki">Wiki</a><a class="nav-link" href="/community">Cộng đồng</a><a class="nav-link" href="/contact">Liên hệ</a></nav><div class="header-actions"><button class="icon-button" aria-label="Tìm kiếm"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3-3"></path></svg></button><button class="menu-button" aria-label="Mở menu" aria-expanded="false"><span></span><span></span><span></span></button></div></div><nav class="mobile-nav" aria-label="Điều hướng di động"></nav></header>
-<main class="tb-user-article"><article class="container tb-user-wrap"><span class="tb-user-tag">${esc(post.category)}</span><h1>${esc(post.title)}</h1><p class="tb-user-lead">${esc(excerpt)}</p><div class="tb-user-meta">${dateVi(post.published_at)} · TrainingBot</div>${cover}<div class="tb-user-story">${articleHasHeading(post)?"":"<h2>Nội dung bài viết</h2>"}${post.rich_content?sanitizeRich(post.rich_content):renderContent(post.content)}</div>${articleSources(post)}${editorialVersionLinks(post)}${articleRelated(related)}<a class="tb-back" href="/news">← Quay lại Tin tức</a></article></main>
-<footer><div class="container footer-inner"><span>© 2026 TrainingBot.</span><div class="footer-links"><a href="/contact">Điều khoản</a><a href="/contact">Quyền riêng tư</a></div></div></footer>
+<main class="tb-user-article"><article class="container tb-user-wrap"><span class="tb-user-tag">${esc(post.category)}</span><h1>${esc(post.title)}</h1><p class="tb-user-lead">${esc(excerpt)}</p><div class="tb-user-meta">${dateVi(post.published_at)} · TrainingBot</div>${cover}<div class="tb-user-story">${articleHasHeading(post)?"":"<h2>Nội dung bài viết</h2>"}${post.rich_content?sanitizeRich(post.rich_content):renderContent(post.content)}</div>${articleSources(post)}${editorialVersionLinks(post)}${editorialArchiveContext(post)}${articleRelated(related)}<a class="tb-back" href="/news">← Quay lại Tin tức</a></article></main>
+<footer><div class="container footer-inner"><span>© 2026 TrainingBot.</span><div class="footer-links"><a href="/terms">Điều khoản</a><a href="/privacy">Quyền riêng tư</a></div></div></footer>
 <script defer src="/navigation_v124.js?v=124"></script>
 <script defer src="/header_search_v152.js?v=182"></script>
 <script defer src="/visitor_tracking_v177.js?v=181"></script>
