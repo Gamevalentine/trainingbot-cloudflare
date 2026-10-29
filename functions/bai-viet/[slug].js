@@ -216,7 +216,7 @@ function verifiedSourcePanel(post){
  const audit=VERIFIED_EDITORIAL_SOURCES[String(post.slug)];
  if(!audit)return "";
  const refs=audit.refs.map(ref=>'<li><a target="_blank" rel="noopener noreferrer" href="'+esc(ref.url)+'">'+esc(ref.label)+'</a></li>').join("");
- return '<section class="tb-p1-box tb-source-verification" aria-label="Nguồn đối chiếu đã kiểm tra"><h2>Nguồn đối chiếu & trạng thái kiểm chứng</h2>'+
+ return '<section class="tb-p1-box tb-source-verification" aria-label="Nguồn đối chiếu đã kiểm tra"><h2>Nguồn đối chiếu &amp; trạng thái kiểm chứng</h2>'+
   '<p><strong>'+esc(audit.status)+'</strong></p><p>'+esc(audit.note)+'</p><ul>'+refs+'</ul></section>';
 }
 function articleSources(post){
