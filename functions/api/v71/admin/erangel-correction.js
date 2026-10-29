@@ -60,7 +60,7 @@ async function authorized(request,env){
  return verifiedGithubOidc(request);
 }
 function isProduction(request){
- try{return new URL(request.url).hostname==="trainingbot.io.vn"}catch{return false}
+ try{return ["trainingbot.io.vn","trainingbot-cloudflare.pages.dev"].includes(new URL(request.url).hostname)}catch{return false}
 }
 function validOriginal(row){
  return !!row && row.slug===ERANGEL_D1_CORRECTION.slug && row.status==="published" &&
