@@ -31,24 +31,34 @@ async function context(request,env){
  return {u,key,ipHash:await proof(key,'preview-ip:'+ip),binding:env.TRAININGBOT_AI_STAGE_WORKER};
 }
 async function stage(ctx,route,method,data){
+ let step='INIT';
+ try{
  const raw=method==='GET'?'':JSON.stringify(data);
+ step='NONCE';
  const timestamp=String(Date.now()),nonce=crypto.randomUUID();
+ step='DIGEST';
  const digest=await proof(ctx.key,'body:'+raw);
+ step='SIGN';
  const signature=await proof(ctx.key,['TRAININGBOT_B1',method,route,timestamp,nonce,ctx.ipHash,digest].join('\n'));
+ step='REQUEST';
  const init={method,redirect:'error',headers:{'accept':'application/json',
    'x-tb-b1-time':timestamp,'x-tb-b1-nonce':nonce,'x-tb-b1-ip':ctx.ipHash,
    'x-tb-b1-signature':signature,
    ...(method==='POST'?{'content-type':'application/json'}:{})},
    ...(method==='POST'?{body:raw}:{})};
  // Scoped subrequest only to named Worker binding; Staging verifies the HMAC before D1/model access.
- try{
-  const res=await ctx.binding.fetch(new Request('https://trainingbot-ai-staging.ai-vn.workers.dev'+route,init));
+ step='FETCH';
+ const res=await ctx.binding.fetch(new Request('https://trainingbot-ai-staging.ai-vn.workers.dev'+route,init));
+ step='RESPONSE';
   if(![200,400,401,403,404,429,503].includes(res.status))return {status:503,category:'UNEXPECTED_UPSTREAM_STATUS'};
   if(!(res.headers.get('content-type')||'').startsWith('application/json'))return {status:503,category:'UPSTREAM_CONTENT_TYPE'};
   const body=await res.text();
   if(body.length>20000)return {status:503,category:'UPSTREAM_BODY_LIMIT'};
   return {status:res.status,json:JSON.parse(body),category:'UPSTREAM_HTTP'};
- }catch{return {status:503,category:'SERVICE_FETCH_EXCEPTION'};}
+ }catch(e){
+  const type=['TypeError','RangeError','NotSupportedError','Error','DOMException'].includes(e?.name)?e.name:'Other';
+  return {status:503,category:'EXCEPTION_'+step+'_'+type};
+ }
 }
 function goodPost(req,ctx){
  if(req.method!=='POST'||req.headers.get('origin')!==ctx.u.origin)return false;
