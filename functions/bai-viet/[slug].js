@@ -127,7 +127,101 @@ function articleExcerpt(post){
  if(end>=90)return cut.slice(0,end+1);
  const space=cut.lastIndexOf(" ");return (space>=90?cut.slice(0,space):cut)+"…";
 }
+const VERIFIED_EDITORIAL_SOURCES = {
+  "battlegrounds-mo-rong-erangel-subzero-trong-pubg-mobile-bgmi-voi-ban-beta-4-7-2": {
+    "status": "ĐÍNH CHÍNH — bài cũ trộn dữ liệu PUBG PC với PUBG Mobile",
+    "note": "Frost Zone Bomb, Thermal Protection Suit, Satellite Crash với sát thương 10–14 HP/giây và bán kính 20 m thuộc bản PUBG: BATTLEGROUNDS 39.2 (PC/console, 01/2026). PUBG Mobile Beta Test 2 ngày 10/10/2026 công bố Erangel Subzero nhưng danh sách cơ chế khác. Chưa xác minh được tên bản build Mobile 'Beta 4.7.2' là tên phát hành chính thức.",
+    "refs": [
+      {
+        "label": "PUBG: BATTLEGROUNDS — Patch Notes Update 39.2 (PC/console)",
+        "url": "https://www.pubg.com/en/news/9635"
+      },
+      {
+        "label": "PUBG Mobile — V4.7 Beta Test 2 Update Announcement",
+        "url": "https://www.pubgmobile.com/en-US/news-detail.shtml?from=news&gid=om6ct49bmmb2wvz95pl2t8lu&pid=om6ct49bmmb2wvz95pl2t8lu_en"
+      },
+      {
+        "label": "Nội dung chi tiết thông báo Beta Test 2 (bản lưu)",
+        "url": "https://event.bittopup.com/news/v4-7-beta-test-2-update-announcement"
+      }
+    ]
+  },
+  "pubg-mobile-4-7-beta-1-chinh-thuc-khoi-dong-hang-loat-thay-doi-gameplay-dang-chu-y": {
+    "status": "ĐÃ ĐỐI CHIẾU — thông báo Beta Test 1, chưa phải bản chính thức",
+    "note": "Vật phẩm hồi phục, Battle Ready Kit, camera phương tiện và Staged Reload được nêu trong thông báo Beta 1 ngày 23/09/2026. Kết quả thử nghiệm không bảo đảm tính năng giữ nguyên khi phát hành.",
+    "refs": [
+      {
+        "label": "PUBG Mobile — mục thông báo phiên bản (23/09/2026)",
+        "url": "https://www.pubgmobile.com/en-US/news.shtml"
+      },
+      {
+        "label": "Thông báo V4.7 Beta Test 1 (bản lưu nội dung)",
+        "url": "https://event.bittopup.com/news/v4-7-beta-test-1-update-announcement"
+      }
+    ]
+  },
+  "pubg-mobile-xac-nhan-m416-glacier-switch-effect-gan-hoan-thien-viet-nam-van-cho-thong-tin": {
+    "status": "XÁC MINH MỘT PHẦN — nhà phát hành thông báo đang phát triển",
+    "note": "Lời công bố M416 Glacier Switch Effect 'almost done' xuất hiện trên tài khoản PUBG MOBILE Global, được DearPlayers lưu lại. Chưa có bằng chứng từ nguồn này xác nhận ngày ra mắt, điều kiện mở khóa hoặc áp dụng tại Việt Nam. DearPlayers là trang lưu lại, không phải chính website nhà phát hành.",
+    "refs": [
+      {
+        "label": "PUBG MOBILE Global — bản lưu thông báo M416 Glacier trên DearPlayers",
+        "url": "https://www.dearplayers.com/en-US/updates/pubg-mobile-global/2102005997917417884"
+      }
+    ]
+  },
+  "pubg-mobile-4-6-chinh-thuc-cap-nhat-hom-nay-midnight-hunters-da-den-tay-nguoi-choi": {
+    "status": "ĐÃ XÁC MINH NGÀY CẬP NHẬT VÀ CHẾ ĐỘ; thông số phụ chưa đối chiếu",
+    "note": "Nhà phát hành PUBG MOBILE Việt Nam thông báo bắt đầu đợt cập nhật 4.6 từ 08/09/2026, hoàn tất dự kiến trước 11:00 UTC ngày 09/09. Giờ 07:00 UTC và dung lượng 1,16 GB/3,50 GB trong nội dung cũ chưa được xác nhận từ thông báo được dẫn; chỉ tham khảo theo thời điểm đăng.",
+    "refs": [
+      {
+        "label": "PUBG MOBILE Việt Nam — Thông báo cập nhật phiên bản 4.6",
+        "url": "https://pubgm.vnggames.com/tin-tuc/thong-bao-cap-nhat/thong-bao-cap-nhat-phien-ban-4-6.html"
+      },
+      {
+        "label": "Level Infinite — thông cáo PUBG MOBILE 4.6 Midnight Hunters",
+        "url": "https://press.levelinfinite.com/en/PUBG-MOBILE-UNLEASHES-A-VAMPIRE-UPRISING-WITH-MIDNIGHT-HUNTERS-MODE-IN"
+      }
+    ]
+  },
+  "pubg-mobile-one-punch-man-chinh-thuc-duoc-cong-bo-saitama-do-bo-erangel-tu-ngay-20-9": {
+    "status": "ĐÃ XÁC MINH — sự kiện hợp tác theo mốc thời gian đã qua",
+    "note": "Website anime One-Punch Man chính thức xác nhận sự kiện 20/09–19/10/2026 (ngày giờ Nhật Bản khác một phần theo múi giờ). Đây là lịch sử sự kiện, không phải lời mời tham gia sự kiện đang diễn ra.",
+    "refs": [
+      {
+        "label": "Website anime One-Punch Man — thông báo PUBG MOBILE collaboration",
+        "url": "https://onepunchman-anime.net/news/archives/7790"
+      }
+    ]
+  }
+};
+const EDITORIAL_CORRECTION_SLUG = "battlegrounds-mo-rong-erangel-subzero-trong-pubg-mobile-bgmi-voi-ban-beta-4-7-2";
+const EDITORIAL_CORRECTION_TITLE = "ĐÍNH CHÍNH: Erangel Subzero của PUBG Mobile Beta 4.7 khác PUBG PC Update 39.2";
+const EDITORIAL_CORRECTION_BODY = "## Đính chính ngày 29/10/2026\n\nBài đăng trước đó đã gắn nhầm nội dung của PUBG: BATTLEGROUNDS (PC/console), bản 39.2 tháng 01/2026, vào tên PUBG Mobile/BGMI Beta 4.7.2. TrainingBot xin đính chính và không sử dụng các thông số PC này như thông số của PUBG Mobile.\n\n## Phần nào thuộc PUBG PC 39.2?\n\n- Satellite Crash xuất hiện bốn lần trong một trận, cầu Blue Zone 10 sát thương/giây; Frost Zone Bomb có bán kính tối đa 20 mét và gây 14 sát thương/giây; Thermal Protection Suit và các điều chỉnh thời tiết whiteout đều được ghi trong thông báo chính thức PUBG: BATTLEGROUNDS Update 39.2 ngày 06/01/2026.\n\n- Các chi tiết này không được phép mặc nhiên áp dụng cho PUBG Mobile hoặc BGMI dù có một số tên tính năng tương tự.\n\n## PUBG Mobile Beta Test 2 công bố điều gì?\n\n- Thông báo Beta Test 2 ngày 10/10/2026 giới thiệu chế độ Erangel Subzero dưới dạng Classic Mode spin-off, bối cảnh các vệ tinh Tythonic rơi xuống Erangel làm khí hậu lạnh đi.\n\n- Các mục được nêu gồm Stalber bị đóng băng, Liquid Nitrogen Tanks, Snow Mist Ammo, snowboard, snowmobile/snowbike, G36C và lốp chống trượt. Đây là dữ liệu Beta, có thể thay đổi trước khi phát hành.\n\n## Về tên phiên bản và nguồn\n\n- Nguồn chính thức đang đối chiếu gọi đợt này là V4.7 Beta Test 2; chưa có cơ sở xác nhận mọi chi tiết trong bài cũ thuộc một bản PUBG Mobile có tên chính thức 'Beta 4.7.2'.\n\n- Xem liên kết đến thông báo PUBG PC và PUBG Mobile trong mục Nguồn đối chiếu bên dưới.\n\n## Trách nhiệm biên tập\n\nTrainingBot giữ nguyên đường dẫn để người đọc và công cụ tìm kiếm truy cập thông tin đính chính, đồng thời tạm thời thay nội dung sai khi hiển thị. Bài gốc được giữ trong dữ liệu quản trị để đối chiếu lịch sử, không tiếp tục hiển thị như bản tin đã xác minh.";
+function verifiedArticleView(post){
+ if(String(post.slug)!==EDITORIAL_CORRECTION_SLUG)return post;
+ // Deliberately keep the original D1 row intact for audit/rollback.
+ // The public view must not keep repeating PC-only patch notes as Mobile 4.7 data.
+ return {
+   ...post,
+   title:EDITORIAL_CORRECTION_TITLE,
+   summary:"Đính chính: các thông số Frost Zone Bomb, Satellite Crash và Thermal Protection Suit trong bài cũ thuộc PUBG PC Update 39.2. Xem riêng thông tin Beta PUBG Mobile 4.7.",
+   content:EDITORIAL_CORRECTION_BODY,
+   rich_content:"",
+   cover_url:"",
+   updated_at:"2026-10-29"
+ };
+}
+function verifiedSourcePanel(post){
+ const audit=VERIFIED_EDITORIAL_SOURCES[String(post.slug)];
+ if(!audit)return "";
+ const refs=audit.refs.map(ref=>'<li><a target="_blank" rel="noopener noreferrer" href="'+esc(ref.url)+'">'+esc(ref.label)+'</a></li>').join("");
+ return '<section class="tb-p1-box tb-source-verification" aria-label="Nguồn đối chiếu đã kiểm tra"><h2>Nguồn đối chiếu &amp; trạng thái kiểm chứng</h2>'+
+  '<p><strong>'+esc(audit.status)+'</strong></p><p>'+esc(audit.note)+'</p><ul>'+refs+'</ul></section>';
+}
 function articleSources(post){
+ const vetted=verifiedSourcePanel(post);
+ if(vetted)return vetted;
  const found=new Set(),content=String(post.content||"")+" "+String(post.rich_content||"");
  for(const raw of content.match(/https?:\/\/[^\s<>"')\]]+/g)||[]){
    try{const u=new URL(raw.replace(/[.,;]+$/,""));if((u.protocol==="https:"||u.protocol==="http:")&&!u.username&&!u.password&&u.hostname!=="trainingbot.io.vn")found.add(u.href);}catch{}
@@ -160,7 +254,7 @@ function editorialArchiveContext(post){
   // Do not assert that earlier Beta notes are the live version.
   const links={
     "battlegrounds-mo-rong-erangel-subzero-trong-pubg-mobile-bgmi-voi-ban-beta-4-7-2":{
-      note:"Bài này phản ánh thông tin được đăng về bản thử nghiệm Beta 4.7.2; chi tiết có thể thay đổi và hiện bài chưa dẫn liên kết nguồn trực tiếp. Không xem các thông số trong bài là dữ liệu đã xác minh cho phiên bản hiện hành.",
+      note:"Bài cũ đã bị đính chính vì trộn thông số PUBG PC 39.2 vào PUBG Mobile Beta. Phần đính chính hiển thị ở trên cùng cùng liên kết đối chiếu nguồn gốc.",
       refs:[["/bai-viet/pubg-mobile-4-7-beta-1-chinh-thuc-khoi-dong-hang-loat-thay-doi-gameplay-dang-chu-y","Đọc lại thông tin Beta 4.7 giai đoạn 1"],["/wiki","Tra cứu Wiki và tình trạng xác minh dữ liệu"]]
     },
     "pubg-mobile-4-6-chinh-thuc-cap-nhat-hom-nay-midnight-hunters-da-den-tay-nguoi-choi":{
@@ -258,5 +352,5 @@ export async function onRequestGet({env,params}){
     const q=await env.DB.prepare("SELECT slug,title FROM tb_manual_posts_v1 WHERE status='published' AND slug!=? AND category=? ORDER BY published_at DESC LIMIT 3").bind(slug,post.category).all();
     related=q.results||[];
   }catch(error){console.error("Related posts unavailable",error);}
-  return new Response(page(post,related),{status:200,headers:{"content-type":"text/html; charset=UTF-8","cache-control":"public, max-age=30, stale-while-revalidate=120","x-content-type-options":"nosniff"}});
+  return new Response(page(verifiedArticleView(post),related),{status:200,headers:{"content-type":"text/html; charset=UTF-8","cache-control":"public, max-age=30, stale-while-revalidate=120","x-content-type-options":"nosniff"}});
 }
