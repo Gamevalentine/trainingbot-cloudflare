@@ -21,7 +21,7 @@ const old={
 };
 const clone=x=>JSON.parse(JSON.stringify(x));
 class MockD1{
- constructor(row){this.post=clone(row);this.backup=null;this.table=false;this.sql=[];this.failAfterFirstAction=false}
+ constructor(row){this.post=clone(row);this.backup=null;this.table=false;this.sql=[];this.failAfterFirstAction=false;this.concurrentEditBeforeBatch=false}
  prepare(sql){
   const db=this;
   function wrap(vals=[]){
@@ -57,17 +57,17 @@ class MockD1{
       if(db.backup)throw Error("UNIQUE constraint failed: backup slug");
       const p=db.post;
       if(!p||p.slug!==rowSlug||p.id!==id||p.title!==title||p.content!==content||p.updated_at!==updated_at)
-       return {meta:{changes:0}};
+       throw Error("NOT NULL constraint failed: tb_editorial_erangel_backup_v1.state");
       db.backup={slug:savedSlug,revision:rev,original_json,original_updated_at,correction_updated_at,
         created_at,state:"applied",restored_at:""};
       return {meta:{changes:1}};
      }
-     if(sql.startsWith("UPDATE tb_editorial_erangel_backup_v1 SET state='restored'")){
-      const [restored_at,backupSlug,rev,rowSlug,id,title,updated_at]=vals;
+     if(sql.startsWith("UPDATE tb_editorial_erangel_backup_v1 SET state=CASE WHEN EXISTS")){
+      const [rowSlug,id,title,updated_at,restored_at,backupSlug,rev]=vals;
       const b=db.backup,p=db.post;
-      if(!b||b.slug!==backupSlug||b.revision!==rev||b.state!=="applied"||
-       !p||p.slug!==rowSlug||p.id!==id||p.title!==title||p.updated_at!==updated_at)
-       return {meta:{changes:0}};
+      if(!b||b.slug!==backupSlug||b.revision!==rev||b.state!=="applied")return {meta:{changes:0}};
+      if(!p||p.slug!==rowSlug||p.id!==id||p.title!==title||p.updated_at!==updated_at)
+       throw Error("NOT NULL constraint failed: tb_editorial_erangel_backup_v1.state");
       Object.assign(b,{state:"restored",restored_at});
       return {meta:{changes:1}};
      }
@@ -78,6 +78,10 @@ class MockD1{
   return wrap();
  }
  async batch(actions){
+  if(this.concurrentEditBeforeBatch){
+   this.post.title="Concurrent Admin edit while migration was being prepared";
+   this.post.updated_at="2026-10-29T18:55:00.000Z";
+  }
   const before={post:clone(this.post),backup:clone(this.backup),table:this.table},results=[];
   try{
    for(let i=0;i<actions.length;i++){
@@ -149,6 +153,14 @@ assert.equal(atomicDb.backup,null);
 const conflictDb=new MockD1({...old,title:"Someone already re-edited this article"});
 assert.equal((await body(await onRequestPost({request:req("POST","apply"),env:{ADMIN_TOKEN:token,DB:conflictDb}}))).status,409);
 assert.equal(conflictDb.backup,null);
+const concurrencyDb=new MockD1(old);
+concurrencyDb.concurrentEditBeforeBatch=true;
+const concurrencyResponse=await body(await onRequestPost({request:req("POST","apply"),env:{ADMIN_TOKEN:token,DB:concurrencyDb}}));
+assert.equal(concurrencyResponse.status,500,"Concurrent optimistic-lock conflict must abort batch");
+assert.equal(concurrencyDb.post.title,"Concurrent Admin edit while migration was being prepared");
+assert.equal(concurrencyDb.backup,null,"No backup can claim success after an aborted write");
+assert.equal(concurrencyDb.post.content,old.content,"Concurrent update must not be overwritten");
+
 
 fs.mkdirSync("seo-erangel-migration-artifacts",{recursive:true});
 fs.writeFileSync("seo-erangel-migration-artifacts/qa-report.json",JSON.stringify({
@@ -156,6 +168,6 @@ fs.writeFileSync("seo-erangel-migration-artifacts/qa-report.json",JSON.stringify
   "unauthorized GET/POST rejected","preview writes rejected","original backup saved",
   "apply idempotent","restore exact row","refuse edited-record rollback",
   "restored original not served publicly","transaction failure atomicity",
-  "unexpected existing title rejected"
+  "unexpected existing title rejected","concurrent Admin edit aborts D1 batch"
  ],productionD1Migrated:false},null,2));
 console.log("ERANGEL D1 MIGRATION QA PASS: private backup, D1 transaction, exact rollback, public fail-closed fallback; remote Production migration NOT executed");
