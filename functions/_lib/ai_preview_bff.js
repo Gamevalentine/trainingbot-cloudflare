@@ -96,17 +96,23 @@ export async function status(request,env){
  const r=await stage(ctx,'/__preview_b1/status','GET');
  const isReady=r.status===200&&r.json?.ok===true&&r.json?.visitor===true;
  const knowledge=r.json?.knowledge;
- const validatedKnowledge=isReady&&knowledge?.coverage==='static_baseline_only'&&
+ const baselineValid=knowledge?.coverage==='static_baseline_only'&&
+   knowledge.counts?.weapons===56&&knowledge.counts?.attachments===49&&
+   knowledge.counts?.vehicles===26&&knowledge.counts?.maps===8&&
+   knowledge.officialVerifiedRecords===0;
+ const runtimeValid=knowledge?.coverage==='runtime_observed_20261029'&&
+   knowledge.counts?.weapons===61&&knowledge.counts?.attachments===51&&
+   knowledge.counts?.vehicles===26&&knowledge.counts?.maps===8&&
+   knowledge.officialVerifiedRecords===8&&knowledge.verifiedCompatibilityEdges===4;
+ const validatedKnowledge=isReady&&(baselineValid||runtimeValid)&&
   typeof knowledge.sourceCommit==='string'&&/^[a-f0-9]{40}$/.test(knowledge.sourceCommit)&&
-  typeof knowledge.snapshotDate==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(knowledge.snapshotDate)&&
-  knowledge.officialVerifiedRecords===0&&
-  knowledge.counts?.weapons===56&&knowledge.counts?.attachments===49&&
-  knowledge.counts?.vehicles===26&&knowledge.counts?.maps===8;
+  typeof knowledge.snapshotDate==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(knowledge.snapshotDate);
  return safe(200,{preview:true,ready:isReady,identityVerified:false,
    anonymousVisitorReady:isReady,surfaces:{visitor:isReady,admin:false},
    ...(validatedKnowledge?{knowledge:{sourceCommit:knowledge.sourceCommit,
      snapshotDate:knowledge.snapshotDate,coverage:knowledge.coverage,
-     counts:knowledge.counts,officialVerifiedRecords:0}}:{}),
+     counts:knowledge.counts,officialVerifiedRecords:knowledge.officialVerifiedRecords,
+     verifiedCompatibilityEdges:runtimeValid?4:0}}:{}),
    ...(!isReady?{reason:'STAGING_BRIDGE_UNAVAILABLE'}:{})});
 }
 export async function session(request,env){
@@ -147,17 +153,21 @@ export async function chat(request,env){
   return safe(result.status===401?401:503,{error:{code:'AI_UNAVAILABLE'}});
  // Accept only compact structured provenance supplied by the authenticated Staging Worker.
  // Client-supplied citations and arbitrary URLs are never forwarded to this response.
- const sources=Array.isArray(result.json.sources)?result.json.sources.slice(0,6)
-  .filter(x=>x&&typeof x==='object'&&['wiki_snapshot','editorial_tactics'].includes(x.type)
+ const officialPattern=/^https:\/\/www\.pubgmobile\.com\/en\/event\/(?:PUBG-MOBILE-Version-430|PUBG-MOBILE-Version-400|Official-Transformers-Collaboration|260Devnotes|250Devnotes|270Devnotes)\/$/;
+ const wikiRuntimePattern=/^https:\/\/github\.com\/Gamevalentine\/trainingbot-cloudflare\/actions\/runs\/40763409109$/;
+ const wikiBasePattern=/^https:\/\/github\.com\/Gamevalentine\/trainingbot-cloudflare\/blob\/[a-f0-9]{40}\/overrides\/wiki\.html$/;
+ const sources=Array.isArray(result.json.sources)?result.json.sources.slice(0,8)
+  .filter(x=>x&&typeof x==='object'&&['wiki_snapshot','editorial_tactics','official_claim'].includes(x.type)
    &&typeof x.title==='string'&&x.title.length<=160)
   .map(x=>({
     type:x.type,title:x.title,
-    sourceStatus:x.type==='wiki_snapshot'?'internal_unverified':'editorial_suggestion',
-    gameVersion:null,
-    ...(x.type==='wiki_snapshot'&&typeof x.url==='string'&&
-      /^https:\/\/github\.com\/Gamevalentine\/trainingbot-cloudflare\/blob\/[a-f0-9]{40}\/overrides\/wiki\.html$/.test(x.url)
-       ?{url:x.url}:{}),
-    ...(typeof x.snapshotDate==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x.snapshotDate)?{snapshotDate:x.snapshotDate}:{})
+    sourceStatus:x.type==='wiki_snapshot'?'internal_unverified':x.type==='official_claim'?'official_claim_verified':'editorial_suggestion',
+    gameVersion:x.type==='official_claim'&&/^\d+\.\d+$/.test(x.gameVersion??'')?x.gameVersion:null,
+    ...(typeof x.url==='string'&&(
+      (x.type==='wiki_snapshot'&&(wikiRuntimePattern.test(x.url)||wikiBasePattern.test(x.url)))||
+      (x.type==='official_claim'&&officialPattern.test(x.url)))?{url:x.url}:{}),
+    ...(typeof x.snapshotDate==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x.snapshotDate)?{snapshotDate:x.snapshotDate}:{}),
+    ...(x.type==='official_claim'&&typeof x.checkedAt==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x.checkedAt)?{checkedAt:x.checkedAt}:{})
   })):[];
  return safe(200,{reply:result.json.reply,conversationId:result.json.conversationId,
    revision:result.json.revision,sources});
