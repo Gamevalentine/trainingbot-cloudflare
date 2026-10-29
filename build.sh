@@ -33,7 +33,7 @@ sed -i 's#hello@trainingbot\.vn#trainingbot.ai2@gmail.com#g; s#TrainingBot Commu
 
 while IFS= read -r -d '' page; do
   case "$page" in
-    public/admin.html|public/admin-*.html|public/contact-inbox.html)
+    public/admin.html|public/admin-*.html|public/contact-inbox.html|public/ai-preview.html|public/ai-admin-preview.html)
       continue
       ;;
   esac
@@ -409,7 +409,7 @@ for (const file of walk(root)) {
   if (!/\.html$/i.test(file)) continue;
   const rel = path.relative(root, file).split(path.sep).join('/');
 
-  if (/^(admin(?:-|\/|\.html)|contact-inbox\.html$|404\.html$)/i.test(rel)) continue;
+  if (/^(admin(?:-|\/|\.html)|contact-inbox\.html$|404\.html$|ai-preview\.html$|ai-admin-preview\.html$)/i.test(rel)) continue;
 
   let html = fs.readFileSync(file, 'utf8');
 
