@@ -33,12 +33,15 @@
       section.append(head);
       const list = document.createElement("ul");
       for (const source of sources.slice(0, 6)) {
-        if (!source || !["wiki_snapshot", "editorial_tactics"].includes(source.type)) continue;
+        if (!source || !["wiki_snapshot", "editorial_tactics", "official_claim"].includes(source.type)) continue;
         const li = document.createElement("li");
-        const name = typeof source.title === "string" ? source.title.slice(0, 160) : "Nguồn nội bộ";
-        const validUrl = typeof source.url === "string" &&
-          /^https:\/\/github\.com\/Gamevalentine\/trainingbot-cloudflare\/blob\/[a-f0-9]{40}\/overrides\/wiki\.html$/.test(source.url);
-        if (validUrl && source.type === "wiki_snapshot") {
+        const name = typeof source.title === "string" ? source.title.slice(0, 160) : "Nguồn";
+        const wikiUrl = typeof source.url === "string" &&
+          (/^https:\/\/github\.com\/Gamevalentine\/trainingbot-cloudflare\/blob\/[a-f0-9]{40}\/overrides\/wiki\.html$/.test(source.url) ||
+           /^https:\/\/github\.com\/Gamevalentine\/trainingbot-cloudflare\/actions\/runs\/40763409109$/.test(source.url));
+        const officialUrl = typeof source.url === "string" &&
+          /^https:\/\/www\.pubgmobile\.com\/en\/event\/(?:PUBG-MOBILE-Version-430|PUBG-MOBILE-Version-400|Official-Transformers-Collaboration|260Devnotes|250Devnotes|270Devnotes)\/$/.test(source.url);
+        if ((wikiUrl && source.type === "wiki_snapshot") || (officialUrl && source.type === "official_claim")) {
           const anchor = document.createElement("a");
           anchor.href = source.url;
           anchor.target = "_blank";
@@ -51,8 +54,11 @@
         const note = document.createElement("span");
         note.textContent = source.type === "editorial_tactics"
           ? " — Gợi ý biên tập, không phải dữ kiện chính thức"
-          : " — Wiki nội bộ, chưa xác minh chính thức; phiên bản game chưa xác minh" +
-            (source.snapshotDate ? "; chụp " + source.snapshotDate : "");
+          : source.type === "official_claim"
+            ? " — Mệnh đề được dẫn nguồn chính thức; bản " + (source.gameVersion || "chưa rõ") +
+              (source.checkedAt ? "; đối chiếu " + source.checkedAt : "")
+            : " — Wiki nội bộ (bản runtime), không phải xác minh game; phiên bản từng trường chưa xác minh" +
+              (source.snapshotDate ? "; chụp " + source.snapshotDate : "");
         li.append(note); list.append(li);
       }
       section.append(list); item.append(section);
