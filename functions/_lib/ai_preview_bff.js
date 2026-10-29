@@ -41,7 +41,7 @@ async function stage(ctx,route,method,data){
  step='SIGN';
  const signature=await proof(ctx.key,['TRAININGBOT_B1',method,route,timestamp,nonce,ctx.ipHash,digest].join('\n'));
  step='REQUEST';
- const init={method,redirect:'error',headers:{'accept':'application/json',
+ const init={method,redirect:'manual',headers:{'accept':'application/json',
    'x-tb-b1-time':timestamp,'x-tb-b1-nonce':nonce,'x-tb-b1-ip':ctx.ipHash,
    'x-tb-b1-signature':signature,
    ...(method==='POST'?{'content-type':'application/json'}:{})},
@@ -57,10 +57,7 @@ async function stage(ctx,route,method,data){
   return {status:res.status,json:JSON.parse(body),category:'UPSTREAM_HTTP'};
  }catch(e){
   const type=['TypeError','RangeError','NotSupportedError','Error','DOMException'].includes(e?.name)?e.name:'Other';
-  const safeMessage=String(e?.message||'UNSPECIFIED')
-    .replace(/https?:\/\/[^\s]+/g,'URL').replace(/[A-Za-z0-9_-]{24,}/g,'REDACTED')
-    .replace(/[^A-Za-z0-9 ,.:_-]/g,'_').slice(0,110);
-  return {status:503,category:'EXCEPTION_'+step+'_'+type+'_'+safeMessage};
+  return {status:503,category:'EXCEPTION_'+step+'_'+type};
  }
 }
 function goodPost(req,ctx){
@@ -100,7 +97,7 @@ export async function status(request,env){
  const isReady=r.status===200&&r.json?.ok===true&&r.json?.visitor===true;
  return safe(200,{preview:true,ready:isReady,identityVerified:false,
    anonymousVisitorReady:isReady,surfaces:{visitor:isReady,admin:false},
-   ...(!isReady?{reason:'STAGING_BRIDGE_HTTP_'+String(r.status)+'_'+String(r.category||'UNKNOWN')+'_'+(r.json?.error?.code==='SERVICE_NOT_CONFIGURED'?'CONFIG':'DENIED')}:{})});
+   ...(!isReady?{reason:'STAGING_BRIDGE_UNAVAILABLE'}:{})});
 }
 export async function session(request,env){
  if(!previewHost(new URL(request.url)))return safe(404,{error:{code:'NOT_FOUND'}});
