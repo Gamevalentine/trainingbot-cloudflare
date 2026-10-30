@@ -13,7 +13,7 @@ export async function onRequestGet({request}){
   const checks={};
   for(const [name,url] of Object.entries(TARGETS)){
     try{
-      const response=await fetch(url,{method:"GET",redirect:"error",signal:AbortSignal.timeout(6000)});
+      const response=await fetch(url,{method:"GET",redirect:"manual",signal:AbortSignal.timeout(6000)});
       checks[name]={ok:response.ok,http:response.status};
     }catch(error){
       // Diagnostic shows stable exception class/code, never remote URLs in errors,
