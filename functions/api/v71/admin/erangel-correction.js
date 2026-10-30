@@ -124,6 +124,7 @@ export async function onRequestGet({request,env}){
    stored_correction:isStoredErangelCorrection(post),migration_state:backup?.state||"not_applied",
    backup_exists:!!backup,backup_integrity_ok:backupIntegrity,
    immutable_fields_match:backup?immutableFieldsMatch:null,
+   maintenance_writes_locked:env.D1_ERANGEL_WRITE_ENABLED!=="true",
    public_fallback_required:!isStoredErangelCorrection(post),
    updated_at:post.updated_at||null,backup_created_at:backup?.created_at||null,
    restored_at:backup?.restored_at||null});
