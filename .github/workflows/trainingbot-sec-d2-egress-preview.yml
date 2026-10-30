@@ -1,0 +1,38 @@
+name: SEC-D2 — Preview external JWKS diagnostic
+on:
+  push:
+    branches: [aion-trainingbot-sec-d2-egress-20261031]
+    paths:
+      - functions/sec-d2-egress.js
+      - .github/workflows/trainingbot-sec-d2-egress-preview.yml
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check public-only function source and probe Preview after deployment
+        run: |
+          node --check functions/sec-d2-egress.js
+          node --input-type=module <<'NODE'
+          const endpoint="https://aion-trainingbot-sec-d2-eg.trainingbot-cloudflare.pages.dev/sec-d2-egress";
+          let response;
+          for(let attempt=1;attempt<=20;attempt++){
+            try{
+              const r=await fetch(endpoint,{signal:AbortSignal.timeout(30000)});
+              const data=await r.json().catch(()=>({}));
+              if(r.ok&&data.scope==="preview-fixed-targets-read-only"){
+                response=data;break;
+              }
+              console.log("SEC_D2_WAIT_PREVIEW",JSON.stringify({attempt,status:r.status}));
+            }catch(error){
+              console.log("SEC_D2_WAIT_PREVIEW",JSON.stringify({attempt,error_name:String(error?.name||"Error")}));
+            }
+            if(attempt<20)await new Promise(resolve=>setTimeout(resolve,6000));
+          }
+          if(!response)throw Error("Could not reach Preview-only egress diagnostic");
+          console.log("SEC_D2_PREVIEW_NETWORK",JSON.stringify(response.checks));
+          console.log("SEC_D2_PREVIEW_DIAGNOSTIC_COMPLETE (no credentials, no D1 writes)");
+          NODE
