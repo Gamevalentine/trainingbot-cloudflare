@@ -1,0 +1,28 @@
+name: TrainingBot SEO-11 — Beta metadata QA (no deploy)
+on:
+  push:
+    branches:
+      - aion-trainingbot-seo11-beta-audit-20261031
+permissions:
+  contents: read
+jobs:
+  seo11-beta:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build production-shaped output without Cloudflare writes
+        shell: bash
+        env:
+          CF_PAGES_BRANCH: main
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          npm run build
+      - name: Verify Beta SEO and site regression
+        shell: bash
+        run: |
+          node tools/seo/seo11-beta-metadata-qa.mjs
+          node tools/qa/p1-seo.mjs
+          node tools/seo/seo-06-10-qa.mjs
+          test ! -f public/admin-demo.html
