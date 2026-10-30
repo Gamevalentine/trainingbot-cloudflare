@@ -1,0 +1,30 @@
+name: TrainingBot SEO-11.D — Wiki crawlable category overview QA
+on:
+  push:
+    branches:
+      - aion-trainingbot-seo11d-wiki-overview-20261031
+permissions:
+  contents: read
+jobs:
+  seo11d:
+    runs-on: ubuntu-latest
+    timeout-minutes: 19
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build website without external deployment
+        shell: bash
+        env:
+          CF_PAGES_BRANCH: main
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          npm run build
+      - name: Verify Wiki content and regressions
+        shell: bash
+        run: |
+          node tools/seo/seo11d-wiki-overview-qa.mjs
+          node tools/qa/p1-seo.mjs
+          node tools/seo/seo-06-10-qa.mjs
+          node tools/seo/seo11-beta-metadata-qa.mjs
+          node tools/seo/seo11c-beta-content-qa.mjs
+          test ! -f public/admin-demo.html
