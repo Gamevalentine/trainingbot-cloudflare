@@ -1,0 +1,15 @@
+/* SEO-11.D: server-rendered Wiki category context only; no catalogue or Admin overrides. */
+.tb-wiki-seo-overview{padding:34px 0 52px;border-top:1px solid rgba(148,163,184,.14)}
+.tb-wiki-overview-kicker{margin:0 0 7px;color:#91b2ff;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:800}
+.tb-wiki-seo-overview h2{font-size:clamp(24px,3vw,36px);letter-spacing:-.025em;line-height:1.3;max-width:950px;margin:0 0 12px}
+.tb-wiki-overview-lead{max-width:980px;color:#b9c6dc;line-height:1.8;font-size:14px;margin:0 0 21px}
+.tb-wiki-seo-overview a{color:#a6c5ff;text-decoration:underline;text-underline-offset:3px}
+.tb-wiki-overview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.tb-wiki-overview-grid article{min-width:0;border:1px solid rgba(148,163,184,.18);background:#111827;border-radius:14px;padding:20px}
+.tb-wiki-overview-grid h3{font-size:17px;margin:0 0 8px;font-weight:800}
+.tb-wiki-overview-grid p,.tb-wiki-overview-note p{color:#aebbd0;font-size:13px;line-height:1.8;margin:0}
+.tb-wiki-overview-note{margin-top:18px;border-left:3px solid #7d91f9;background:#101929;padding:16px 19px;border-radius:0 12px 12px 0}
+.tb-wiki-overview-note h3{font-size:15px;margin:0 0 7px}
+.tb-wiki-overview-note p+p{margin-top:8px}
+.tb-wiki-overview-note strong{color:#e4edff}
+@media(max-width:690px){.tb-wiki-seo-overview{padding:27px 0 40px}.tb-wiki-overview-grid{grid-template-columns:1fr}.tb-wiki-overview-grid article{padding:16px}.tb-wiki-seo-overview h2{font-size:24px}}
