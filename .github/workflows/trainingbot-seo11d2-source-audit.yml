@@ -1,0 +1,37 @@
+name: TrainingBot SEO-11.D.2 — Wiki source and compatibility audit
+on:
+  push:
+    branches:
+      - aion-trainingbot-seo11d2-verifiable-records-20261031
+permissions:
+  contents: read
+jobs:
+  wiki-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build static site without Cloudflare writes
+        env:
+          CF_PAGES_BRANCH: main
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          npm run build
+      - name: Verify 146-item ledger, historical sources and SEO regressions
+        run: |
+          node tools/wiki/seo11d2-inventory-qa.mjs
+          node tools/seo/seo11d-wiki-overview-qa.mjs
+          node tools/seo/seo11c-beta-content-qa.mjs
+          node tools/seo/seo11-beta-metadata-qa.mjs
+          node tools/qa/p1-seo.mjs
+          node tools/seo/seo-06-10-qa.mjs
+          test ! -f public/admin-demo.html
+      - name: Install Playwright test runtime
+        run: npm install --no-save --no-package-lock playwright
+      - name: Browser regression Stage C and D
+        run: |
+          node tools/wiki/stage-c-browser-qa.mjs
+          node tools/wiki/stage-d-browser-qa.mjs
+      - name: Browser acceptance: source links and historical attachment pairs
+        run: node tools/wiki/seo11d2-browser-qa.mjs

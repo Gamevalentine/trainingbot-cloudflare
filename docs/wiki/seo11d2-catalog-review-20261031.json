@@ -1,0 +1,1811 @@
+{
+  "schemaVersion": "seo11d2-record-review-v1",
+  "reviewedAt": "2026-10-31",
+  "scope": "All 61 weapon, 51 attachment, 26 vehicle and 8 map names in effective JS Wiki catalog after existing source patches; excludes standalone boat missing from legacy data",
+  "currentAccuracyPolicy": "Historical official release notes are not full current-version validation; attachment rights and image licensing are not established by citations",
+  "counts": {
+    "weapons": 61,
+    "attachments": 51,
+    "vehicles": 26,
+    "maps": 8
+  },
+  "completeness": {
+    "totalRecords": 146,
+    "weaponHistoricalEvidenceProfiles": 11,
+    "attachmentProfilesWithHistoricalPairs": 2,
+    "historicalAttachmentWeaponPairs": 4,
+    "attachmentCurrentVersionCompatibilityVerified": 0,
+    "attachmentVerifiedImageRights": 0,
+    "fullVehicleSpecificationProfiles": 0,
+    "mapModeSpecificOfficialNotes": 3,
+    "additionalOfficialVehicleOutsideLegacyCatalog": "Thuyền Cao Su (bản 4.6, 4 chỗ)"
+  },
+  "knownCriticalCorrection": {
+    "weapon": "ACE32",
+    "release": "4.6",
+    "baseDamageFrom": 46,
+    "baseDamageTo": 47,
+    "sourceUrl": "https://www.pubgmobile.com/en/event/Midnight-Hunters/",
+    "note": "No blanket claim of valid damage for 4.7 Beta"
+  },
+  "verifiedAttachmentPairings": [
+    {
+      "attachment": "Full-Auto Mod",
+      "weapons": [
+        "M16A4",
+        "Mk47 Mutant"
+      ],
+      "release": "2.6",
+      "sourceUrl": "https://www.pubgmobile.com/en/event/260Devnotes/",
+      "currentVersionVerified": false
+    },
+    {
+      "attachment": "Gun Shield",
+      "weapons": [
+        "DP-28",
+        "M249"
+      ],
+      "release": "2.5",
+      "sourceUrl": "https://www.pubgmobile.com/id/event/Imagiversary/",
+      "currentVersionVerified": false
+    }
+  ],
+  "unlistedOfficialVehicles": [
+    {
+      "name": "Thuyền Cao Su",
+      "release": "4.6",
+      "seats": 4,
+      "sourceUrl": "https://pubgm.vnggames.com/tin-tuc/thong-bao-cap-nhat/thong-bao-cap-nhat-phien-ban-4-6.html",
+      "presentIn26Legacy": false,
+      "currentFullSpecVerified": false
+    }
+  ],
+  "records": [
+    {
+      "kind": "weapons",
+      "name": "AKM",
+      "status": "versioned_official_notes_partial",
+      "sourceIds": [
+        "pubg-official-4.6-vng"
+      ],
+      "versionScope": "4.6",
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": []
+    },
+    {
+      "kind": "weapons",
+      "name": "M16A4",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "SCAR-L",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "M416",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "GROZA",
+      "status": "versioned_official_notes_partial",
+      "sourceIds": [
+        "pubg-official-4.6-vng"
+      ],
+      "versionScope": "4.6",
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": []
+    },
+    {
+      "kind": "weapons",
+      "name": "AUG",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "QBZ",
+      "status": "versioned_official_notes_partial",
+      "sourceIds": [
+        "pubg-official-2.4"
+      ],
+      "versionScope": "2.4",
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": []
+    },
+    {
+      "kind": "weapons",
+      "name": "M762",
+      "status": "versioned_official_notes_partial",
+      "sourceIds": [
+        "pubg-official-4.6-vng"
+      ],
+      "versionScope": "4.6",
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": []
+    },
+    {
+      "kind": "weapons",
+      "name": "Mk47 Mutant",
+      "status": "versioned_official_notes_partial",
+      "sourceIds": [
+        "pubg-official-4.6-vng"
+      ],
+      "versionScope": "4.6",
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": []
+    },
+    {
+      "kind": "weapons",
+      "name": "G36C",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "FAMAS",
+      "status": "versioned_official_notes_partial",
+      "sourceIds": [
+        "pubg-official-2.4"
+      ],
+      "versionScope": "2.4",
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": []
+    },
+    {
+      "kind": "weapons",
+      "name": "ACE32",
+      "status": "versioned_official_notes_partial",
+      "sourceIds": [
+        "pubg-official-4.6-vng"
+      ],
+      "versionScope": "4.6",
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": []
+    },
+    {
+      "kind": "weapons",
+      "name": "Honey Badger",
+      "status": "versioned_official_notes_partial",
+      "sourceIds": [
+        "pubg-official-2.4",
+        "pubg-official-4.6-vng"
+      ],
+      "versionScope": "2.4, 4.6",
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": []
+    },
+    {
+      "kind": "weapons",
+      "name": "ASM Abakan",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "Mini14",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "SKS",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "SLR",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "Mk14",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "QBU",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "Mk12",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "VSS",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "Kar98k",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "M24",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "AWM",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "Win94",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "Mosin Nagant",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "AMR",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "UZI",
+      "status": "versioned_official_notes_partial",
+      "sourceIds": [
+        "pubg-official-2.4"
+      ],
+      "versionScope": "2.4",
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": []
+    },
+    {
+      "kind": "weapons",
+      "name": "UMP45",
+      "status": "versioned_official_notes_partial",
+      "sourceIds": [
+        "pubg-official-2.4"
+      ],
+      "versionScope": "2.4",
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": []
+    },
+    {
+      "kind": "weapons",
+      "name": "Vector",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "Thompson SMG",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "PP-19 Bizon",
+      "status": "versioned_official_notes_partial",
+      "sourceIds": [
+        "pubg-official-2.4"
+      ],
+      "versionScope": "2.4",
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": []
+    },
+    {
+      "kind": "weapons",
+      "name": "MP5K",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "P90",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "JS9",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "S686",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "S1897",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "S12K",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "DBS",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "M1014",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "NS2000",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "M249",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "DP-28",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "MG3",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "P92",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "P1911",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "R1895",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "P18C",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "R45",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "Sawed-Off",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "Skorpion",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "Desert Eagle",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "Crossbow",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "Panzerfaust",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "Flare Gun",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "M79",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "M1 Garand",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "DSR",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "Dual MP7",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "Tactical Crossbow",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "weapons",
+      "name": "Mortar",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Thông số cân bằng hiện tại chưa đối chiếu nguồn chính thức",
+        "Số liệu chi tiết và phụ kiện cụ thể chưa kiểm chứng"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Choke (SG)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Compensator (SMG)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Compensator (Snipers)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Flash Hider (SMG)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Flash Hider (Snipers)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Suppressor (SMG, Pistols)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Suppressor (Snipers)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Compensator (AR)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Flash Hider (AR)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Suppressor (AR)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Duckbill (Shotguns)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Barrel Extender (SMG)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Barrel Extender (AR, Snipers)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Muzzle Brake (Snipers)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Muzzle Brake (AR)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Muzzle Brake (SMG)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Angled Foregrip",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Vertical Foregrip",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Light Grip",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Half Grip",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Thumb Grip",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Laser Sight",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Ergonomic Grip",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Quiver (Crossbow)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Red Dot Sight",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Holographic Sight",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "2x Scope",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "4x Scope",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "8x Scope",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "3x Scope",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "6x Scope",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Canted Sight",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Extended Mag (SMG, Pistols)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Quickdraw Mag (SMG, Pistols)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Extended Quickdraw Mag (SMG, Pistols)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Extended Mag (Snipers)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Quickdraw Mag (Snipers)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Extended Quickdraw Mag (Snipers)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Extended Mag (AR)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Quickdraw Mag (AR)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Extended Quickdraw Mag (AR)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Shotgun Quick Loader",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Mini Drum Mag (AR)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Stock (Micro UZI)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Tactical Stock (Rifles, SMG)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Cheek Pad (Snipers)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Bullet Loop (Shotguns, Snipers)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Gun Shield",
+      "status": "historical_pairings_only",
+      "sourceIds": [
+        "pubg-official-2.5-imagiversary"
+      ],
+      "versionScope": "2.5",
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh khả năng tương thích ở bản hiện hành",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Full-Auto Mod",
+      "status": "historical_pairings_only",
+      "sourceIds": [
+        "pubg-official-2.6-devnotes"
+      ],
+      "versionScope": "2.6",
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh khả năng tương thích ở bản hiện hành",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Nòng kéo dài (Súng bắn tỉa)",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "attachments",
+      "name": "Báng súng nặng",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa có nguồn chính thức ghi rõ cặp phụ kiện–vũ khí cho phiên bản",
+        "Quyền ảnh chưa xác minh"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "UAZ",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "UAZ kín",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "Dacia 1300",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "Buggy",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "Motorcycle",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "Motorcycle + Sidecar",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "Mirado",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "Mirado mui trần",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "Pickup",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "Pickup kín",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "Van",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "Rony",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "Scooter",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "Tukshai",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "Snowmobile",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "Snowbike",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "Zima UAZ",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "Coupe RB",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "Motor Glider",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "BRDM-2",
+      "status": "partial_release_note",
+      "sourceIds": [
+        "pubg-vi-4.6"
+      ],
+      "versionScope": "4.6",
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "Aquarail",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "PG-117",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "Monster Truck",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "UTV",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "Quad",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "vehicles",
+      "name": "Mountain Bike",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Chưa xác minh hồ sơ tốc độ và độ bền đầy đủ",
+        "Danh sách xuất hiện theo chế độ cần đối chiếu"
+      ]
+    },
+    {
+      "kind": "maps",
+      "name": "Erangel",
+      "status": "mode_specific_official_note",
+      "sourceIds": [
+        "pubg-vi-4.6"
+      ],
+      "versionScope": "4.6",
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Nhịp chơi và cơ chế theo từng chế độ/phiên bản chưa kiểm chứng đầy đủ"
+      ]
+    },
+    {
+      "kind": "maps",
+      "name": "Miramar",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Nhịp chơi và cơ chế theo từng chế độ/phiên bản chưa kiểm chứng đầy đủ"
+      ]
+    },
+    {
+      "kind": "maps",
+      "name": "Sanhok",
+      "status": "mode_specific_official_note",
+      "sourceIds": [
+        "pubg-vi-4.6"
+      ],
+      "versionScope": "4.6",
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Nhịp chơi và cơ chế theo từng chế độ/phiên bản chưa kiểm chứng đầy đủ"
+      ]
+    },
+    {
+      "kind": "maps",
+      "name": "Vikendi",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Nhịp chơi và cơ chế theo từng chế độ/phiên bản chưa kiểm chứng đầy đủ"
+      ]
+    },
+    {
+      "kind": "maps",
+      "name": "Livik",
+      "status": "mode_specific_official_note",
+      "sourceIds": [
+        "pubg-vi-4.6"
+      ],
+      "versionScope": "4.6",
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Nhịp chơi và cơ chế theo từng chế độ/phiên bản chưa kiểm chứng đầy đủ"
+      ]
+    },
+    {
+      "kind": "maps",
+      "name": "Karakin",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Nhịp chơi và cơ chế theo từng chế độ/phiên bản chưa kiểm chứng đầy đủ"
+      ]
+    },
+    {
+      "kind": "maps",
+      "name": "Nusa",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Nhịp chơi và cơ chế theo từng chế độ/phiên bản chưa kiểm chứng đầy đủ"
+      ]
+    },
+    {
+      "kind": "maps",
+      "name": "Rondo",
+      "status": "source_gap",
+      "sourceIds": [],
+      "versionScope": null,
+      "sourceFrom": "TrainingBot source registry; not a claim of current complete accuracy",
+      "missing": [
+        "Nhịp chơi và cơ chế theo từng chế độ/phiên bản chưa kiểm chứng đầy đủ"
+      ]
+    }
+  ]
+}
