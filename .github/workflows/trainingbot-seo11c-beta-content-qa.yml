@@ -1,0 +1,34 @@
+name: TrainingBot SEO-11.C — Beta content and internal-link QA
+on:
+  push:
+    branches:
+      - aion-trainingbot-seo11c-content-20261031
+permissions:
+  contents: read
+jobs:
+  seo11c:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build website offline; no Cloudflare or D1 writes
+        shell: bash
+        env:
+          CF_PAGES_BRANCH: main
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          npm run build
+      - name: Audit indexed Beta hub and regressions
+        shell: bash
+        run: |
+          node tools/seo/seo11c-beta-content-qa.mjs
+          node tools/seo/seo11-beta-metadata-qa.mjs
+          node tools/qa/p1-seo.mjs
+          node tools/seo/seo-06-10-qa.mjs
+          node tools/qa/p1-content.mjs
+          test ! -f public/admin-demo.html
+      - name: Install local browser QA
+        run: npm install --no-save --no-package-lock playwright
+      - name: Check mobile and desktop Beta download workflow
+        run: node tools/qa/updates-content-v204.mjs
