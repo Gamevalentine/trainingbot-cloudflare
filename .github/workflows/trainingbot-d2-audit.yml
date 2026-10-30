@@ -65,12 +65,14 @@ jobs:
               backup_exists:data.backup_exists===true,
               backup_integrity_ok:data.backup_integrity_ok===true,
               immutable_fields_match:data.immutable_fields_match===true,
+              maintenance_writes_locked:data.maintenance_writes_locked===true,
               stored_correction:data.stored_correction===true,
               public_fallback_required:data.public_fallback_required??null};
             console.log("D2_PRODUCTION_D1_READ_ONLY",JSON.stringify(result));
             if(response.status===200){
               if(!data.ok||data.migration_state!=="applied"||
                !result.backup_exists||!result.backup_integrity_ok||!result.immutable_fields_match||
+               !result.maintenance_writes_locked||
                !result.stored_correction||result.public_fallback_required!==false)
                 throw Error("D1 Production snapshot or immutable fields failed integrity check");
               verified=true;break;
