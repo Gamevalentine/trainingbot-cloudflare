@@ -35,7 +35,8 @@ try{
   try{
    await page.goto(root+'/wiki.html',{waitUntil:'domcontentloaded',timeout:25000});
    await page.waitForFunction(()=>window.__TB_WIKI_D__?.ready&&DATA.weapons.length===61&&DATA.attachments.length===51,{timeout:17000});
-   assert.equal(await page.locator('#tb-wiki-nguon-kiem-chung article').count(),4);
+   assert.equal(await page.locator('#tb-wiki-seo-overview').count(),1,'Prior SEO-11.D overview must survive Wiki hydration');
+   assert.equal(await page.locator('#tb-wiki-nguon-kiem-chung article').count(),4,'Versioned source cards must survive Wiki hydration');
    assert.equal(await page.locator('#tb-wiki-nguon-kiem-chung a').count(),4);
    await openCard(page,'attachments',['Bộ chuyển chế độ tự động','Full-Auto Mod']);
    await page.waitForFunction(()=>document.querySelector('#tbWikiModal .tb-d-release')?.textContent?.includes('M16A4'),undefined,{timeout:8000});
