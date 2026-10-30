@@ -1,0 +1,83 @@
+name: TrainingBot D2 — D1 integrity, five articles and security QA
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/trainingbot-d2-audit.yml
+      - functions/api/v71/admin/erangel-correction.js
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  d2-technical-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Audit D1 integrity and secure maintenance behavior (mock database)
+        run: |
+          node --check functions/api/v71/admin/erangel-correction.js
+          node --check tools/seo/d2-five-posts-audit.mjs
+          node tools/seo/erangel-d1-migration-qa.mjs
+          node tools/seo/seo-source-verification-qa.mjs
+      - name: Audit five public articles, sources, metadata and asset origins without changing D1
+        run: node tools/seo/d2-five-posts-audit.mjs
+      - name: Save public-only evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-d2-public-evidence
+          path: |
+            d2-audit-artifacts/
+            seo-erangel-migration-artifacts/
+            seo-sources-evidence/
+          retention-days: 14
+          if-no-files-found: ignore
+  d2-production-d1:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Verify real D1 backup and immutable fields using signed read-only GET
+        run: |
+          node --input-type=module <<'NODE'
+          const audience="trainingbot-erangel-d1-migration-v1";
+          const issue=async()=>{
+            const uri=new URL(process.env.ACTIONS_ID_TOKEN_REQUEST_URL);
+            uri.searchParams.set("audience",audience);
+            const result=await fetch(uri,{headers:{Authorization:"Bearer "+process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN}});
+            if(!result.ok)throw Error("Cannot issue signed GitHub identity: "+result.status);
+            const token=(await result.json()).value;
+            if(typeof token!=="string"||token.split(".").length!==3)throw Error("Invalid signed identity");
+            return token;
+          };
+          const endpoint="https://trainingbot-cloudflare.pages.dev/api/v71/admin/erangel-correction";
+          let verified=false;
+          for(let attempt=1;attempt<=12;attempt++){
+            const response=await fetch(endpoint,{method:"GET",headers:{
+              Authorization:"Bearer "+await issue(),Accept:"application/json"
+            },signal:AbortSignal.timeout(12000)});
+            const data=await response.json().catch(()=>({}));
+            const result={attempt,http:response.status,state:data.migration_state||null,
+              backup_exists:data.backup_exists===true,
+              backup_integrity_ok:data.backup_integrity_ok===true,
+              immutable_fields_match:data.immutable_fields_match===true,
+              stored_correction:data.stored_correction===true,
+              public_fallback_required:data.public_fallback_required??null};
+            console.log("D2_PRODUCTION_D1_READ_ONLY",JSON.stringify(result));
+            if(response.status===200){
+              if(!data.ok||data.migration_state!=="applied"||
+               !result.backup_exists||!result.backup_integrity_ok||!result.immutable_fields_match||
+               !result.stored_correction||result.public_fallback_required!==false)
+                throw Error("D1 Production snapshot or immutable fields failed integrity check");
+              verified=true;break;
+            }
+            if(![401,503].includes(response.status))throw Error("Unexpected D1 status "+response.status);
+            if(attempt<12)await new Promise(resolve=>setTimeout(resolve,8000));
+          }
+          if(!verified)throw Error("D2 could not verify authenticated D1 snapshot; no writes");
+          console.log("D2_PRODUCTION_D1_INTEGRITY_VERIFIED; NO_DATA_WRITES");
+          NODE
