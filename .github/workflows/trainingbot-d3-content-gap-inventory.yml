@@ -1,0 +1,38 @@
+name: TrainingBot LIC-02 and D3.1 — evidence and content gap audit
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [aion-trainingbot-lic02-d3-inventory-20261031]
+permissions:
+  contents: read
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build exact main-shaped static layout for source inventory
+        env:
+          CF_PAGES_BRANCH: main
+        run: npm run build
+      - name: Read-only D3.1 site sections, wiki evidence and public article sitemap
+        run: |
+          node --check tools/seo/d3-content-gap-inventory.mjs
+          node tools/seo/d3-content-gap-inventory.mjs
+      - name: Re-run five-article & image URL QA to preserve D2 boundary
+        run: |
+          node tools/seo/seo-source-verification-qa.mjs
+          node tools/seo/d2-five-posts-audit.mjs
+      - name: Save evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-lic-d3-inventory
+          path: |
+            d3-inventory-artifacts/
+            d2-audit-artifacts/
+            seo-sources-evidence/
+          retention-days: 14
+          if-no-files-found: ignore
