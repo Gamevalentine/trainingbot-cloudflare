@@ -18,14 +18,23 @@
       "checkedAt": "2026-10-31",
       "verifiedAs": "historical_attachment_compatibility",
       "currentGameStatus": "not_asserted"
+    },
+    "pubg-official-2.5-imagiversary": {
+      "title": "PUBG MOBILE Version 2.5 — Imagiversary, Gun Shield",
+      "url": "https://www.pubgmobile.com/id/event/Imagiversary/",
+      "version": "2.5",
+      "publishedAt": "2023-03",
+      "checkedAt": "2026-10-31",
+      "verifiedAs": "historical_attachment_compatibility",
+      "currentGameStatus": "not_asserted"
     }
   },
   "coverage": {
     "attachments": {
       "total": 51,
-      "verifiedCompatibility": 1,
+      "verifiedCompatibility": 2,
       "verifiedImageRights": 0,
-      "historicalVerifiedPairs": 2,
+      "historicalVerifiedPairs": 4,
       "currentVersionVerifiedCompatibility": 0
     },
     "vehicles": {
@@ -52,6 +61,16 @@
         "Mk47 Mutant"
       ],
       "note": "Thông báo chính thức của PUBG MOBILE phiên bản 2.6 xác nhận Full-Auto Mod dùng được với M16A4 và Mk47 để bổ sung chế độ tự động. Đây là lịch sử phiên bản 2.6, KHÔNG xác nhận mọi chế độ hoặc bản cập nhật hiện hành."
+    },
+    "Gun Shield": {
+      "sourceId": "pubg-official-2.5-imagiversary",
+      "release": "2.5",
+      "status": "historical_official_compatibility",
+      "compatibleWeapons": [
+        "DP-28",
+        "M249"
+      ],
+      "note": "Thông báo nhà phát hành ở phiên bản 2.5 cho biết Gun Shield có thể trang bị trên DP-28 và M249; khi nằm sấp, tấm chắn được mở để hỗ trợ che chắn. Đây là ghi chú lịch sử 2.5, không xác nhận tương thích hiện hành."
     }
   },
   "vehicles": {

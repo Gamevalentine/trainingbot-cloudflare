@@ -29,12 +29,12 @@ function summary(){
  t.append(make("strong","",kindLabels[k]+" · dữ liệu đang rà soát"));
  const count=Array.isArray(DATA[k])?DATA[k].length:0;
  let msg=k==="attachments"?
-  "Đã liệt kê "+count+" phụ kiện. Full-Auto Mod có bằng chứng tương thích M16A4 và Mk47 theo bản 2.6; khả năng tương thích hiện hành và quyền ảnh của danh mục vẫn chưa xác minh.":
+  "Đã liệt kê "+count+" phụ kiện. Full-Auto Mod (2.6) và Gun Shield (2.5) có tổng cộng 4 cặp vũ khí được ghi nhận trong nguồn lịch sử; tương thích hiện hành của toàn bộ danh mục và quyền ảnh vẫn chưa xác minh.":
  k==="vehicles"?
   "Đã liệt kê "+count+" phương tiện. Ghi chú chính thức 4.6 có Thuyền Cao Su 4 chỗ chưa có trong danh mục cũ; không tự gộp thành xe khác.":
   "Đã liệt kê "+count+" bản đồ. Nguồn 4.6 xác nhận bản đồ của một chế độ chủ đề, không phải mọi vị trí loot trong Classic.";
  t.append(make("p","",msg));box.append(t);
- const badge=make("span","tb-d-status",k==="attachments"?"1 phụ kiện có nguồn lịch sử":k==="vehicles"?"1 mục chưa có trong kho":"3 ghi chú theo chế độ");
+ const badge=make("span","tb-d-status",k==="attachments"?"2 phụ kiện có nguồn lịch sử":k==="vehicles"?"1 mục chưa có trong kho":"3 ghi chú theo chế độ");
  box.append(badge);
  if(k==="vehicles"){
   const item=evidence.unlisted?.["Thuyền Cao Su"];
@@ -69,7 +69,7 @@ function showModal(){
  const note=make("p","tb-d-unverified","Các thông số không kèm trích dẫn nguồn ở hồ sơ cũ là dữ liệu tham khảo, chưa được xác minh cho bản hiện hành.");
  panel.append(note);
  const list=make("ul","tb-d-checklist");
- const sourceName=title==="Bộ chuyển chế độ tự động"?"Full-Auto Mod":title;
+ const sourceName=title==="Bộ chuyển chế độ tự động"?"Full-Auto Mod":title==="Khiên súng"?"Gun Shield":title;
  const attEvidence=k==="attachments"?evidence.attachments?.[sourceName]:null;
  const missing=k==="attachments"?
   [attEvidence?.sourceId?"Vũ khí gắn được đã được đối chiếu ở bản 2.6, nhưng tính tương thích phiên bản hiện hành chưa xác minh.":"Vũ khí gắn được: chưa có bảng tương thích chính thức theo phiên bản.",
