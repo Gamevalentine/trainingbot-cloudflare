@@ -114,6 +114,10 @@
   const displayFireMode=value=>fireModeNames[value]||value;
 
   const main=document.querySelector('main');
+  // Preserve server-rendered SEO category/evidence sections when upgrading the
+  // legacy Wiki grid to V2. Previously main.innerHTML removed them on hydration.
+  // Keep the original nodes (rather than duplicating markup) for one canonical copy.
+  const retainedWikiSections=[...main.querySelectorAll('#tb-wiki-seo-overview,#tb-wiki-nguon-kiem-chung')];
   main.innerHTML=`<section class="tb-wiki-shell">
     <div class="tb-wiki-head">
       <div><div class="tb-wiki-kicker">${icons.maps}<span>WIKI PUBG MOBILE</span></div><h1 id="tbWikiTitle">Kho vũ khí</h1><p class="tb-wiki-subtitle" id="tbWikiSubtitle"></p></div>
@@ -124,6 +128,7 @@
     <div class="tb-wiki-grid" id="tbWikiGrid"></div>
   </section>
   <div class="tb-wiki-modal" id="tbWikiModal" aria-hidden="true"><div class="tb-wiki-modal-card"><div class="tb-wiki-modal-head"><h3 id="tbWikiModalTitle"></h3><button class="tb-wiki-modal-close" id="tbWikiModalClose" type="button">×</button></div><div class="tb-wiki-modal-body" id="tbWikiModalBody"></div></div></div>`;
+  for(const section of retainedWikiSections) main.appendChild(section);
 
   let active='weapons',searchTerm='',filter='Tất cả',compareMode=false,selected=[];
   const titleEl=document.getElementById('tbWikiTitle'),subEl=document.getElementById('tbWikiSubtitle'),searchEl=document.getElementById('tbWikiSearch'),tabsEl=document.getElementById('tbWikiTabs'),filtersEl=document.getElementById('tbWikiFilters'),gridEl=document.getElementById('tbWikiGrid'),compareBtn=document.getElementById('tbCompareBtn');

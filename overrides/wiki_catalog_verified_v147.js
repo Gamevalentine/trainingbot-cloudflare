@@ -16,19 +16,17 @@
     'Mortar':'https://www.pubgmobile.com/images/event/PUBG-MOBILE-Version-400/s3_weapon1.png'
   };
 
-  const DAMAGE_CURRENT={
-    'AKM':50,
-    'M762':48,
-    'ACE32':46,
-    'Honey Badger':45,
-    'Mk47 Mutant':50,
-    'GROZA':49
+  // Only a release-scoped, directly sourced value is shown as base damage.
+  // Previously this map was labelled CURRENT, even though several values were
+  // from older releases and ACE32 had an outdated 46 after v4.6 raised it to 47.
+  const RELEASE46_DAMAGE={
+    'ACE32':47
   };
 
   const DETAIL={
     'AKM':{note:'PUBG MOBILE 4.2 tăng sát thương cơ bản AKM từ 48 lên 50.'},
     'M762':{note:'PUBG MOBILE 4.2 tăng sát thương cơ bản M762 từ 46 lên 48. M762 có các chế độ đơn, loạt 3 viên và tự động.'},
-    'ACE32':{note:'PUBG MOBILE 4.2 tăng sát thương cơ bản ACE32 từ 45 lên 47; phiên bản 4.5 điều chỉnh lại từ 47 xuống 46 đồng thời cải thiện độ ổn định và khả năng bắn liên tục.'},
+    'ACE32':{note:'PUBG MOBILE 4.2 tăng sát thương cơ bản ACE32 từ 45 lên 47; bản 4.5 điều chỉnh xuống 46; bản 4.6 tăng lại từ 46 lên 47 và giảm độ giật ngang/dọc. Ghi chú có phạm vi từng bản, không suy ra Beta 4.7.'},
     'Honey Badger':{note:'PUBG MOBILE 4.2 tăng sát thương cơ bản Honey Badger từ 43 lên 45. Bản 4.3 bổ sung Miramar, Karakin, Vikendi, Nusa và Rondo vào danh sách bản đồ xuất hiện.',maps:ALL_MAPS},
     'Mk47 Mutant':{note:'PUBG MOBILE 4.2 tăng sát thương cơ bản Mk47 từ 48 lên 50. Full-Auto Mod cho phép Mk47 sử dụng chế độ tự động.'},
     'GROZA':{note:'PUBG MOBILE 4.2 tăng sát thương cơ bản Groza từ 48 lên 49.'},
@@ -146,12 +144,12 @@
     const label=row.querySelector('span');
     const b=row.querySelector('b');
     const fill=row.querySelector('.tb-v145-fill');
-    if(label&&label.textContent!=='Sát thương cơ bản')label.textContent='Sát thương cơ bản';
+    if(label&&label.textContent!=='Sát thương cơ bản (4.6)')label.textContent='Sát thương cơ bản (4.6)';
     if(b&&b.textContent!==String(value))b.textContent=String(value);
     if(fill&&fill.style.width!==`${Math.max(0,Math.min(100,value))}%`)fill.style.width=`${Math.max(0,Math.min(100,value))}%`;
     const note=root.querySelector('.tb-v145-score-note');
     if(note){
-      const text='Sát thương cơ bản dùng số chính thức hiện hành; các thanh còn lại chỉ hiển thị khi có nguồn Wiki tham khảo riêng.';
+      const text='Sát thương cơ bản ACE32 là 47 theo thông báo PUBG MOBILE 4.6 (09/2026), không được coi là số đã xác minh cho Beta 4.7. Các thanh còn lại chỉ hiển thị khi có nguồn riêng.';
       if(note.textContent!==text)note.textContent=text;
     }
   }
@@ -207,7 +205,7 @@
     if(left.querySelector('[data-v147-marker]')?.dataset.v147Marker===name)return;
 
     const p=DETAIL[name];
-    const damage=DAMAGE_CURRENT[name];
+    const damage=RELEASE46_DAMAGE[name];
     if(!p&&damage==null)return;
 
     if(p){
