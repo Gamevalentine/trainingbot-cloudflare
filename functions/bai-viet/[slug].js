@@ -302,7 +302,10 @@ function page(post,related=[]){
  const excerpt=articleExcerpt(post);
   const canonical=`${ORIGIN}/bai-viet/${encodeURIComponent(post.slug)}`;
   const safeCover=safeUrl(post.cover_url,"image");
-  const shareImage=absoluteUrl(safeCover,`${ORIGIN}/news-pubg-mobile-4-6-cover.webp`);
+  // Social previews need a raster PNG: SVG alone is not consistently supported.
+  const shareArt=safeCover.startsWith("/editorial-original-")&&safeCover.endsWith(".svg")
+   ? safeCover.slice(0,-4)+".png" : safeCover;
+  const shareImage=absoluteUrl(shareArt,`${ORIGIN}/news-pubg-mobile-4-6-cover.webp`);
   const published=isoDate(post.published_at);
   const modified=isoDate(post.updated_at)||published;
   const cover=safeCover?`<img class="tb-cover" src="${esc(safeCover)}" alt="${esc(post.title)}">`:"";
