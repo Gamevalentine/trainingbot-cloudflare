@@ -17,7 +17,7 @@ jobs:
         run: |
           node --check functions/sec-d2-egress.js
           node --input-type=module <<'NODE'
-          const endpoint="https://aion-trainingbot-sec-d2-eg.trainingbot-cloudflare.pages.dev/sec-d2-egress";
+          const endpoint="https://aion-trainingbot-sec-d2-egre.trainingbot-cloudflare.pages.dev/sec-d2-egress";
           let response;
           for(let attempt=1;attempt<=20;attempt++){
             try{
