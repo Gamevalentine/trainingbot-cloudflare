@@ -15,7 +15,9 @@ for (const page of pages) {
   assert.equal(title,expectedTitle,page+' SEO title');
   assert.equal(description,expectedDescription,page+' SEO description');
   assert.equal(canonical,origin+'/ban-cap-nhat',page+' canonical');
-  assert(!/<meta\b[^>]*name=["']robots["'][^>]*content=["'][^"']*noindex/i.test(html),page+' must be indexable');
+  const noindex=/<meta\b[^>]*name=["']robots["'][^>]*content=["'][^"']*noindex/i.test(html);
+  if (page==='updates.html') assert(noindex,'Legacy /updates alias must remain noindex');
+  else assert(!noindex,'Canonical /ban-cap-nhat page must remain indexable');
   assert(html.includes('href="/ban-cap-nhat"'),page+' original route link kept');
 }
 const home=fs.readFileSync('public/index.html','utf8');
