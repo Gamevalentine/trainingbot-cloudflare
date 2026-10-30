@@ -105,6 +105,7 @@ async function body(response){return {status:response.status,...await response.j
 const lockedEnv={ADMIN_TOKEN:token,DB:new MockD1(old)};
 const lockedRead=await body(await onRequestGet({request:req("GET"),env:lockedEnv}));
 assert.equal(lockedRead.status,200,"D1 read remains available with maintenance locked");
+assert.equal(lockedRead.maintenance_writes_locked,true,"D2 lock is visible in authenticated read-only state");
 const lockedWrite=await body(await onRequestPost({request:req("POST","apply"),env:lockedEnv}));
 assert.equal(lockedWrite.status,423,"Maintenance must be locked by default");
 assert.equal(lockedEnv.DB.sql.filter(([op])=>op==="run").length,0,"Locked maintenance must not write or create backup table");
