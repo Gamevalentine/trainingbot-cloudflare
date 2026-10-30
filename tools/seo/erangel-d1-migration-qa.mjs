@@ -211,6 +211,14 @@ try{
  const valid=signedJwt();
  const st=await body(await onRequestGet({request:oidcReq("GET",valid),env:oidcEnv}));
  assert.equal(st.status,200,"Signed, correct GitHub OIDC workflow can read D1 migration status");
+ const d2Token=signedJwt({
+  workflow_ref:"Gamevalentine/trainingbot-cloudflare/.github/workflows/trainingbot-d2-audit.yml@refs/heads/main"
+ });
+ assert.equal((await body(await onRequestGet({request:oidcReq("GET",d2Token),env:oidcEnv}))).status,200,
+  "Dedicated D2 main-branch OIDC workload may read only");
+ assert.equal((await body(await onRequestPost({request:oidcReq("POST",d2Token,"apply"),env:oidcEnv}))).status,401,
+  "Dedicated D2 OIDC workload must not gain maintenance write access");
+
  const badCases=[
   signedJwt({aud:"wrong-audience"}),
   signedJwt({workflow_ref:"OtherOwner/other/.github/workflows/trainingbot-erangel-d1-migrate.yml@refs/heads/main"}),
