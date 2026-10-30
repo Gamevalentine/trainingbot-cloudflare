@@ -17,6 +17,11 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+      - name: Build Production-shaped static files used by source verification
+        env:
+          CF_PAGES_BRANCH: main
+        run: |
+          npm run build
       - name: Audit D1 integrity and secure maintenance behavior (mock database)
         run: |
           node --check functions/api/v71/admin/erangel-correction.js
