@@ -48,9 +48,9 @@ for(const slug of slugs){
   if(!assets.has(full))assets.set(full,{url:full,usedBy:[],status:"not_checked"});
   assets.get(full).usedBy.push({slug,role});
  };
- const og=html.match(/<meta\\s+property="og:image"\\s+content="([^"]+)"/i)?.[1]||"";
+ const og=html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i)?.[1]||"";
  add(decode(og),"open_graph");
- for(const match of html.matchAll(/<img\\b[^>]*>/gi)){
+ for(const match of html.matchAll(/<img\b[^>]*>/gi)){
   const tag=match[0];add(getAttr(tag,"src"),tag.includes('class="tb-cover"')?"cover":"inline",getAttr(tag,"alt"));
  }
  articles.push({slug,url,uses});
