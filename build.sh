@@ -291,12 +291,12 @@ const coreSeo = {
     description: 'Tra cứu Wiki PUBG Mobile về vũ khí, phụ kiện, phương tiện, bản đồ và hướng dẫn chơi được tổng hợp trên TrainingBot.'
   },
   'ban-cap-nhat.html': {
-    title: 'Bản cập nhật PUBG Mobile & bản Beta – TrainingBot',
-    description: 'Theo dõi các phiên bản PUBG Mobile, bản Beta, lịch cập nhật, tính năng mới và link trải nghiệm trên TrainingBot.'
+    title: 'PUBG Mobile Beta: Phiên bản và hướng dẫn tải | TrainingBot',
+    description: 'Khám phá PUBG Mobile Beta: các phiên bản thử nghiệm, trạng thái tải và hướng dẫn cài APK/XAPK trên Android. Theo dõi thông tin tại TrainingBot.'
   },
   'updates.html': {
-    title: 'Bản cập nhật PUBG Mobile & bản Beta – TrainingBot',
-    description: 'Theo dõi các phiên bản PUBG Mobile, bản Beta, lịch cập nhật, tính năng mới và link trải nghiệm trên TrainingBot.'
+    title: 'PUBG Mobile Beta: Phiên bản và hướng dẫn tải | TrainingBot',
+    description: 'Khám phá PUBG Mobile Beta: các phiên bản thử nghiệm, trạng thái tải và hướng dẫn cài APK/XAPK trên Android. Theo dõi thông tin tại TrainingBot.'
   },
   'community.html': {
     title: 'Cộng đồng TrainingBot – Kết nối game thủ PUBG Mobile',
