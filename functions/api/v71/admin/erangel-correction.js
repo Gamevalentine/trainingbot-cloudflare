@@ -20,6 +20,8 @@ const OIDC_PINNED_UNTIL=Date.parse("2026-10-31T20:20:00Z");
 const OIDC_AUDIENCE="trainingbot-erangel-d1-migration-v1";
 const OIDC_REPOSITORY="gamevalentine/trainingbot-cloudflare";
 const OIDC_WORKFLOW=OIDC_REPOSITORY+"/.github/workflows/trainingbot-erangel-d1-migrate.yml@refs/heads/main";
+// Additional signed main-branch identity may READ D2 status only; cannot write.
+const OIDC_D2_READ_WORKFLOW=OIDC_REPOSITORY+"/.github/workflows/trainingbot-d2-audit.yml@refs/heads/main";
 function decodeBase64Url(value){
  if(!/^[a-zA-Z0-9_-]+$/.test(value))throw new Error("Invalid base64url");
  const raw=atob(value.replace(/-/g,"+").replace(/_/g,"/").padEnd(Math.ceil(value.length/4)*4,"="));
@@ -59,7 +61,8 @@ async function verifiedGithubOidc(request){
   const now=Math.floor(Date.now()/1000);
   return jwt.iss===OIDC_ISSUER&&jwt.aud===OIDC_AUDIENCE&&
    String(jwt.repository||"").toLowerCase()===OIDC_REPOSITORY&&
-   String(jwt.workflow_ref||"").toLowerCase()===OIDC_WORKFLOW&&
+   (String(jwt.workflow_ref||"").toLowerCase()===OIDC_WORKFLOW||
+    (request.method==="GET"&&String(jwt.workflow_ref||"").toLowerCase()===OIDC_D2_READ_WORKFLOW))&&
    jwt.ref==="refs/heads/main"&&jwt.event_name==="push"&&
    typeof jwt.sha==="string"&&/^[a-f0-9]{40}$/.test(jwt.sha)&&
    typeof jwt.jti==="string"&&jwt.jti.length>0&&
