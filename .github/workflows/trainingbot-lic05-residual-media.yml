@@ -1,0 +1,31 @@
+name: TrainingBot LIC-05 — legacy public media residual audit
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [aion-trainingbot-lic05-residual-media-20261031]
+permissions:
+  contents: read
+jobs:
+  residual-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reconstruct Production-shaped static files
+        env:
+          CF_PAGES_BRANCH: main
+        run: npm run build
+      - name: Read old public media hashes, static reference sites and five live articles
+        run: |
+          node --check tools/seo/lic05-residual-media-audit.mjs
+          node tools/seo/lic05-residual-media-audit.mjs
+      - name: Save media footprint evidence without deleting old assets
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-lic05-legacy-asset-exposure
+          path: lic05-audit-artifacts/residual.json
+          retention-days: 14
+          if-no-files-found: ignore
