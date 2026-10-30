@@ -358,3 +358,8 @@ if(!fs.readFileSync(path.join(root,'index.html'),'utf8').includes('<h2>PUBG Mobi
 }
 console.log('UI-NAV-01: Beta navigation verified on six main pages; '+replaced+' labels updated');
 NODE
+
+# LIC-04: generate social PNG images only from the in-repo original vector/art source.
+# No external media download, font, API, D1 or R2 request.
+node --check tools/seo/lic04-build-png.mjs
+node tools/seo/lic04-build-png.mjs
