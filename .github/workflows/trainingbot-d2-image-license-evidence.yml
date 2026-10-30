@@ -1,10 +1,14 @@
 name: TrainingBot D2.9-LIC — image evidence (read-only)
 on:
-  push:
-    branches: [aion-trainingbot-d2-lic-assets-20261031]
+  pull_request:
+    branches: [main]
     paths:
       - tools/seo/d2-image-evidence.mjs
+      - docs/seo/d2-image-rights-register-20261031.md
       - .github/workflows/trainingbot-d2-image-license-evidence.yml
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
