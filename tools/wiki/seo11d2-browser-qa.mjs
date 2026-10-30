@@ -40,13 +40,14 @@ try{
    assert.equal(await page.locator('#tb-wiki-nguon-kiem-chung a').count(),4);
    await openCard(page,'attachments',['Bộ chuyển chế độ tự động','Full-Auto Mod']);
    await page.waitForFunction(()=>document.querySelector('#tbWikiModal .tb-d-release')?.textContent?.includes('M16A4'),undefined,{timeout:8000});
-   let text=await page.locator('#tbWikiModal .tb-d-release').innerText();
+   let text=await page.locator('#tbWikiModal .tb-d-release').textContent();
+   console.log('D2_MOD_DIAGNOSTIC',JSON.stringify(await page.locator('#tbWikiModal .tb-d-release').evaluate(el=>({modalClass:el.closest('#tbWikiModal')?.className,display:getComputedStyle(el).display,visible:!!el.getClientRects().length,text:el.textContent?.slice(0,380)}))));
    assert(text.includes('Mk47')&&text.includes('2.6')&&text.includes('hiện hành'),'Historical Mod pairing missing '+text);
    assert.equal(await page.locator('#tbWikiModal .tb-d-release a').getAttribute('href'),'https://www.pubgmobile.com/en/event/260Devnotes/');
    await page.locator('#tbWikiModalClose').click();
    await openCard(page,'attachments',['Khiên súng','Gun Shield']);
    await page.waitForFunction(()=>document.querySelector('#tbWikiModal .tb-d-release')?.textContent?.includes('DP-28'),undefined,{timeout:8000});
-   text=await page.locator('#tbWikiModal .tb-d-release').innerText();
+   text=await page.locator('#tbWikiModal .tb-d-release').textContent();
    assert(text.includes('M249')&&text.includes('2.5'),'Gun Shield pairing missing '+text);
    assert.equal(await page.locator('#tbWikiModal .tb-d-release a').getAttribute('href'),'https://www.pubgmobile.com/id/event/Imagiversary/');
    await page.locator('#tbWikiModalClose').click();
