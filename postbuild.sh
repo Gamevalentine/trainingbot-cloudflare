@@ -313,3 +313,47 @@ node tools/seo/seo-category-enhance.mjs
 
 # SEO content hygiene — internal navigation must not point at the noindex /updates alias.
 node tools/seo/seo-legacy-links.mjs
+
+# UI-NAV-01: show "Beta" for the existing /ban-cap-nhat destination.
+# Run after unified header and SEO rewrites; do not change routes, canonical or Admin.
+node <<'NODE'
+const fs = require('node:fs');
+const path = require('node:path');
+const root = path.resolve('public');
+const required = ['index.html','ban-cap-nhat.html','news.html','wiki.html','community.html','contact.html'];
+let replaced = 0;
+function walk(folder) {
+  return fs.readdirSync(folder,{withFileTypes:true}).flatMap(entry => {
+    const full=path.join(folder,entry.name);
+    return entry.isDirectory() ? walk(full) : [full];
+  });
+}
+const anchor=/(<a\b[^>]*\bhref=(["'])\/ban-cap-nhat\2[^>]*>)\s*Bản cập nhật\s*(<\/a>)/gi;
+for(const file of walk(root)) {
+  if(!file.endsWith('.html'))continue;
+  const rel=path.relative(root,file).split(path.sep).join('/');
+  if(/^(admin(?:-|\/|\.html)|contact-inbox\.html$)/i.test(rel))continue;
+  const html=fs.readFileSync(file,'utf8');
+  const revised=html.replace(/<header\b[^>]*>[\s\S]*?<\/header>/gi,header=>
+    header.replace(anchor,(_all,open,_quote,close)=>{replaced++;return open+'Beta'+close;})
+  );
+  if(revised!==html)fs.writeFileSync(file,revised);
+}
+for(const name of ['navigation_v124.js','mobile_menu_v5.js']) {
+  const file=path.join(root,name);
+  if(!fs.existsSync(file))continue;
+  const js=fs.readFileSync(file,'utf8');
+  const revised=js.replace(/Bản cập nhật/g,'Beta');
+  if(revised!==js)fs.writeFileSync(file,revised);
+}
+for(const page of required) {
+  const html=fs.readFileSync(path.join(root,page),'utf8');
+  const header=(html.match(/<header\b[^>]*>[\s\S]*?<\/header>/i)||[])[0]||'';
+  const matches=header.match(/<a\b[^>]*\bhref=(["'])\/ban-cap-nhat\1[^>]*>\s*Beta\s*<\/a>/gi)||[];
+  if(matches.length<2)throw Error('UI-NAV-01: desktop/mobile Beta links missing on '+page);
+}
+if(!fs.readFileSync(path.join(root,'index.html'),'utf8').includes('<h2>PUBG Mobile Beta</h2>')) {
+  throw Error('UI-NAV-01: homepage Beta heading missing');
+}
+console.log('UI-NAV-01: Beta navigation verified on six main pages; '+replaced+' labels updated');
+NODE
