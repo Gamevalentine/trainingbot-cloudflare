@@ -8,14 +8,14 @@ const pages=['ban-cap-nhat.html','updates.html'];
 
 for (const page of pages) {
   const html=fs.readFileSync('public/'+page,'utf8');
-  const title=(html.match(/<title\\b[^>]*>([\\s\\S]*?)<\\/title>/i)||[])[1]?.trim()||'';
-  const description=(html.match(/<meta\\b[^>]*name=["']description["'][^>]*content=["']([^"']*)["']/i)||[])[1]||'';
-  const canonicalTag=(html.match(/<link\\b[^>]*rel=["']canonical["'][^>]*>/i)||[])[0]||'';
+  const title=(html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)||[])[1]?.trim()||'';
+  const description=(html.match(/<meta\b[^>]*name=["']description["'][^>]*content=["']([^"']*)["']/i)||[])[1]||'';
+  const canonicalTag=(html.match(/<link\b[^>]*rel=["']canonical["'][^>]*>/i)||[])[0]||'';
   const canonical=(canonicalTag.match(/href=["']([^"']+)["']/i)||[])[1]||'';
   assert.equal(title,expectedTitle,page+' SEO title');
   assert.equal(description,expectedDescription,page+' SEO description');
   assert.equal(canonical,origin+'/ban-cap-nhat',page+' canonical');
-  assert(!/<meta\\b[^>]*name=["']robots["'][^>]*content=["'][^"']*noindex/i.test(html),page+' must be indexable');
+  assert(!/<meta\b[^>]*name=["']robots["'][^>]*content=["'][^"']*noindex/i.test(html),page+' must be indexable');
   assert(html.includes('href="/ban-cap-nhat"'),page+' original route link kept');
 }
 const home=fs.readFileSync('public/index.html','utf8');
