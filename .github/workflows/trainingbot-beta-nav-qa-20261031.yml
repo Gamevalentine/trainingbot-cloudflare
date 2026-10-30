@@ -1,0 +1,41 @@
+name: TrainingBot Beta Navigation — isolated build QA
+on:
+  push:
+    branches:
+      - aion-trainingbot-beta-nav-qa-20261031
+permissions:
+  contents: read
+jobs:
+  beta-navigation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate scripts and generate public website (no production deployment)
+        shell: bash
+        env:
+          CF_PAGES_BRANCH: main
+        run: |
+          bash -n build.sh
+          bash -n postbuild.sh
+          npm run build
+      - name: Check six routes, menu text and scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          for page in index ban-cap-nhat news wiki community contact; do
+            test -f "public/$page.html"
+            COUNT=$(grep -oE 'href="/ban-cap-nhat">Beta</a>' "public/$page.html" | wc -l)
+            test "$COUNT" -ge 1 || { echo "Beta navigation missing: $page"; exit 1; }
+            if grep -q 'href="/ban-cap-nhat">Bản cập nhật</a>' "public/$page.html"; then
+              echo "Old navigation label persists in $page"
+              exit 1
+            fi
+          done
+          grep -q '<h2>PUBG Mobile Beta</h2>' public/index.html
+          test -f public/ban-cap-nhat.html
+          grep -q 'rel="canonical"' public/index.html
+          test -f public/admin.html
+          test ! -f public/admin-demo.html
+          node tools/qa/p1-seo.mjs
+          echo 'PASS: Beta links remain on original URLs. Admin and SEO guards intact.'
