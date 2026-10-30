@@ -39,8 +39,13 @@ for(const [slug,id] of names){
  assert.equal(res.status,200);
  const html=await res.text();
  assert(html.includes('class="tb-cover" src="'+svg+'"'),"Displayed article must use original SVG, not old D1 cover: "+slug);
- assert(html.includes('property="og:image" content="https://trainingbot.io.vn'+svg+'"'),"OpenGraph must be owned SVG");
- assert(html.includes('name="twitter:image" content="https://trainingbot.io.vn'+svg+'"'),"Twitter media must use owned SVG");
+ const png=svg.replace(/\.svg$/,".png");
+ const pngBytes=fs.readFileSync("public"+png);
+ assert(pngBytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])),"OG asset must be real PNG");
+ assert.equal(pngBytes.readUInt32BE(16),1200);
+ assert.equal(pngBytes.readUInt32BE(20),630);
+ assert(html.includes('property="og:image" content="https://trainingbot.io.vn'+png+'"'),"OpenGraph must use original raster PNG");
+ assert(html.includes('name="twitter:image" content="https://trainingbot.io.vn'+png+'"'),"Twitter media must use original raster PNG");
  assert(!html.includes("old-copyright-unverified-image.jpg"),"Old D1 cover must not appear publicly");
 }
 const other=await articleGet({env:{DB:articleDb},params:{slug:"non-audited-independent-post"}});
@@ -75,7 +80,7 @@ fs.mkdirSync("lic04-artifacts",{recursive:true});
 fs.writeFileSync("lic04-artifacts/acceptance.json",JSON.stringify({
  scope:"Five original SVG article/OG/feed substitutions without D1/R2 modifications",
  slugs:names.map(([slug,id])=>({slug,illustration:"/editorial-original-"+id+".svg",source:"overrides/editorial-original-"+id+".svg",
-  externalMediaEmbedded:false,originalD1CoverRetained:true})),
+  externalMediaEmbedded:false,originalD1CoverRetained:true,originalSharePng:"/editorial-original-"+id+".png"})),
  articleSelects,publicCards:parsed.posts.length,rightsScope:"Self-authored geometric-only SVGs. Legacy stored assets remain unverified.",qa:"PASS"
 },null,2));
 console.log("LIC04_ARTWORK_VIEW_ONLY_PASS; five article covers, OG and feeds are original SVGs; D1/R2 intact");
