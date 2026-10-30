@@ -1,0 +1,31 @@
+name: TrainingBot D2.9-LIC — image evidence (read-only)
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - tools/seo/d2-image-evidence.mjs
+      - docs/seo/d2-image-rights-register-20261031.md
+      - .github/workflows/trainingbot-d2-image-license-evidence.yml
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  image-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read five public articles and fingerprint each displayed image
+        run: |
+          node --check tools/seo/d2-image-evidence.mjs
+          node tools/seo/d2-image-evidence.mjs
+      - name: Preserve inventory for license review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-d2-lic-image-evidence
+          path: d2-audit-artifacts/image-evidence.json
+          if-no-files-found: ignore
+          retention-days: 14
