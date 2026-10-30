@@ -213,12 +213,22 @@ export function isStoredErangelCorrection(post){
  post.content===ERANGEL_D1_CORRECTION.content &&
  String(post.rich_content||"")==="" && String(post.cover_url||"")==="";
 }
+// LIC-04: only these five editorial articles use new, self-authored
+// illustration SVGs. Originals remain untouched in D1/R2 for evidence and
+// safe rollback; the public view substitutes the images at render time.
+const LIC04_SAFE_ART=Object.freeze({
+ "battlegrounds-mo-rong-erangel-subzero-trong-pubg-mobile-bgmi-voi-ban-beta-4-7-2": "/editorial-original-erangel.svg",
+ "pubg-mobile-4-7-beta-1-chinh-thuc-khoi-dong-hang-loat-thay-doi-gameplay-dang-chu-y": "/editorial-original-beta-47.svg",
+ "pubg-mobile-xac-nhan-m416-glacier-switch-effect-gan-hoan-thien-viet-nam-van-cho-thong-tin": "/editorial-original-m416-glacier.svg",
+ "pubg-mobile-4-6-chinh-thuc-cap-nhat-hom-nay-midnight-hunters-da-den-tay-nguoi-choi": "/editorial-original-midnight-hunters.svg",
+ "pubg-mobile-one-punch-man-chinh-thuc-duoc-cong-bo-saitama-do-bo-erangel-tu-ngay-20-9": "/editorial-original-one-punch-man.svg"
+});
 function verifiedArticleView(post){
- if(String(post.slug)!==EDITORIAL_CORRECTION_SLUG)return post;
- // No temporary content override after the verified correction reaches D1.
- // Fail closed on unmigrated/rolled-back D1 rows: never re-publish PC patch notes as Mobile.
- if(isStoredErangelCorrection(post))return post;
- return {...post,...ERANGEL_D1_CORRECTION,updated_at:"2026-10-29"};
+ const view=String(post.slug)!==EDITORIAL_CORRECTION_SLUG
+  ? post
+  : (isStoredErangelCorrection(post)?post:{...post,...ERANGEL_D1_CORRECTION,updated_at:"2026-10-29"});
+ const replacement=LIC04_SAFE_ART[String(view.slug)];
+ return replacement?{...view,cover_url:replacement}:view;
 }
 function verifiedSourcePanel(post){
  const audit=VERIFIED_EDITORIAL_SOURCES[String(post.slug)];
@@ -292,7 +302,10 @@ function page(post,related=[]){
  const excerpt=articleExcerpt(post);
   const canonical=`${ORIGIN}/bai-viet/${encodeURIComponent(post.slug)}`;
   const safeCover=safeUrl(post.cover_url,"image");
-  const shareImage=absoluteUrl(safeCover,`${ORIGIN}/news-pubg-mobile-4-6-cover.webp`);
+  // Social previews need a raster PNG: SVG alone is not consistently supported.
+  const shareArt=safeCover.startsWith("/editorial-original-")&&safeCover.endsWith(".svg")
+   ? safeCover.slice(0,-4)+".png" : safeCover;
+  const shareImage=absoluteUrl(shareArt,`${ORIGIN}/news-pubg-mobile-4-6-cover.webp`);
   const published=isoDate(post.published_at);
   const modified=isoDate(post.updated_at)||published;
   const cover=safeCover?`<img class="tb-cover" src="${esc(safeCover)}" alt="${esc(post.title)}">`:"";

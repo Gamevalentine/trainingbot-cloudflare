@@ -1,0 +1,75 @@
+name: TrainingBot LIC-04 — original five-article artwork QA
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/trainingbot-lic04-original-art.yml
+      - tools/seo/lic04-*
+      - postbuild.sh
+      - functions/bai-viet/**
+      - functions/api/posts.js
+      - overrides/editorial-original-*
+permissions:
+  contents: read
+jobs:
+  original-art-local:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build original art, SEO source evidence and exact main-shaped site
+        env:
+          CF_PAGES_BRANCH: main
+        run: npm run build
+      - name: Verify self-authored SVG and raster cards, public D1 view and feed
+        run: |
+          node --check tools/seo/lic04-original-media-qa.mjs
+          node --check tools/seo/lic04-build-png.mjs
+          node --check tools/seo/lic04-live-acceptance.mjs
+          node tools/seo/lic04-original-media-qa.mjs
+          node tools/seo/seo-source-verification-qa.mjs
+          node tools/seo/erangel-d1-migration-qa.mjs
+      - name: Validate SVG XML structure with Python standard library
+        run: |
+          python3 - <<'PY'
+          import glob
+          from xml.etree import ElementTree as ET
+          svgs=glob.glob("public/editorial-original-*.svg")
+          assert len(svgs)==5, f"Expected five original SVG illustrations, found {len(svgs)}"
+          for path in svgs:
+              root=ET.parse(path).getroot()
+              assert root.tag.endswith("svg")
+              assert root.attrib["viewBox"]=="0 0 1200 630"
+              assert not any(node.tag.lower().endswith(("image","script","foreignobject")) for node in root.iter())
+          print("LIC04_SVG_XML_VALID_5_FILES")
+          PY
+      - name: Preserve build acceptance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lic04-original-art-build-acceptance
+          path: |
+            lic04-artifacts/
+            seo-erangel-migration-artifacts/
+            seo-sources-evidence/
+          retention-days: 14
+          if-no-files-found: ignore
+  original-art-production:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read-only Production article, SVG and PNG acceptance after Pages deploy
+        run: node tools/seo/lic04-live-acceptance.mjs
+      - name: Preserve public acceptance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lic04-original-art-production-acceptance
+          path: lic04-artifacts/production.json
+          retention-days: 14
+          if-no-files-found: ignore

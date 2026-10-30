@@ -1,3 +1,12 @@
+// LIC-04: public cards show the same original in-repo SVG covers as
+// article pages, without changing any stored D1 cover_url values.
+const LIC04_SAFE_ART=Object.freeze({
+ "battlegrounds-mo-rong-erangel-subzero-trong-pubg-mobile-bgmi-voi-ban-beta-4-7-2": "/editorial-original-erangel.svg",
+ "pubg-mobile-4-7-beta-1-chinh-thuc-khoi-dong-hang-loat-thay-doi-gameplay-dang-chu-y": "/editorial-original-beta-47.svg",
+ "pubg-mobile-xac-nhan-m416-glacier-switch-effect-gan-hoan-thien-viet-nam-van-cho-thong-tin": "/editorial-original-m416-glacier.svg",
+ "pubg-mobile-4-6-chinh-thuc-cap-nhat-hom-nay-midnight-hunters-da-den-tay-nguoi-choi": "/editorial-original-midnight-hunters.svg",
+ "pubg-mobile-one-punch-man-chinh-thuc-duoc-cong-bo-saitama-do-bo-erangel-tu-ngay-20-9": "/editorial-original-one-punch-man.svg"
+});
 const H={"content-type":"application/json; charset=UTF-8","cache-control":"public, max-age=0, must-revalidate"};
 const reply=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:H});
 
@@ -30,6 +39,6 @@ export async function onRequestGet({request,env}){
     ? "id,slug,title,summary,category,cover_url,featured_at,published_at,substr(content,1,12000) AS content"
     : "id,slug,title,summary,category,cover_url,featured_at,published_at";
   const result=await env.DB.prepare(`SELECT ${fields} FROM tb_manual_posts_v1 WHERE status='published' ORDER BY published_at DESC LIMIT ?`).bind(limit).all();
-  const posts=(result.results||[]).map(row=>({...row,url:`/bai-viet/${row.slug}`}));
+  const posts=(result.results||[]).map(row=>({...row,cover_url:LIC04_SAFE_ART[row.slug]||row.cover_url,url:`/bai-viet/${row.slug}`}));
   return reply({ok:true,posts});
 }

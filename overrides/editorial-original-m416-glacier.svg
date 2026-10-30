@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="M416 GLACIER — SWITCH EFFECT · ĐANG XÁC MINH">
+<title>M416 GLACIER — Minh họa biên tập TrainingBot</title>
+<desc>Hình vector trừu tượng gốc của TrainingBot: gradient màu, đường nét hình học và chữ, không có ảnh chụp, nhân vật, logo hoặc tài sản game được sao chép.</desc>
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0a1732"/><stop offset="1" stop-color="#334cc0"/></linearGradient><linearGradient id="edge" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#6c8fff"/><stop offset="1" stop-color="#b0e6ff"/></linearGradient></defs>
+<rect width="1200" height="630" fill="url(#g)"/>
+<path d="M0 0h1200v630H0Z" fill="none" stroke="#b0e6ff" stroke-width="2" opacity=".24"/>
+<g opacity=".12" stroke="#b0e6ff" stroke-width="1"><path d="M0 120h1200M0 220h1200M0 320h1200M0 420h1200M0 520h1200M120 0v630M240 0v630M360 0v630M480 0v630M600 0v630M720 0v630M840 0v630M960 0v630M1080 0v630"/></g>
+<path d="M-80 620 470 -40" stroke="url(#edge)" stroke-width="110" opacity=".05"/>
+<g opacity=".42" fill="none" stroke="#c7f2ff" stroke-width="4"><path d="M830 380 1015 100 1185 380 1022 548Z"/><path d="M830 380h355M1015 100l7 448M830 380l185-280 170 280-163 168Z"/><path d="M830 380 1022 548 1015 100 1185 380"/></g>
+<rect x="72" y="78" width="11" height="435" rx="5" fill="url(#edge)"/>
+<rect x="116" y="92" width="300" height="42" rx="20" fill="#6c8fff" fill-opacity=".15" stroke="#6c8fff" stroke-opacity=".55"/>
+<text x="138" y="119" font-family="Arial, sans-serif" font-size="16" font-weight="700" letter-spacing="2.2" fill="#b0e6ff">EDITORIAL UPDATE</text>
+<text x="120" y="248" font-family="Arial, sans-serif" font-size="72" font-weight="800" letter-spacing="-1.7" fill="#ffffff">M416</text>
+<text x="120" y="330" font-family="Arial, sans-serif" font-size="82" font-weight="900" letter-spacing="-2" fill="#b0e6ff">GLACIER</text>
+<path d="M120 369h515" stroke="url(#edge)" stroke-width="3" opacity=".85"/>
+<text x="120" y="418" font-family="Arial, sans-serif" font-size="20" font-weight="700" letter-spacing="2.0" fill="#f5f5ff">SWITCH EFFECT · ĐANG XÁC MINH</text>
+<text x="120" y="530" font-family="Arial, sans-serif" font-size="17" font-weight="700" letter-spacing="3" fill="#ffffff">TRAININGBOT  /  MINH HỌA BIÊN TẬP</text>
+<text x="120" y="568" font-family="Arial, sans-serif" font-size="12" letter-spacing="1.2" fill="#c2c7d9">KHÔNG PHẢI ARTWORK CHÍNH THỨC CỦA TRÒ CHƠI HOẶC ĐỐI TÁC</text>
+</svg>
