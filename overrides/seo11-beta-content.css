@@ -1,0 +1,17 @@
+/* SEO-11.C: Editorial context + verified internal article links, isolated to Beta hub. */
+.tb-beta-editorial{padding-top:42px}
+.tb-beta-editorial-eyebrow{font-size:11px;font-weight:850;letter-spacing:.13em;text-transform:uppercase;color:#8ca9ed;margin:0 0 10px}
+.tb-beta-editorial h2{font-size:clamp(25px,3.3vw,36px);line-height:1.22;max-width:910px;margin:0 0 16px;letter-spacing:-.025em}
+.tb-beta-editorial-lead{max-width:960px;font-size:15px;line-height:1.8;color:#b8c7da;margin:0 0 19px}
+.tb-beta-editorial-lead strong{color:#f0f5ff}
+.tb-beta-editorial-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.tb-beta-editorial-card{min-width:0;padding:23px;border:1px solid #35415b;border-radius:16px;background:#111b2a}
+.tb-beta-editorial-tag{display:block;font-size:11px;letter-spacing:.04em;font-weight:800;color:#a6c6ff;margin-bottom:10px}
+.tb-beta-editorial-tag-correction{color:#f2c58b}
+.tb-beta-editorial-card h3{font-size:19px;line-height:1.42;font-weight:850;margin:0 0 11px}
+.tb-beta-editorial-card h3 a{color:#eef4ff;text-decoration:none;text-underline-offset:4px}
+.tb-beta-editorial-card h3 a:hover,.tb-beta-editorial-card h3 a:focus-visible{text-decoration:underline;color:#accbff}
+.tb-beta-editorial-card p{font-size:13.5px;line-height:1.75;color:#acbdd4;margin:0}
+.tb-beta-editorial-foot{max-width:990px;font-size:13px;line-height:1.8;color:#9fb0c7;margin:15px 0 0}
+.tb-beta-editorial-foot a{color:#aacdff;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:680px){.tb-beta-editorial{padding-top:32px}.tb-beta-editorial-grid{grid-template-columns:1fr}.tb-beta-editorial-card{padding:18px}.tb-beta-editorial-lead{font-size:14px}.tb-beta-editorial-card h3{font-size:17px}}
