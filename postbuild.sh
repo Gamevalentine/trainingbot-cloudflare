@@ -350,7 +350,8 @@ for(const page of required) {
   const html=fs.readFileSync(path.join(root,page),'utf8');
   const header=(html.match(/<header\b[^>]*>[\s\S]*?<\/header>/i)||[])[0]||'';
   const matches=header.match(/<a\b[^>]*\bhref=(["'])\/ban-cap-nhat\1[^>]*>\s*Beta\s*<\/a>/gi)||[];
-  if(matches.length<2)throw Error('UI-NAV-01: desktop/mobile Beta links missing on '+page);
+  if(matches.length!==1)throw Error('UI-NAV-01: exactly one desktop Beta link expected on '+page);
+  if(!/<nav\b[^>]*class="mobile-nav"/i.test(header))throw Error('UI-NAV-01: mobile navigation mount missing on '+page);
 }
 if(!fs.readFileSync(path.join(root,'index.html'),'utf8').includes('<h2>PUBG Mobile Beta</h2>')) {
   throw Error('UI-NAV-01: homepage Beta heading missing');
