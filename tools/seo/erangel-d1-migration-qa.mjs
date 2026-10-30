@@ -94,7 +94,7 @@ class MockD1{
  }
 }
 const token="a-valid-private-ops-token-at-least-16-chars";
-const env={ADMIN_TOKEN:token,DB:new MockD1(old)};
+const env={ADMIN_TOKEN:token,D1_ERANGEL_WRITE_ENABLED:"true",DB:new MockD1(old)};
 function req(method,action,authorized=true,host="trainingbot.io.vn"){
  return new Request("https://"+host+"/api/v71/admin/erangel-correction",{
   method,headers:{"content-type":"application/json",...(authorized?{"Authorization":"Bearer "+token}:{})},
@@ -102,6 +102,12 @@ function req(method,action,authorized=true,host="trainingbot.io.vn"){
  });
 }
 async function body(response){return {status:response.status,...await response.json()}}
+const lockedEnv={ADMIN_TOKEN:token,DB:new MockD1(old)};
+const lockedRead=await body(await onRequestGet({request:req("GET"),env:lockedEnv}));
+assert.equal(lockedRead.status,200,"D1 read remains available with maintenance locked");
+const lockedWrite=await body(await onRequestPost({request:req("POST","apply"),env:lockedEnv}));
+assert.equal(lockedWrite.status,423,"Maintenance must be locked by default");
+assert.equal(lockedEnv.DB.sql.filter(([op])=>op==="run").length,0,"Locked maintenance must not write or create backup table");
 const beforeStatus=await body(await onRequestGet({request:req("GET"),env}));
 assert.equal(beforeStatus.status,200);
 assert.equal(beforeStatus.migration_state,"not_applied");
@@ -123,6 +129,14 @@ const readStatus=await body(await onRequestGet({request:req("GET"),env}));
 assert.equal(readStatus.backup_exists,true);
 assert.equal(readStatus.stored_correction,true);
 assert.equal(readStatus.migration_state,"applied");
+assert.equal(readStatus.backup_integrity_ok,true,"Original snapshot verified against corrected D1");
+assert.equal(readStatus.immutable_fields_match,true,"Immutable editorial fields were preserved");
+env.DB.backup.original_json="{broken";
+assert.equal((await body(await onRequestGet({request:req("GET"),env}))).backup_integrity_ok,false,"Corrupted snapshot must fail");
+env.DB.backup.original_json=JSON.stringify({...old,category:"forged"});
+assert.equal((await body(await onRequestGet({request:req("GET"),env}))).backup_integrity_ok,false,"Altered immutable source must fail");
+env.DB.backup.original_json=JSON.stringify(old);
+
 
 const newer=env.DB.post.updated_at;
 env.DB.post.updated_at="2026-10-30T00:00:00.000Z";
@@ -147,16 +161,16 @@ assert(!safeHtml.includes(old.title),"Original incorrect title must not become p
 
 const atomicDb=new MockD1(old);
 atomicDb.failAfterFirstAction=true;
-const failed=await body(await onRequestPost({request:req("POST","apply"),env:{ADMIN_TOKEN:token,DB:atomicDb}}));
+const failed=await body(await onRequestPost({request:req("POST","apply"),env:{ADMIN_TOKEN:token,D1_ERANGEL_WRITE_ENABLED:"true",DB:atomicDb}}));
 assert.equal(failed.status,500);
 assert.deepEqual(atomicDb.post,old,"Failed transaction must not partially overwrite article");
 assert.equal(atomicDb.backup,null);
 const conflictDb=new MockD1({...old,title:"Someone already re-edited this article"});
-assert.equal((await body(await onRequestPost({request:req("POST","apply"),env:{ADMIN_TOKEN:token,DB:conflictDb}}))).status,409);
+assert.equal((await body(await onRequestPost({request:req("POST","apply"),env:{ADMIN_TOKEN:token,D1_ERANGEL_WRITE_ENABLED:"true",DB:conflictDb}}))).status,409);
 assert.equal(conflictDb.backup,null);
 const concurrencyDb=new MockD1(old);
 concurrencyDb.concurrentEditBeforeBatch=true;
-const concurrencyResponse=await body(await onRequestPost({request:req("POST","apply"),env:{ADMIN_TOKEN:token,DB:concurrencyDb}}));
+const concurrencyResponse=await body(await onRequestPost({request:req("POST","apply"),env:{ADMIN_TOKEN:token,D1_ERANGEL_WRITE_ENABLED:"true",DB:concurrencyDb}}));
 assert.equal(concurrencyResponse.status,500,"Concurrent optimistic-lock conflict must abort batch");
 assert.equal(concurrencyDb.post.title,"Concurrent Admin edit while migration was being prepared");
 assert.equal(concurrencyDb.backup,null,"No backup can claim success after an aborted write");
@@ -192,7 +206,7 @@ const oidcReq=(method,jwt,action,host="trainingbot.io.vn")=>new Request(
  ...(method==="POST"?{body:JSON.stringify({action,confirm:revision})}:{})
  });
 try{
- const oidcDB=new MockD1(old),oidcEnv={DB:oidcDB};
+ const oidcDB=new MockD1(old),oidcEnv={DB:oidcDB,D1_ERANGEL_WRITE_ENABLED:"true"};
  const valid=signedJwt();
  const st=await body(await onRequestGet({request:oidcReq("GET",valid),env:oidcEnv}));
  assert.equal(st.status,200,"Signed, correct GitHub OIDC workflow can read D1 migration status");
@@ -221,7 +235,7 @@ try{
  const prodAliasDB=new MockD1(old);
  const prodAlias=await body(await onRequestPost({
   request:oidcReq("POST",valid,"apply","trainingbot-cloudflare.pages.dev"),
-  env:{DB:prodAliasDB}
+  env:{DB:prodAliasDB,D1_ERANGEL_WRITE_ENABLED:"true"}
  }));
  assert.equal(prodAlias.status,200,"Canonical Pages production hostname must be permitted for signed OIDC migration");
  assert.equal(prodAliasDB.backup.state,"applied");
@@ -266,6 +280,6 @@ fs.writeFileSync("seo-erangel-migration-artifacts/qa-report.json",JSON.stringify
   "unauthorized GET/POST rejected","preview writes rejected","original backup saved",
   "apply idempotent","restore exact row","refuse edited-record rollback",
   "restored original not served publicly","transaction failure atomicity",
-  "unexpected existing title rejected","concurrent Admin edit aborts D1 batch","signed GitHub OIDC workflow can apply migration on canonical Pages Production hostname","OIDC wrong audience/repo/workflow/branch/event/expiry/signature rejected","offline pinned JWT verification","offline wrong repository denied","expired pin denied"
+  "unexpected existing title rejected","concurrent Admin edit aborts D1 batch","signed GitHub OIDC workflow can apply migration on canonical Pages Production hostname","OIDC wrong audience/repo/workflow/branch/event/expiry/signature rejected","offline pinned JWT verification","offline wrong repository denied","expired pin denied","D2 write lock default","backup integrity read","immutable field verification"
  ],productionD1Migrated:false},null,2));
 console.log("ERANGEL D1 MIGRATION QA PASS: private backup, D1 transaction, exact rollback, public fail-closed fallback; remote Production migration NOT executed");
