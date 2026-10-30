@@ -105,9 +105,26 @@ export async function onRequestGet({request,env}){
  try{
   const [post,backup]=await Promise.all([getPost(env.DB),getBackup(env.DB)]);
   if(!post)return reply({ok:false,message:"Target post not found"},404);
+  // Read-only D2 integrity verification: do not expose original_json, source
+  // text, secret hashes, or personal fields in the public API response.
+  let backupIntegrity=false,immutableFieldsMatch=false;
+  if(backup){
+   try{
+    const original=JSON.parse(backup.original_json);
+    const immutable=["id","slug","category","status","featured_at","created_at","published_at"];
+    immutableFieldsMatch=immutable.every(field=>(original[field]??"")===(post[field]??""));
+    backupIntegrity=backup.revision===REVISION && backup.state==="applied" &&
+     validOriginal(original) && original.updated_at===backup.original_updated_at &&
+     post.updated_at===backup.correction_updated_at &&
+     immutableFieldsMatch && backup.slug===ERANGEL_D1_CORRECTION.slug &&
+     isStoredErangelCorrection(post);
+   }catch(error){backupIntegrity=false}
+  }
   return reply({ok:true,revision:REVISION,slug:ERANGEL_D1_CORRECTION.slug,
    stored_correction:isStoredErangelCorrection(post),migration_state:backup?.state||"not_applied",
-   backup_exists:!!backup,public_fallback_required:!isStoredErangelCorrection(post),
+   backup_exists:!!backup,backup_integrity_ok:backupIntegrity,
+   immutable_fields_match:backup?immutableFieldsMatch:null,
+   public_fallback_required:!isStoredErangelCorrection(post),
    updated_at:post.updated_at||null,backup_created_at:backup?.created_at||null,
    restored_at:backup?.restored_at||null});
  }catch(error){console.error("Erangel D1 status",error);return reply({ok:false,message:"Could not read D1 state"},500)}
@@ -115,6 +132,12 @@ export async function onRequestGet({request,env}){
 export async function onRequestPost({request,env}){
  if(!await authorized(request,env))return reply({ok:false,message:"Unauthorized"},401);
  if(!isProduction(request))return reply({ok:false,message:"Maintenance writes require the production hostname"},403);
+ // D2.3: the one-time migration is complete. All maintenance writes are now
+ // disabled unless the operator *explicitly* enables a separate environment
+ // toggle after reviewing a verified backup and rollback plan. This gate is
+ // enforced for BOTH GitHub OIDC and legacy ADMIN_TOKEN identities.
+ if(env.D1_ERANGEL_WRITE_ENABLED!=="true")
+  return reply({ok:false,message:"D1 maintenance writes locked after migration"},423);
  if(!env.DB || typeof env.DB.batch!=="function")return reply({ok:false,message:"Transactional D1 binding unavailable"},503);
  let input;
  try{input=await request.json()}catch{return reply({ok:false,message:"Malformed JSON"},400)}
