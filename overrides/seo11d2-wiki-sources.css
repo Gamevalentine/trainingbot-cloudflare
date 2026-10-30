@@ -1,0 +1,15 @@
+/* SEO-11.D.2: release-scoped source notes, no changes to catalog or navigation */
+.tb-wiki-d2-sources{padding:38px 0 58px;border-top:1px solid rgba(148,163,184,.15)}
+.tb-wiki-d2-kicker{margin:0 0 9px;color:#9fc3ff;text-transform:uppercase;font-size:11px;font-weight:800;letter-spacing:.11em}
+.tb-wiki-d2-sources h2{margin:0 0 12px;font-size:clamp(23px,3vw,35px);line-height:1.25}
+.tb-wiki-d2-lead{color:#b4c3dc;max-width:980px;line-height:1.8;margin:0 0 20px}
+.tb-wiki-d2-lead strong,.tb-wiki-d2-foot strong{color:#eef4ff}
+.tb-wiki-d2-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.tb-wiki-d2-grid article{background:#111a29;border:1px solid #2f405b;border-radius:14px;padding:21px;min-width:0}
+.tb-wiki-d2-tag{font-size:11px;font-weight:800;color:#94b4ee}
+.tb-wiki-d2-grid h3{font-size:18px;line-height:1.4;margin:11px 0}
+.tb-wiki-d2-grid p{font-size:13px;line-height:1.8;color:#b8c7de;margin:0 0 12px}
+.tb-wiki-d2-grid a{color:#a1ccff;text-decoration:underline;text-underline-offset:3px;font-size:12px;font-weight:750}
+.tb-wiki-d2-grid a:focus-visible{outline:2px solid #8ec7ff;outline-offset:3px}
+.tb-wiki-d2-foot{border-left:3px solid #7b9aff;background:#0d192a;padding:14px 17px;border-radius:0 11px 11px 0;font-size:13px;line-height:1.8;color:#b2c3da;margin:18px 0 0}
+@media(max-width:840px){.tb-wiki-d2-grid{grid-template-columns:1fr}.tb-wiki-d2-grid article{padding:17px}.tb-wiki-d2-sources{padding:29px 0 43px}}

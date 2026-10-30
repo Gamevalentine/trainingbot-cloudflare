@@ -1,6 +1,6 @@
 {
   "schemaVersion": "wiki-d1",
-  "reviewedAt": "2026-10-29",
+  "reviewedAt": "2026-10-31",
   "sources": {
     "pubg-vi-4.6": {
       "title": "Thông Báo Cập Nhật Phiên Bản 4.6 — PUBG MOBILE Việt Nam",
@@ -9,13 +9,24 @@
       "publishedAt": "2026-09-07",
       "verifiedAs": "release_specific",
       "currentGameStatus": "not_asserted"
+    },
+    "pubg-official-2.6-devnotes": {
+      "title": "PUBG MOBILE Version 2.6 — Dev Notes, Full-Auto Mod",
+      "url": "https://www.pubgmobile.com/en/event/260Devnotes/",
+      "version": "2.6",
+      "publishedAt": "2023-05",
+      "checkedAt": "2026-10-31",
+      "verifiedAs": "historical_attachment_compatibility",
+      "currentGameStatus": "not_asserted"
     }
   },
   "coverage": {
     "attachments": {
       "total": 51,
-      "verifiedCompatibility": 0,
-      "verifiedImageRights": 0
+      "verifiedCompatibility": 1,
+      "verifiedImageRights": 0,
+      "historicalVerifiedPairs": 2,
+      "currentVersionVerifiedCompatibility": 0
     },
     "vehicles": {
       "total": 26,
@@ -31,6 +42,16 @@
     "all": {
       "note": "Tên/nhóm/công dụng đang lấy từ DATA Wiki; tính tương thích từng vũ khí và quyền dùng ảnh chưa được xác minh theo phiên bản.",
       "status": "not_verified"
+    },
+    "Full-Auto Mod": {
+      "sourceId": "pubg-official-2.6-devnotes",
+      "release": "2.6",
+      "status": "historical_official_compatibility",
+      "compatibleWeapons": [
+        "M16A4",
+        "Mk47 Mutant"
+      ],
+      "note": "Thông báo chính thức của PUBG MOBILE phiên bản 2.6 xác nhận Full-Auto Mod dùng được với M16A4 và Mk47 để bổ sung chế độ tự động. Đây là lịch sử phiên bản 2.6, KHÔNG xác nhận mọi chế độ hoặc bản cập nhật hiện hành."
     }
   },
   "vehicles": {
@@ -53,7 +74,7 @@
       "sourceId": "pubg-vi-4.6",
       "status": "official_not_in_legacy_catalog",
       "seats": 4,
-      "note": "Phương tiện có thể nhặt, triển khai và thu hồi. Người ở ghế phụ có thể chèo; nhiều người chèo giúp thuyền đi nhanh hơn.",
+      "note": "Thuyền Cao Su được PUBG MOBILE công bố ở bản 4.6: phương tiện 4 chỗ, có thể nhặt, triển khai và thu hồi về ba lô; hành khách chèo, càng nhiều người chèo thuyền càng nhanh. Chưa có thẻ riêng trong danh mục 26 phương tiện cũ.",
       "release": "4.6"
     }
   },
