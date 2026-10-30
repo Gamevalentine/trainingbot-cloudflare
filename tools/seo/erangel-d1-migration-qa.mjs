@@ -183,8 +183,9 @@ const {publicKey,privateKey}=generateKeyPairSync("rsa",{modulusLength:2048});
 const publicJwk={...publicKey.export({format:"jwk"}),kid:"trainingbot-qa-key",alg:"RS256",use:"sig"};
 const githubJwks="https://token.actions.githubusercontent.com/.well-known/jwks";
 const beforeFetch=globalThis.fetch;
-globalThis.fetch=async uri=>{
- if(String(uri)!==githubJwks)throw Error("Unexpected OIDC key source");
+globalThis.fetch=async (uri,options)=>{
+ assert.equal(String(uri),githubJwks,"Only the fixed official GitHub issuer can supply signing keys");
+ assert.equal(options?.redirect,"manual","Cloudflare supports manual but not error redirect");
  return Response.json({keys:[publicJwk]});
 };
 const now=Math.floor(Date.now()/1000);
@@ -250,35 +251,42 @@ try{
  assert.equal(prodAliasDB.backup.state,"applied");
  assert.deepEqual(JSON.parse(prodAliasDB.backup.original_json),old);
 
- // The Cloudflare runtime may have no outbound fetch. Prove pinned keys still
- // validate RSA signatures, while rejecting wrong claims and expired pins.
- const injectPinned=controller.replace(
-  /const OIDC_PINNED_KEYS=Object\.freeze\(\[[^\n]*\]\);/,
-  "const OIDC_PINNED_KEYS=Object.freeze(["+JSON.stringify(publicJwk)+"]);"
- );
- assert.notEqual(injectPinned,controller,"Expected to inject QA RSA key into pin fixture");
- globalThis.fetch=async()=>{throw new TypeError("Outbound JWKS blocked in QA")};
- const offline=await import("data:text/javascript;base64,"+Buffer.from(injectPinned).toString("base64"));
- const offlineStatus=await body(await offline.onRequestGet({
-  request:oidcReq("GET",valid,"", "trainingbot-cloudflare.pages.dev"),env:{DB:new MockD1(old)}
+ // SEC-D2: no pinned trust keys. Refuse redirect, malformed JWKS and network errors.
+ assert(!controller.includes("OIDC_PINNED_KEYS"),"Permanent auth must not rely on expired offline public keys");
+ for(const [scenario,responseFn] of [
+  ["jwks_redirect",async()=>new Response(null,{status:302,headers:{Location:"https://attacker.invalid/jwks"}})],
+  ["jwks_empty",async()=>Response.json({keys:[]})],
+  ["jwks_error",async()=>{throw new TypeError("Simulated unavailable GitHub issuer")}]
+ ]){
+  globalThis.fetch=async (uri,opts)=>{
+   assert.equal(String(uri),githubJwks);
+   assert.equal(opts?.redirect,"manual","Never follow issuer redirects");
+   return responseFn();
+  };
+  const unavailable=await body(await onRequestGet({
+   request:oidcReq("GET",valid),env:{DB:new MockD1(old)}
+  }));
+  assert.equal(unavailable.status,401,scenario+" must fail closed");
+ }
+ // Even a correctly signed JWT with an untrusted JWK/JKU lookup hint is rejected.
+ const [headerPayload,payload]=valid.split(".");
+ const unsafeHeader=Buffer.from(JSON.stringify({alg:"RS256",kid:publicJwk.kid,
+  jku:"https://attacker.invalid/jwks"})).toString("base64url");
+ const joined=unsafeHeader+"."+payload;
+ const untrustedToken=joined+"."+createSign("RSA-SHA256").update(joined).sign(privateKey).toString("base64url");
+ let unexpectedFetch=0;
+ globalThis.fetch=async()=>{unexpectedFetch++;return Response.json({keys:[publicJwk]})};
+ const blocked=await body(await onRequestGet({
+  request:oidcReq("GET",untrustedToken),env:{DB:new MockD1(old)}
  }));
- assert.equal(offlineStatus.status,200,"Valid signed JWT with previously pinned key passes offline");
- const offlineBad=await body(await offline.onRequestGet({
-  request:oidcReq("GET",signedJwt({repository:"attacker/repository"})),env:{DB:new MockD1(old)}
- }));
- assert.equal(offlineBad.status,401,"Offline verifier must still reject wrong repository");
- const expiredSource=injectPinned.replace('Date.parse("2026-10-31T20:20:00Z")','Date.parse("1970-01-01T00:00:00Z")');
- assert.notEqual(expiredSource,injectPinned,"Offline pin must have explicit expiry");
- const expired=await import("data:text/javascript;base64,"+Buffer.from(expiredSource).toString("base64"));
- const expiredStatus=await body(await expired.onRequestGet({
-  request:oidcReq("GET",valid),env:{DB:new MockD1(old)}
- }));
- assert.equal(expiredStatus.status,401,"Expired pinned key must fail closed");
- globalThis.fetch=async uri=>{
-  if(String(uri)!==githubJwks)throw Error("Unexpected OIDC key source");
+ assert.equal(blocked.status,401,"Inline JKU must be refused");
+ assert.equal(unexpectedFetch,0,"Reject untrusted JWT header before fetching keys");
+ globalThis.fetch=async (uri,opts)=>{
+  assert.equal(String(uri),githubJwks);
+  assert.equal(opts?.redirect,"manual");
   return Response.json({keys:[publicJwk]});
  };
-
+ 
 }finally{
  globalThis.fetch=beforeFetch;
 }
@@ -289,6 +297,6 @@ fs.writeFileSync("seo-erangel-migration-artifacts/qa-report.json",JSON.stringify
   "unauthorized GET/POST rejected","preview writes rejected","original backup saved",
   "apply idempotent","restore exact row","refuse edited-record rollback",
   "restored original not served publicly","transaction failure atomicity",
-  "unexpected existing title rejected","concurrent Admin edit aborts D1 batch","signed GitHub OIDC workflow can apply migration on canonical Pages Production hostname","OIDC wrong audience/repo/workflow/branch/event/expiry/signature rejected","offline pinned JWT verification","offline wrong repository denied","expired pin denied","D2 write lock default","backup integrity read","immutable field verification"
+  "unexpected existing title rejected","concurrent Admin edit aborts D1 batch","signed GitHub OIDC workflow can apply migration on canonical Pages Production hostname","OIDC wrong audience/repo/workflow/branch/event/expiry/signature rejected","live issuer manual redirect","JWKS network/redirect errors fail closed","untrusted JKU denied","D2 write lock default","backup integrity read","immutable field verification"
  ],productionD1Migrated:false},null,2));
 console.log("ERANGEL D1 MIGRATION QA PASS: private backup, D1 transaction, exact rollback, public fail-closed fallback; remote Production migration NOT executed");
