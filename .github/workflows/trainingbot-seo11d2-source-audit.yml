@@ -33,5 +33,5 @@ jobs:
         run: |
           node tools/wiki/stage-c-browser-qa.mjs
           node tools/wiki/stage-d-browser-qa.mjs
-      - name: Browser acceptance: source links and historical attachment pairs
+      - name: "Browser acceptance: source links and historical attachment pairs"
         run: node tools/wiki/seo11d2-browser-qa.mjs
