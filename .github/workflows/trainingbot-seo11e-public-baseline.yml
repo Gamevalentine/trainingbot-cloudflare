@@ -1,0 +1,24 @@
+name: TrainingBot SEO-11.E — public technical baseline
+on:
+  push:
+    branches:
+      - aion-trainingbot-seo11e-public-baseline-20261031
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-seo-baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect public robots, sitemaps and all sitemap URLs
+        run: node tools/seo/seo11e-public-baseline.mjs
+      - name: Preserve public crawlability report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo11e-public-baseline
+          path: seo11e-artifacts/public-baseline.json
+          if-no-files-found: warn
+          retention-days: 60
