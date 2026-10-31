@@ -1,0 +1,37 @@
+name: TrainingBot LIC-06.1 — classify legacy image references
+on:
+  push:
+    branches: [aion-trainingbot-lic061-classify-20261031]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions:
+  contents: read
+jobs:
+  classify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Production-shaped static pages
+        env:
+          CF_PAGES_BRANCH: main
+        run: npm run build
+      - name: Classify every legacy cover use and save site-wide evidence
+        run: |
+          node --check tools/seo/lic061-classify-shared-image.mjs
+          node tools/seo/lic061-classify-shared-image.mjs
+      - name: Read-only regression verification for prior five D1 articles
+        run: |
+          node tools/seo/seo-source-verification-qa.mjs
+          node tools/seo/lic05-residual-media-audit.mjs
+      - name: Upload reference classification
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trainingbot-lic061-reference-types
+          path: |
+            lic061-audit-artifacts/
+            lic05-audit-artifacts/residual.json
+          retention-days: 21
+          if-no-files-found: ignore
