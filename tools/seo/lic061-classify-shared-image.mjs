@@ -121,5 +121,6 @@ console.log("LIC061_RESULTS",JSON.stringify({
  filesWithReference:files.length,referenceOccurrences:report.referenceOccurrences,
  byRole:counts,byGroup:cohorts,riskFiles:report.riskFiles,safeMetadataOnly:report.safeMetadataOnly
 }));
+console.log("LIC061_PER_FILE",JSON.stringify(files.map(f=>({path:f.path,group:f.group,robots:f.robots,roles:f.references.map(r=>r.role)}))));
 assert(files.length>0,"No references found; please investigate changed build");
 console.log("LIC061_AUDIT_COMPLETE_READ_ONLY");
