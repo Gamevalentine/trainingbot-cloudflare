@@ -369,6 +369,10 @@ function upsertMeta(html, key, value, attr = 'name') {
   return upsertHead(html, re, '<meta ' + attr + '="' + escapeAttr(key) + '" content="' + escapeAttr(value) + '">');
 }
 function localImageFor(rel, html) {
+  // LIC-06.2: archived v4.6 article has no cleared social artwork; do not
+  // silently fall through to a different unreviewed in-body game image.
+  // Only the metadata image is replaced, never the article body or D1 data.
+  if (rel === 'news-pubg-mobile-4-6.html') return defaultShareImage;
   const stem = rel.replace(/\.html$/i, '');
   for (const ext of ['webp','jpg','jpeg','png','svg']) {
     const candidate = stem + '-cover.' + ext;
