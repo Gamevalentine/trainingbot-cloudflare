@@ -235,11 +235,42 @@
     left.appendChild(marker);
   }
 
+  // Legacy Wiki uses .tabs/.overview-card and renders before deferred v147.
+  // Sync only after verified rows are inserted; keep a bounded modern-grid retry.
+  let legacyRerendered=false;
+  let gridRetries=0;
+  function refreshLegacyWiki(){
+    const buttons=[...document.querySelectorAll('.tabs .tab[data-tab]')];
+    if(!buttons.length)return;
+    const titles={weapons:'Vũ khí',attachments:'Phụ kiện',vehicles:'Phương tiện',maps:'Bản đồ'};
+    for(const btn of buttons){
+      const kind=btn.dataset.tab;
+      if(titles[kind]&&Array.isArray(DATA[kind]))btn.textContent=titles[kind]+' · '+DATA[kind].length;
+    }
+    for(const card of document.querySelectorAll('.overview-card')){
+      const span=card.querySelector('span');
+      const amount=card.querySelector('b');
+      const kind=Object.keys(titles).find(key=>titles[key]===span?.textContent?.trim());
+      if(kind&&amount)amount.textContent=String(DATA[kind].length);
+    }
+    if(!legacyRerendered){
+      const active=buttons.find(btn=>btn.classList?.contains('active'));
+      if(active&&typeof active.click==='function'){
+        legacyRerendered=true;
+        active.click();
+      }
+    }
+  }
+
   function start(){
     if(!patchData()){setTimeout(start,60);return;}
     const tabs=document.getElementById('tbWikiTabs');
     const grid=document.getElementById('tbWikiGrid');
-    if(!tabs||!grid){setTimeout(start,60);return;}
+    if(!tabs||!grid){
+      refreshLegacyWiki();
+      if(gridRetries++<12)setTimeout(start,100);
+      return;
+    }
 
     const weaponBtn=tabs.querySelector('.tb-wiki-tab[data-tab="weapons"]');
     if(weaponBtn?.classList.contains('active')&&!document.documentElement.dataset.v147Rerendered){

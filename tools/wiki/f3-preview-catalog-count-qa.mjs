@@ -1,6 +1,7 @@
 // F.3 Preview-only: deterministic catalog parity gate (no API, model, D1 or secrets).
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {runInNewContext} from 'node:vm';
 
 const html=readFileSync('public/wiki.html','utf8');
 const v145=readFileSync('public/wiki_verified_data_v145.js','utf8');
@@ -35,4 +36,39 @@ for(const name of scripts){
   assert.equal(html.indexOf(pattern,at+1),-1,'Duplicate browser script: '+name);
   last=at;
 }
+// Execute the real v147 source against a minimal legacy-DOM fixture. The
+// fallback must redraw the 56-row list after adding five source-backed rows.
+const legacyData=JSON.parse(match[1]);
+for(const name of extraAttachments)legacyData.attachments.push([name,'Đã bổ sung','']);
+let clicks=0;
+const legacyTabs=['weapons','attachments'].map(kind=>({
+  dataset:{tab:kind},textContent:'',classList:{contains:()=>kind==='weapons'},
+  click(){clicks++;}
+}));
+const legacyCards=[['weapons','Vũ khí'],['attachments','Phụ kiện'],
+  ['vehicles','Phương tiện'],['maps','Bản đồ']].map(([kind,title])=>{
+  const number={textContent:''};
+  return {kind,number,querySelector(key){
+    if(key==='span')return {textContent:title};
+    if(key==='b')return number;
+    return null;
+  }};
+});
+runInNewContext(v147,{DATA:legacyData,setTimeout(){},
+  document:{
+    getElementById(){return null;},
+    querySelectorAll(key){
+      if(key==='.tabs .tab[data-tab]')return legacyTabs;
+      if(key==='.overview-card')return legacyCards;
+      return [];
+    }
+  }
+},{timeout:1500});
+assert.equal(legacyData.weapons.length,61,'v147 did not add five weapons');
+assert.equal(legacyData.attachments.length,51,'v145 expected attachments missing');
+assert.equal(clicks,1,'Legacy Wiki list was not re-rendered exactly once');
+assert.equal(legacyTabs[0].textContent,'Vũ khí · 61');
+assert.equal(legacyTabs[1].textContent,'Phụ kiện · 51');
+for(const card of legacyCards)assert.equal(card.number.textContent,String(counts[card.kind]));
+
 console.log('PASS F.3 Preview Wiki 61/51/26/8 and ordered v145-v149 scripts');
