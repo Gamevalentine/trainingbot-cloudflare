@@ -39,6 +39,7 @@ for(const host of ["trainingbot.io.vn","trainingbot-cloudflare.pages.dev","lic06
 }
 const encoded=await request("trainingbot.io.vn",targets[1].replace("/user-posts","/%75ser-posts"));
 assert.equal(encoded.status,302,"Encoded path variant must not bypass exact retirement");
+assert.equal(bucketReads,0,"Retired media must not read R2 before any other test routes");
 for(const unscoped of [
  "/editorial-original-trainingbot-share.png",
  "/editorial-original-erangel.svg",
@@ -50,7 +51,7 @@ for(const unscoped of [
  assert.equal(res.status,200,"Unscoped path changed: "+unscoped);
  assert.equal(await res.text(),"unchanged");
 }
-assert.equal(bucketReads,0,"No media bucket access needed for retired redirects in mock");
+assert.equal(bucketReads,3,"Only three non-target images may reach ordinary bucket lookup");
 assert.equal(nextCalls,5,"Only non-target routes may reach normal middleware");
 console.log("LIC063_ROUTE_GATE_QA_PASS",JSON.stringify({
  retiredAssets:targets.length,origins:3,methods:["GET","HEAD"],
