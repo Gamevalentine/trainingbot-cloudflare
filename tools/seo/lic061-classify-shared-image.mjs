@@ -3,7 +3,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import assert from "node:assert/strict";
-const needle="news-pubg-mobile-4-6-cover.webp";
+// Classify whichever explicitly approved share default the build currently uses.
+const declaredDefault=fs.readFileSync("build.sh","utf8").match(/const\s+defaultShareImage\s*=\s*origin\s*\+\s*['"](\/[a-z0-9._/-]+)['"]/i);
+assert(declaredDefault,"Cannot determine defaultShareImage from build.sh");
+const needle=declaredDefault[1].slice(1);
+assert(["news-pubg-mobile-4-6-cover.webp","editorial-original-trainingbot-share.png"].includes(needle),
+ "Unreviewed default media: audit source/rights before accepting new image");
 const root="public";
 const walk=folder=>fs.readdirSync(folder,{withFileTypes:true}).flatMap(x=>{
  const f=path.join(folder,x.name);return x.isDirectory()?walk(f):[f];
@@ -58,8 +63,8 @@ function pageGroup(f){
  return "other_public";
 }
 const build=fs.readFileSync("build.sh","utf8");
-assert(/const\s+defaultShareImage\s*=\s*origin\s*\+\s*['"]\/news-pubg-mobile-4-6-cover\.webp['"]/i.test(build),
- "The default share image source changed; cannot infer build pipeline origin");
+assert(build.includes("const defaultShareImage = origin + '/"+needle+"';"),
+ "Active default image source no longer matches this evidence classifier");
 const candidates=walk(root).filter(f=>/\.(?:html|css|js|json|svg|xml|txt)$/i.test(f)&&fs.statSync(f).size<=3*1024*1024);
 const files=[];
 for(const absolute of candidates){
@@ -89,7 +94,7 @@ const counts=Object.fromEntries([...new Set(files.flatMap(f=>f.references.map(r=
 const cohorts=Object.fromEntries([...new Set(files.map(f=>f.group))].sort().map(g=>[g,files.filter(f=>f.group===g).length]));
 const safe=new Set(["opengraph_image","twitter_image","structured_data_image"]);
 const risky=files.filter(f=>f.references.some(r=>!safe.has(r.role)));
-const report={checkedAt:new Date().toISOString(),stage:"LIC-06.1",sourceOfReference:"build.sh:defaultShareImage",
+const report={checkedAt:new Date().toISOString(),stage:"LIC-06.1 (reusable active-default evidence)",sourceOfReference:"build.sh:defaultShareImage",activeDefaultImage:"/"+needle,
  filesScanned:candidates.length,baselineFileCount:35,filesWithReference:files.length,
  deltaFromBaseline:files.length-35,
  referenceOccurrences:files.reduce((n,f)=>n+f.referenceCount,0),
@@ -100,7 +105,7 @@ const report={checkedAt:new Date().toISOString(),stage:"LIC-06.1",sourceOfRefere
 fs.mkdirSync("lic061-audit-artifacts",{recursive:true});
 fs.writeFileSync("lic061-audit-artifacts/classification.json",JSON.stringify(report,null,2));
 const lines=[
- "# LIC-06.1 — Phân loại 35 tệp tham chiếu ảnh chia sẻ cũ",
+ "# LIC-06 — Phân loại các tệp tham chiếu ảnh chia sẻ đang dùng",
  "",
  "Nguồn thực thi: npm run build (CF_PAGES_BRANCH=main), sau đó kiểm tra các tệp public được tạo ra. Không ghi D1/R2.",
  "",
@@ -118,7 +123,7 @@ for(const f of files)lines.push("| "+f.path+" | "+f.group+" | "+(f.robots||"khô
 lines.push("","## LIC-06.2","Chỉ khi mọi vị trí được phân loại và có bản ảnh branded gốc đủ quyền, thay tại nguồn tạo SEO metadata trong build.sh, giữ canonical/title/robots/JSON-LD, kiểm thử Wiki, SEO, Pages và mạng xã hội. Không sửa dữ liệu D1 hoặc xóa tệp ảnh gốc.","");
 fs.writeFileSync("lic061-audit-artifacts/classification.md",lines.join("\n"));
 console.log("LIC061_RESULTS",JSON.stringify({
- filesWithReference:files.length,referenceOccurrences:report.referenceOccurrences,
+ activeDefaultImage:report.activeDefaultImage,filesWithReference:files.length,referenceOccurrences:report.referenceOccurrences,
  byRole:counts,byGroup:cohorts,riskFiles:report.riskFiles,safeMetadataOnly:report.safeMetadataOnly
 }));
 console.log("LIC061_PER_FILE",JSON.stringify(files.map(f=>({path:f.path,group:f.group,robots:f.robots,roles:f.references.map(r=>r.role)}))));
