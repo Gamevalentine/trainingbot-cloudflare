@@ -1,0 +1,30 @@
+name: TrainingBot AI Preview identity isolation QA
+on:
+  pull_request:
+    paths:
+      - 'overrides/ai-preview*'
+      - 'overrides/ai-admin-preview.html'
+      - 'functions/_middleware.js'
+      - 'functions/api/ai-preview/**'
+      - 'tools/qa/ai-preview-qa.mjs'
+  push:
+    branches: [preview/ai-identity-bridge]
+permissions:
+  contents: read
+jobs:
+  preview-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node tools/qa/ai-preview-qa.mjs
+      - run: node tools/qa/b1-preview-bff-qa.mjs
+      - run: npm run build
+      - run: node tools/qa/ai-preview-build-qa.mjs
+      - run: node tools/qa/ai-auth-surface-audit.mjs
+      - run: node tools/qa/ai-auth-contract-audit.mjs
+      - run: node tools/qa/a1-admin-auth-inventory.mjs
+      - run: node tools/qa/ai-identity-public-probe.mjs
