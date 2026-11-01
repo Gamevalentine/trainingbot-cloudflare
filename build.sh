@@ -274,7 +274,9 @@ const path = require('path');
 
 const root = path.resolve('public');
 const origin = 'https://trainingbot.io.vn';
-const defaultShareImage = origin + '/news-pubg-mobile-4-6-cover.webp';
+// LIC-06.2: generic independently authored TrainingBot social preview (generated in postbuild.sh).
+// This is a metadata-only default, not a replacement for article-specific images.
+const defaultShareImage = origin + '/editorial-original-trainingbot-share.png';
 const logoUrl = origin + '/favicon.svg';
 
 const coreSeo = {
