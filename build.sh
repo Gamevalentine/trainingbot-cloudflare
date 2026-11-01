@@ -372,6 +372,10 @@ function localImageFor(rel, html) {
   const stem = rel.replace(/\.html$/i, '');
   for (const ext of ['webp','jpg','jpeg','png','svg']) {
     const candidate = stem + '-cover.' + ext;
+    // LIC-06.2: this specific archived v4.6 cover has unverified image rights.
+    // Use the first-party generic share card for social metadata instead;
+    // leave the original binary and article body completely unchanged.
+    if (candidate === 'news-pubg-mobile-4-6-cover.webp') continue;
     if (fs.existsSync(path.join(root, candidate))) return origin + '/' + candidate;
   }
   const imgs = [...html.matchAll(/<img\b[^>]*src=["']([^"']+)["'][^>]*>/gi)]
