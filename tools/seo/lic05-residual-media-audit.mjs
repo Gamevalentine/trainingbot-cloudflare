@@ -28,9 +28,16 @@ for(const a of assets){
  a.publicTextReferences=compiled.filter(({body})=>body.includes(a.path)||body.includes(a.path.slice(1)))
    .map(({f})=>f.replace(/^public\//,"")).slice(0,60);
  try{
-  const res=await fetch(origin+a.path,{method:"GET",signal:AbortSignal.timeout(18000)});
+  // Manual redirects distinguish original binary exposure from a deliberate
+  // no-store redirect to our self-authored graphic. Do not hash the redirect target
+  // and then falsely conclude the preserved R2 object has been modified.
+  const res=await fetch(origin+a.path,{method:"GET",redirect:"manual",signal:AbortSignal.timeout(18000)});
   a.http=res.status;a.mime=res.headers.get("content-type")||null;
-  if(res.ok){
+  a.retiredRedirect=res.status===302&&
+    res.headers.get("location")==="https://trainingbot.io.vn/editorial-original-trainingbot-share.png";
+  if(a.retiredRedirect){
+   a.unchanged=null;a.rightsConfirmed=false;
+  }else if(res.ok){
    const data=Buffer.from(await res.arrayBuffer());
    a.bytes=data.length;
    a.sha256=crypto.createHash("sha256").update(data).digest("hex");
@@ -52,13 +59,15 @@ for(const slug of slugs){
 }
 const report={checkedAt:new Date().toISOString(),method:"Read-only HTTP GET and built static source scan; no API /api/posts or D1/R2 writes",
  assets,articles:pageResults,originalBinaryUrlsStillPublic:assets.filter(a=>a.http===200).length,
+ retiredUrlCount:assets.filter(a=>a.retiredRedirect).length,
  liveFiveArticlesClear:pageResults.every(a=>a.status===200&&!a.legacyAssetReferences?.length&&a.safeCoverShown&&a.safeSocialPng),
  rightsEvidenceFound:false,
  conclusion:"Legacy assets may remain directly accessible even after five displayed article covers and social images are replaced. Copyright permission must not be invented."};
 fs.mkdirSync("lic05-audit-artifacts",{recursive:true});
 fs.writeFileSync("lic05-audit-artifacts/residual.json",JSON.stringify(report,null,2));
-console.log("LIC05_RESIDUAL_OLD_MEDIA",JSON.stringify({assets:assets.map(a=>({id:a.id,http:a.http,unchanged:a.unchanged,publicTextReferences:a.publicTextReferences})),
+console.log("LIC05_RESIDUAL_OLD_MEDIA",JSON.stringify({assets:assets.map(a=>({id:a.id,http:a.http,retiredRedirect:a.retiredRedirect||false,unchanged:a.unchanged,publicTextReferences:a.publicTextReferences})),
  liveFiveArticlesClear:report.liveFiveArticlesClear,oldUrlsAccessible:report.originalBinaryUrlsStillPublic}));
 if(!report.liveFiveArticlesClear)throw Error("Five D1 pages still reference legacy unverified media or new SVG/PNG absent");
 if(assets.some(a=>a.http===200&&!a.unchanged))throw Error("Legacy binary hash differs from verified preservation snapshot; investigate");
+if(assets.some(a=>a.http!==200&&!a.retiredRedirect))throw Error("Unexpected media response outside approved 302 redirect; investigate");
 console.log("LIC05_READ_ONLY_RESIDUAL_CHECK_PASS; legacy asset rights remain unverified");

@@ -1,0 +1,64 @@
+name: TrainingBot LIC-06.3 — retire exact legacy image delivery
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+    paths:
+      - functions/_middleware.js
+      - tools/seo/lic05-residual-media-audit.mjs
+      - tools/seo/lic063-retired-routes-qa.mjs
+      - tools/seo/lic063-retired-routes-production.mjs
+      - .github/workflows/trainingbot-lic063-retired-media.yml
+permissions:
+  contents: read
+jobs:
+  lic063-safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile exact-path middleware and verify GET/HEAD isolation with fake R2
+        run: |
+          node --check functions/_middleware.js
+          node --check tools/seo/lic063-retired-routes-qa.mjs
+          node --check tools/seo/lic063-retired-routes-production.mjs
+          node tools/seo/lic063-retired-routes-qa.mjs
+      - name: Rebuild main-shaped site without changing R2/D1
+        env:
+          CF_PAGES_BRANCH: main
+        run: npm run build
+      - name: Confirm original artwork pages and old URL evidence remain intact
+        run: |
+          node tools/seo/lic04-original-media-qa.mjs
+          node tools/seo/lic061-classify-shared-image.mjs
+          node tools/seo/lic062-default-share-qa.mjs
+          node tools/seo/lic05-residual-media-audit.mjs
+      - name: Record read-only safety evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lic063-redirect-safety
+          path: |
+            lic05-audit-artifacts/
+            lic061-audit-artifacts/
+            lic062-audit-artifacts/pre-release.json
+          retention-days: 21
+          if-no-files-found: ignore
+  lic063-production:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify 5 exact image URLs on both Production hosts using GET/HEAD after deploy
+        run: node tools/seo/lic063-retired-routes-production.mjs
+      - name: Save the post-release 302 redirect audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lic063-production-audit
+          path: lic063-audit-artifacts/production.json
+          retention-days: 21
+          if-no-files-found: ignore
