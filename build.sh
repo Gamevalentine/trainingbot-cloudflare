@@ -274,7 +274,9 @@ const path = require('path');
 
 const root = path.resolve('public');
 const origin = 'https://trainingbot.io.vn';
-const defaultShareImage = origin + '/news-pubg-mobile-4-6-cover.webp';
+// LIC-06.2: generic independently authored TrainingBot social preview (generated in postbuild.sh).
+// This is a metadata-only default, not a replacement for article-specific images.
+const defaultShareImage = origin + '/editorial-original-trainingbot-share.png';
 const logoUrl = origin + '/favicon.svg';
 
 const coreSeo = {
@@ -367,9 +369,17 @@ function upsertMeta(html, key, value, attr = 'name') {
   return upsertHead(html, re, '<meta ' + attr + '="' + escapeAttr(key) + '" content="' + escapeAttr(value) + '">');
 }
 function localImageFor(rel, html) {
+  // LIC-06.2: archived v4.6 article has no cleared social artwork; do not
+  // silently fall through to a different unreviewed in-body game image.
+  // Only the metadata image is replaced, never the article body or D1 data.
+  if (rel === 'news-pubg-mobile-4-6.html') return defaultShareImage;
   const stem = rel.replace(/\.html$/i, '');
   for (const ext of ['webp','jpg','jpeg','png','svg']) {
     const candidate = stem + '-cover.' + ext;
+    // LIC-06.2: this specific archived v4.6 cover has unverified image rights.
+    // Use the first-party generic share card for social metadata instead;
+    // leave the original binary and article body completely unchanged.
+    if (candidate === 'news-pubg-mobile-4-6-cover.webp') continue;
     if (fs.existsSync(path.join(root, candidate))) return origin + '/' + candidate;
   }
   const imgs = [...html.matchAll(/<img\b[^>]*src=["']([^"']+)["'][^>]*>/gi)]

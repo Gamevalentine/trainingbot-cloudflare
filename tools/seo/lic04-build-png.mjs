@@ -9,7 +9,10 @@ const designs=[
  ["beta-47","PUBG MOBILE","BETA 4.7","#0b1733","#284a88","#8befff","grid"],
  ["m416-glacier","M416","GLACIER","#091832","#3155a9","#8dbaff","crystal"],
  ["midnight-hunters","MIDNIGHT","HUNTERS","#1e0d28","#8c3555","#ffa9ae","moon"],
- ["one-punch-man","ONE-PUNCH","MAN","#2d1230","#ac5924","#ffcf7b","pulse"]
+ ["one-punch-man","ONE-PUNCH","MAN","#2d1230","#ac5924","#ffcf7b","pulse"],
+ // LIC-06.2: generic first-party community site share preview for all 35 SEO pages.
+ // Deliberately no PUBG/game/anime marks or external artwork.
+ ["trainingbot-share","TRAININGBOT","NEWS / WIKI","#0a0b24","#283867","#a5dbff","grid"]
 ];
 const glyph={
  A:["01110","10001","10001","11111","10001","10001","10001"],
