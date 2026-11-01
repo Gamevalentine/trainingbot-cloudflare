@@ -1,0 +1,64 @@
+name: TrainingBot LIC-06.2 — original generic social image
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+    paths:
+      - build.sh
+      - tools/seo/lic04-build-png.mjs
+      - tools/seo/lic061-classify-shared-image.mjs
+      - tools/seo/lic062-default-share-qa.mjs
+      - tools/seo/lic062-default-share-production.mjs
+      - .github/workflows/trainingbot-lic062-share.yml
+permissions:
+  contents: read
+jobs:
+  lic062-static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build release-equivalent HTML plus self-authored TrainingBot PNG
+        env:
+          CF_PAGES_BRANCH: main
+        run: npm run build
+      - name: Verify all 35 share metadata pages, original bytes and D1 article isolation
+        run: |
+          node --check tools/seo/lic061-classify-shared-image.mjs
+          node --check tools/seo/lic062-default-share-qa.mjs
+          node --check tools/seo/lic062-default-share-production.mjs
+          node tools/seo/lic061-classify-shared-image.mjs
+          node tools/seo/lic062-default-share-qa.mjs
+          node tools/seo/lic04-original-media-qa.mjs
+          node tools/seo/seo-source-verification-qa.mjs
+      - name: Preserve metadata and original-art evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lic062-static-share-evidence
+          path: |
+            lic061-audit-artifacts/
+            lic062-audit-artifacts/pre-release.json
+            lic04-artifacts/
+          retention-days: 21
+          if-no-files-found: ignore
+  lic062-production:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read only eight live SEO pages and five individual D1 articles after Pages deploy
+        run: |
+          node --check tools/seo/lic062-default-share-production.mjs
+          node tools/seo/lic062-default-share-production.mjs
+      - name: Preserve real Production acceptance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lic062-production-share-evidence
+          path: lic062-audit-artifacts/production.json
+          retention-days: 21
+          if-no-files-found: ignore
