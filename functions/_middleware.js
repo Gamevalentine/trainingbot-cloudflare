@@ -1,4 +1,29 @@
 const IMAGE_PATH=/\.(?:png|jpe?g|webp|gif|svg|avif)$/i;
+// LIC-06.3: five exact unverified legacy media URLs are retired from public
+// delivery WITHOUT deleting R2/site-overrides files or editing D1/backup.
+// A temporary, no-store redirect keeps external image embeds from breaking.
+// Undo is one code revert; all other image paths keep existing behavior.
+const LIC063_RETIRED_MEDIA=new Set([
+  "/news-pubg-mobile-4-6-cover.webp",
+  "/user-posts/pubg-mobile-4-7-beta-1-chinh-thuc-khoi-dong-hang-loat-thay-doi-gameplay--1790303973793.jpg",
+  "/user-posts/pubg-mobile-xac-nhan-m416-glacier-switch-effect-gan-hoan-thien-viet-nam--1790048495762.jpg",
+  "/user-posts/pubg-mobile-4-6-chinh-thuc-cap-nhat-hom-nay-midnight-hunters-da-den-tay--1788837512881.png",
+  "/user-posts/pubg-mobile-one-punch-man-chinh-thuc-duoc-cong-bo-saitama-do-bo-erangel--1788593701812.jpg"
+]);
+const LIC063_SAFE_ART="https://trainingbot.io.vn/editorial-original-trainingbot-share.png";
+function retiredPublicImage(request,url){
+  if(!["GET","HEAD"].includes(request.method))return null;
+  let path=url.pathname;
+  try{path=decodeURIComponent(path);}catch{return null;}
+  if(!LIC063_RETIRED_MEDIA.has(path))return null;
+  return new Response(null,{status:302,headers:{
+    location:LIC063_SAFE_ART,
+    "cache-control":"no-store",
+    "x-robots-tag":"noindex, nofollow",
+    "x-content-type-options":"nosniff"
+  }});
+}
+
 function keyFor(path){return `site-overrides/${encodeURIComponent(path)}`;}
 
 /*
@@ -70,6 +95,10 @@ async function previewPublicReadOnly({request},url){
 async function handleRequest(context){
   const {request,env}=context;
   const url=new URL(request.url);
+  // Retire only five audited media addresses on both Production and Preview.
+  // Must run BEFORE Preview read-through and R2 bucket lookup.
+  const retired=retiredPublicImage(request,url);
+  if(retired)return retired;
 
   /*
    * P3.1 hard isolation: a Preview must never send mutations to D1, R2 or
