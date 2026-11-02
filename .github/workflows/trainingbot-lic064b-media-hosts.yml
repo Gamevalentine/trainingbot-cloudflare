@@ -1,0 +1,46 @@
+name: TrainingBot LIC-06.4B — verify observed media and CDN origin
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [aion-trainingbot-lic064b-verify-media-20261103]
+permissions:
+  contents: read
+jobs:
+  verify-media-hosts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Production-shaped content, no credentials or D1/R2 mutations
+        env:
+          CF_PAGES_BRANCH: main
+        run: npm run build
+      - name: Reconstruct LIC-06.4A media list from current public HTML and source
+        run: |
+          node --check tools/seo/lic064a-sitewide-images.mjs
+          node tools/seo/lic064a-sitewide-images.mjs
+      - name: Verify exactly 13 observed public media URLs, HEAD, bounded GET, hash and redirects
+        run: |
+          node --check tools/seo/lic064b-public-media-verification.mjs
+          node tools/seo/lic064b-public-media-verification.mjs
+      - name: Audit repository-declared R2 route, Pages behavior and CDN candidates
+        run: |
+          node --check tools/seo/lic064b-origin-cdn-evidence.mjs
+          node tools/seo/lic064b-origin-cdn-evidence.mjs
+      - name: Confirm five retired URLs and D1 article public read-only integrity
+        run: |
+          node --check tools/seo/lic063-retired-routes-production.mjs
+          node tools/seo/lic063-retired-routes-production.mjs
+      - name: Persist 13-item inspection, external host map and source inventory
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lic064b-media-verification-evidence
+          path: |
+            lic064a-audit-artifacts/sitewide-assets.json
+            lic064b-audit-artifacts/
+            lic063-audit-artifacts/production.json
+          retention-days: 30
+          if-no-files-found: ignore
