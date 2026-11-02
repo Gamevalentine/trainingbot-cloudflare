@@ -1,0 +1,45 @@
+name: TrainingBot LIC-06.4A — sitewide image inventory, no writes
+on:
+  push:
+    branches: [aion-trainingbot-lic064a-image-inventory-20261102]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions:
+  contents: read
+jobs:
+  sitewide-image-inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build exact Production-shaped static files
+        env:
+          CF_PAGES_BRANCH: main
+        run: npm run build
+      - name: Inventory all publicly built HTML/CSS/JS and public D1 article HTML without API writes
+        run: |
+          node --check tools/seo/lic064a-sitewide-images.mjs
+          node tools/seo/lic064a-sitewide-images.mjs
+      - name: Install browser tools to capture JavaScript-generated images locally
+        run: npm install --no-save --no-package-lock playwright
+      - name: Observe Home, Wiki, Beta and News rendered DOM in isolated read-only Chromium
+        run: |
+          node --check tools/seo/lic064a-browser-observed.mjs
+          node tools/seo/lic064a-browser-observed.mjs
+      - name: Recheck critical LIC-06.2 and LIC-06.3 public media safety
+        run: |
+          node tools/seo/lic061-classify-shared-image.mjs
+          node tools/seo/lic062-default-share-qa.mjs
+          node tools/seo/lic063-retired-routes-qa.mjs
+      - name: Save complete inventory for next stage LIC-06.4B/C
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lic064a-sitewide-image-inventory
+          path: |
+            lic064a-audit-artifacts/
+            lic061-audit-artifacts/
+            lic062-audit-artifacts/pre-release.json
+          retention-days: 30
+          if-no-files-found: ignore
