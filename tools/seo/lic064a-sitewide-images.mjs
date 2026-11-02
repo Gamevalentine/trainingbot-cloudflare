@@ -24,6 +24,8 @@ function urlFor(raw,base=domain+"/"){
  try{
   const u=new URL(s,base);
   if(!["http:","https:"].includes(u.protocol)||!imageExt.test(u.pathname))return null;
+  // Exclude example placeholders ("https://...") from a literal JS scan.
+  if(u.hostname==="..."||!u.hostname.includes(".")||u.hostname.includes(".."))return null;
   u.search="";u.hash="";
   if(u.hostname==="trainingbot-cloudflare.pages.dev")u.hostname="trainingbot.io.vn";
   return u.href;
@@ -126,8 +128,12 @@ const summary={
  uniqueMedia:assets.length,uses:assets.reduce((n,a)=>n+a.uses.length,0),
  liveHtmlMedia:assets.filter(x=>x.visibility==="live_html").length,
  sourceOnlyCandidates:assets.filter(x=>x.visibility==="source_candidate_only").length,
+ liveHtmlFirstParty:assets.filter(x=>x.visibility==="live_html"&&x.hostname==="trainingbot.io.vn").length,
+ liveHtmlExternal:assets.filter(x=>x.visibility==="live_html"&&x.hostname!=="trainingbot.io.vn").length,
+ sourceOnlyExternalCandidates:assets.filter(x=>x.visibility==="source_candidate_only"&&x.hostname!=="trainingbot.io.vn").length,
  newOriginalArt:assets.filter(x=>x.provenance==="self_authored_in_repo_code").length,
  unverifiedRights:assets.filter(x=>x.rights==="UNVERIFIED").length,
+ unverifiedLiveHtml:assets.filter(x=>x.rights==="UNVERIFIED"&&x.visibility==="live_html").length,
  hosts:[...new Set(assets.map(x=>x.hostname))].sort(),roles,
  warnings,limitations:[
  "Dynamic JavaScript and image API feeds can render additional assets; literal references are candidates, not proof of actual display.",
