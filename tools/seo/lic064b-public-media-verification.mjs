@@ -8,6 +8,7 @@ const inventory=JSON.parse(fs.readFileSync("lic064a-audit-artifacts/sitewide-ass
 const candidates=inventory.assets.filter(a=>a.visibility==="live_html"&&a.rights==="UNVERIFIED");
 assert.equal(candidates.length,13,"The 13-file LIC-06.4A observed HTML scope drifted; review BEFORE probing");
 const maxBytes=8*1024*1024; // stop early on unusually large media
+const previouslyRetiredImageHash="e80a02798aeb6098aa8d364e06ada9d948f119d7dae6a4c01860aa11663283ca";
 const retryable=new Set([408,425,429,500,502,503,504]);
 const allowedHost=new Set(["trainingbot.io.vn","trainingbot-cloudflare.pages.dev"]);
 const safe=(url)=>{
@@ -80,6 +81,11 @@ for(const item of candidates){
      record.bytes=read.bytes.length;
      record.sha256=crypto.createHash("sha256").update(read.bytes).digest("hex");
      record.format=dimension(read.bytes,type);
+     const extension=record.path.split(".").pop()?.toLowerCase();
+     const extensionFormat=extension==="jpg"?"jpeg":extension;
+     record.extensionContentMismatch=Boolean(extensionFormat&&record.format.format!=="unrecognized"&&
+       record.format.format!==extensionFormat);
+     record.duplicatesRetiredLegacyImage=record.sha256===previouslyRetiredImageHash;
      if(record.format.format==="svg"){
       const str=read.bytes.toString("utf8");
       record.svgExternalLinks=/\b(?:href|xlink:href)\s*=\s*["']https?:\/\//i.test(str)||
@@ -98,13 +104,17 @@ for(const item of candidates){
   url:record.url,status:record.status,head:record.head?.status,get:record.get?.status,
   type:record.get?.headers?.["content-type"],bytes:record.bytes||null,
   sha256:record.sha256||null,redirect:record.redirect?.location||null,
-  originPath:record.originPath}));
+  originPath:record.originPath,extensionContentMismatch:record.extensionContentMismatch||false,
+  duplicatesRetiredLegacyImage:record.duplicatesRetiredLegacyImage||false}));
 }
 const issues=results.filter(r=>r.status==="request_error"||r.status==="non_image_content_type_no_body_download"||
  r.status==="http_error"||r.status==="retryable_http_error"||r.status.startsWith("body_skipped"));
 const counts={retrieved:results.filter(r=>r.status==="retrieved_image_bytes").length,
  redirect:results.filter(r=>r.status==="redirect_not_downloaded").length,
- errorOrSkipped:issues.length};
+ errorOrSkipped:issues.length,
+ extensionMismatch:results.filter(r=>r.extensionContentMismatch).length,
+ legacyDuplicatesStillPublic:results.filter(r=>r.duplicatesRetiredLegacyImage).length,
+ licenseVerified:0};
 const report={checkedAt:new Date().toISOString(),task:"LIC-06.4B/first_party_live_html",
  scope:"Exactly 13 live-public-HTML assets without licensing evidence from LIC-06.4A; public first-party HTTP only; no D1/R2 API",
  totals:{assets:results.length,...counts},
@@ -123,6 +133,9 @@ const rows=[["url","http_head","http_get","content_type","bytes","sha256","statu
   r.bytes||"",r.sha256||"",r.status,r.observedFrom.map(x=>x.page).join("; "),r.redirect?.location||""])];
 fs.writeFileSync("lic064b-audit-artifacts/13-live-media-technical.csv",rows.map(row=>row.map(esc).join(",")).join("\n")+"\n");
 console.log("LIC064B_13_MEDIA_SUMMARY",JSON.stringify(report.totals));
+console.log("LIC064B_FLAGGED_MEDIA",JSON.stringify(results.filter(r=>r.extensionContentMismatch||r.duplicatesRetiredLegacyImage)
+ .map(r=>({url:r.url,sha256:r.sha256,mime:r.get?.headers?.["content-type"],format:r.format,
+  extensionMismatch:r.extensionContentMismatch||false,retiredLegacyDuplicate:r.duplicatesRetiredLegacyImage||false}))));
 assert.equal(results.length,13);
 if(results.filter(r=>r.status==="request_error").length>5)throw Error("Too many first-party image request errors; incomplete media audit");
 console.log("LIC064B_13_MEDIA_MEASURED_READ_ONLY; COPYRIGHT_STATUS_REMAINS_UNVERIFIED");
