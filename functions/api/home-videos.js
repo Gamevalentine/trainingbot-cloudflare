@@ -52,6 +52,8 @@ async function ensureTable(env){
     title TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL
   )`).run();
+
+  await env.DB.prepare("CREATE TABLE IF NOT EXISTS home_video_covers (external_id TEXT PRIMARY KEY, cover_url TEXT NOT NULL)").run();
   // Existing entries are preserved; deleted legacy posts must not be recreated on reads.
   await env.DB.prepare("UPDATE home_videos SET url=? WHERE external_id=? AND url LIKE '%/player/v1/%'")
     .bind(SEEDS[2][1],SEEDS[2][0]).run();
@@ -69,7 +71,7 @@ async function hydrateTitles(env,rows){
 export async function onRequestGet({env}){
   try{
     await ensureTable(env);
-    const result=await env.DB.prepare("SELECT external_id,url,title,created_at FROM home_videos ORDER BY created_at DESC, external_id DESC").all();
+    const result=await env.DB.prepare("SELECT v.external_id,v.url,v.title,v.created_at,COALESCE(c.cover_url,'') AS thumbnail_url FROM home_videos v LEFT JOIN home_video_covers c ON c.external_id=v.external_id ORDER BY v.created_at DESC,v.external_id DESC").all();
     return json({ok:true,videos:await hydrateTitles(env,result.results||[])});
   }catch(error){
     console.error("home videos",error);

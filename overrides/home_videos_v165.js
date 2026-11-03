@@ -89,14 +89,15 @@
       const poster = document.createElement("div");
       poster.className = "tb-home-video-poster";
       if (video.thumbnail_url) poster.classList.add("is-real");
+      if (video.kind === "photo" && !video.thumbnail_url) poster.classList.add("is-photo-unavailable");
       const image = document.createElement("img");
-      image.src = video.thumbnail_url || fallbackCover;
+      image.src = video.thumbnail_url || (video.kind === "photo" ? "/trainingbot-logo-v110.png" : fallbackCover);
       image.alt = video.title || mediaName(video);
       image.loading = "lazy";
       image.referrerPolicy = "no-referrer";
       image.addEventListener("error", () => {
         if (image.src.endsWith(fallbackCover)) return;
-        image.src = fallbackCover;
+        image.src = video.kind === "photo" ? "/trainingbot-logo-v110.png" : fallbackCover;
         poster.classList.remove("is-real");
       });
       const overlay = document.createElement("div");
@@ -107,6 +108,12 @@
       const heading = document.createElement("h3");
       heading.textContent = video.title || mediaName(video);
       overlay.append(type, heading);
+      if (video.kind === "photo" && !video.thumbnail_url) {
+        const note=document.createElement("p");
+        note.className="tb-home-video-error";
+        note.textContent="TikTok chưa cung cấp ảnh xem trước. Bạn có thể xem bộ ảnh gốc bên dưới.";
+        overlay.append(note);
+      }
       if (error) {
         const note = document.createElement("p");
         note.className = "tb-home-video-error";
@@ -162,11 +169,11 @@
     thumb.className = "tb-home-video-thumb";
 
     const image = document.createElement("img");
-    image.src = video.thumbnail_url || fallbackCover;
+    image.src = video.thumbnail_url || (video.kind === "photo" ? "/trainingbot-logo-v110.png" : fallbackCover);
     image.alt = video.title || mediaName(video);
     image.loading = "lazy";
     image.referrerPolicy = "no-referrer";
-    image.addEventListener("error", () => { image.src = fallbackCover; });
+    image.addEventListener("error", () => { image.src = video.kind === "photo" ? "/trainingbot-logo-v110.png" : fallbackCover; });
 
     const play = document.createElement("span");
     play.className = "tb-home-video-play";

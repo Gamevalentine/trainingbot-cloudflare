@@ -17,8 +17,9 @@
       .tb-hv-add{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px}.tb-hv-add input{min-height:42px;border:1px solid #28344e;border-radius:11px;background:#071022;color:#fff;padding:0 12px;outline:none}.tb-hv-add button,.tb-hv-row button{min-height:42px;border:0;border-radius:11px;padding:0 15px;background:linear-gradient(135deg,#745cff,#2acbea);color:#fff;font-weight:800;cursor:pointer}
       .tb-hv-status{min-height:18px;margin:9px 0;color:#8391a9;font-size:10px}.tb-hv-status.ok{color:#86efac}.tb-hv-status.error{color:#fda4af}
       .tb-hv-list{display:grid;gap:8px}.tb-hv-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px;border:1px solid #202c43;border-radius:13px;background:#071022}.tb-hv-order{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:#121d33;color:#aebbd1;font-size:10px;font-weight:900}.tb-hv-copy{min-width:0}.tb-hv-copy b{display:flex;align-items:center;gap:7px;font-size:11px}.tb-hv-copy small{display:block;margin-top:4px;color:#718098;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tb-hv-new{padding:3px 6px;border-radius:999px;background:rgba(38,211,238,.11);color:#aef5ff;font-size:8px;font-weight:900}.tb-hv-row button{min-height:34px;padding:0 11px;background:#111b2e;border:1px solid #2b3852;color:#c4cde0}
+      .tb-hv-row{grid-template-columns:auto minmax(0,1fr) auto auto}.tb-hv-help{font-size:11px;color:#acbfe5;margin:10px 0;line-height:1.5}
       .tb-dashboard-empty{padding:18px;border:1px dashed #26344d;border-radius:14px;color:#8290a8;text-align:center;font-size:11px}
-      @media(max-width:650px){.tb-hv-head{align-items:stretch;flex-direction:column}.tb-hv-edit{width:100%}.tb-hv-add{grid-template-columns:1fr}.tb-hv-row{grid-template-columns:auto minmax(0,1fr)}.tb-hv-row button{grid-column:1/-1}}
+      @media(max-width:650px){.tb-hv-head{align-items:stretch;flex-direction:column}.tb-hv-edit{width:100%}.tb-hv-add{grid-template-columns:1fr}.tb-hv-row{grid-template-columns:auto minmax(0,1fr)}.tb-hv-row button{grid-column:auto}}
     `;
     document.head.appendChild(node);
   }
@@ -48,6 +49,7 @@
       <article class="tb-hv-row">
         <span class="tb-hv-order">${index+1}</span>
         <div class="tb-hv-copy"><b>${/\/photo\//.test(video.url||"")?"Ảnh TikTok":"Video TikTok"} ${index===0?'<span class="tb-hv-new">MỚI NHẤT</span>':''}</b><small>${esc(video.url||video.external_id)}</small></div>
+        <button type="button" data-cover-video="${esc(video.external_id)}" data-cover-current="${esc(video.thumbnail_url||"")}">Ảnh bìa</button>
         <button type="button" data-delete-video="${esc(video.external_id)}">Xóa</button>
       </article>`).join("");
   }
@@ -84,6 +86,21 @@
     await saveUrl(url,"Đang cập nhật video mới nhất…");
   }
 
+
+  async function editCover(id,button){
+    const prior=button.dataset.coverCurrent||"";
+    const url=prompt("Dán URL ảnh bìa HTTPS từ Media Library (để trống nếu muốn xóa ảnh bìa):",prior);
+    if(url===null)return;
+    button.disabled=true;
+    status("Đang lưu ảnh bìa…");
+    try{
+      const data=await adminApi({method:"PATCH",body:JSON.stringify({external_id:id,cover_url:url.trim()})});
+      rows(data.videos||[]);
+      status("✓ Đã cập nhật ảnh bìa. Ảnh sẽ hiển thị trên trang chủ nếu URL truy cập công khai.","ok");
+    }catch(error){status(error.message||"Không lưu được ảnh bìa.","error");}
+    finally{button.disabled=false;}
+  }
+
   async function remove(id,button){
     if(!confirm("Xóa video này khỏi trang chủ?"))return;
     button.disabled=true;
@@ -106,7 +123,8 @@
     box.innerHTML=`
       <div class="tb-hv-head"><div><span class="eyebrow">TRANG CHỦ</span><h3>Video và ảnh TikTok</h3><p>Bài đăng mới nhất ở khung lớn. Các bài cũ tự xếp ngang bên dưới.</p></div><button id="tbHomeVideoEdit" class="tb-hv-edit" type="button">Sửa video mới nhất</button></div>
       <div class="tb-hv-add"><input id="tbHomeVideoUrl" type="url" placeholder="Dán link video hoặc ảnh TikTok"><button id="tbHomeVideoAdd" type="button">Thêm bài đăng</button></div>
-      <div id="tbHomeVideosStatus" class="tb-hv-status"></div>
+      <p class="tb-hv-help">Bài ảnh TikTok không có ảnh xem trước? Chọn “Ảnh bìa” và dán link ảnh từ Media Library (có thể tải ảnh của bạn lên kho media trước).</p>
+       <div id="tbHomeVideosStatus" class="tb-hv-status"></div>
       <div id="tbHomeVideosList" class="tb-hv-list"></div>`;
     const title=panel.querySelector(".section-title");
     if(title)title.after(box);else panel.prepend(box);

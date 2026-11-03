@@ -69,3 +69,6 @@
 .tb-home-video-empty{padding:28px 20px;border:1px solid #31405a;border-radius:18px;color:#dbeafe;text-align:center}
 .tb-home-video-empty a{color:#aab8ff;font-weight:800}
 .tb-home-video-overlay{max-height:85%;overflow:auto}
+
+.tb-home-video-poster.is-photo-unavailable{background:radial-gradient(circle at 45% 30%,#30345c,#090e1b)}
+.tb-home-video-poster.is-photo-unavailable>img{object-fit:contain;padding:30px;opacity:.5;filter:none}

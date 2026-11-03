@@ -67,10 +67,12 @@ async function ensureTable(env){
     title TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL
   )`).run();
+
+  await env.DB.prepare("CREATE TABLE IF NOT EXISTS home_video_covers (external_id TEXT PRIMARY KEY, cover_url TEXT NOT NULL)").run();
   // Admin deletion must persist; never resurrect the original sample posts.
 }
 async function list(env){
-  const result=await env.DB.prepare("SELECT external_id,url,title,created_at FROM home_videos ORDER BY created_at DESC, external_id DESC").all();
+  const result=await env.DB.prepare("SELECT v.external_id,v.url,v.title,v.created_at,COALESCE(c.cover_url,'') AS thumbnail_url FROM home_videos v LEFT JOIN home_video_covers c ON c.external_id=v.external_id ORDER BY v.created_at DESC,v.external_id DESC").all();
   return result.results||[];
 }
 
@@ -104,9 +106,38 @@ export async function onRequestDelete({request,env}){
     const id=String(body.external_id||"").trim();
     if(!/^\d{10,25}$/.test(id))return json({ok:false,message:"Video không hợp lệ."},400);
     await env.DB.prepare("DELETE FROM home_videos WHERE external_id=?").bind(id).run();
+    await env.DB.prepare("DELETE FROM home_video_covers WHERE external_id=?").bind(id).run();
     return json({ok:true,videos:await list(env)});
   }catch(error){
     console.error("admin home videos delete",error);
     return json({ok:false,message:"Không thể xóa video trang chủ."},500);
+  }
+}
+
+export async function onRequestPatch({request,env}){
+  if(!env.ADMIN_TOKEN)return json({ok:false,message:"ADMIN_TOKEN chưa được cấu hình."},503);
+  if(!isAdmin(request,env))return json({ok:false,message:"Unauthorized"},401);
+  try{
+    await ensureTable(env);
+    const body=await request.json().catch(()=>({}));
+    const id=String(body.external_id||"").trim();
+    if(!/^\d{10,25}$/.test(id))return json({ok:false,message:"ID bài đăng không hợp lệ."},400);
+    const result=await env.DB.prepare("SELECT external_id FROM home_videos WHERE external_id=?").bind(id).first();
+    if(!result)return json({ok:false,message:"Không tìm thấy bài đăng."},404);
+    const raw=String(body.cover_url||"").trim();
+    if(raw.length>2048)return json({ok:false,message:"URL ảnh bìa quá dài."},400);
+    if(raw){
+      let parsed;
+      try{parsed=new URL(raw);}catch{}
+      if(!parsed||parsed.protocol!=="https:"||!parsed.hostname||parsed.username||parsed.password)
+        return json({ok:false,message:"Hãy dùng đường dẫn ảnh bìa HTTPS hợp lệ từ kho media."},400);
+      await env.DB.prepare("INSERT INTO home_video_covers(external_id,cover_url) VALUES(?,?) ON CONFLICT(external_id) DO UPDATE SET cover_url=excluded.cover_url").bind(id,parsed.href).run();
+    }else{
+      await env.DB.prepare("DELETE FROM home_video_covers WHERE external_id=?").bind(id).run();
+    }
+    return json({ok:true,videos:await list(env)});
+  }catch(error){
+    console.error("admin home videos cover",error);
+    return json({ok:false,message:"Không thể lưu ảnh bìa."},500);
   }
 }
