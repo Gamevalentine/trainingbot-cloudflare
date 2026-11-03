@@ -67,9 +67,7 @@ async function ensureTable(env){
     title TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL
   )`).run();
-  for(const seed of SEEDS){
-    await env.DB.prepare("INSERT OR IGNORE INTO home_videos(external_id,url,title,created_at) VALUES(?,?,?,?)").bind(...seed).run();
-  }
+  // Admin deletion must persist; never resurrect the original sample posts.
 }
 async function list(env){
   const result=await env.DB.prepare("SELECT external_id,url,title,created_at FROM home_videos ORDER BY created_at DESC, external_id DESC").all();

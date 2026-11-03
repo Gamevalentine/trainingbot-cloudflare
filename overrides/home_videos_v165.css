@@ -61,3 +61,11 @@
 .tb-home-video-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 2px}
 .tb-home-video-controls button{background:#1e2841;color:#f8fafc;border:1px solid #475478;border-radius:10px;padding:9px 13px;cursor:pointer}
 @media(max-width:520px){.tb-home-video-poster{border-radius:18px}.tb-home-video-overlay{padding:24px 14px 17px}.tb-home-video-overlay h3{font-size:16px}}
+
+/* Home media v207: visible photo covers, types and graceful embed failure. */
+.tb-home-video-poster.is-real>img{opacity:1;filter:none}
+.tb-home-video-kind{font-size:10px;letter-spacing:.12em;font-weight:900;color:#b7e8ff}
+.tb-home-video-error{margin:0;color:#fbd5c9;font-size:12px;line-height:1.5}
+.tb-home-video-empty{padding:28px 20px;border:1px solid #31405a;border-radius:18px;color:#dbeafe;text-align:center}
+.tb-home-video-empty a{color:#aab8ff;font-weight:800}
+.tb-home-video-overlay{max-height:85%;overflow:auto}

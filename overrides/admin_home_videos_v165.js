@@ -68,7 +68,7 @@
     try{
       const data=await adminApi({method:"POST",body:JSON.stringify({url:value})});
       rows(data.videos||[]);
-      status("✓ Đã cập nhật. Bài đăng này đang là nội dung mới nhất trên trang chủ.","ok");
+      status(/\/photo\/\d+/.test(value) ? "✓ Đã lưu bài ảnh. Trang chủ sẽ hiển thị ảnh xem trước khi TikTok cung cấp; người xem luôn có thể mở bài gốc." : "✓ Đã cập nhật video mới nhất trên trang chủ.","ok");
       return true;
     }catch(error){status(error.message||"Không cập nhật được video.","error");return false;}
   }

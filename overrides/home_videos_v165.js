@@ -2,26 +2,7 @@
 (() => {
   "use strict";
 
-  const FALLBACK = [
-    {
-      external_id: "7681293376775277832",
-      url: "https://www.tiktok.com/@trainingbot.ai2/video/7681293376775277832?is_from_webapp=1&sender_device=pc",
-      title: "HỢP TÁC PUBG MOBILE x LINCOLN",
-      created_at: "2026-09-03T13:08:20Z"
-    },
-    {
-      external_id: "7680817497632820501",
-      url: "https://www.tiktok.com/@trainingbot.ai2/video/7680817497632820501?is_from_webapp=1&sender_device=pc",
-      title: "",
-      created_at: "2026-09-03T13:00:00Z"
-    },
-    {
-      external_id: "7677790316665031957",
-      url: "https://www.tiktok.com/@trainingbot.ai2/video/7677790316665031957",
-      title: "",
-      created_at: "2026-09-01T00:00:00Z"
-    }
-  ];
+  const FALLBACK = [];
 
   const host = document.querySelector(".hero-tiktok");
   const heroLayout = host?.closest(".tb202-video-stage");
@@ -37,7 +18,9 @@
         external_id: String(item?.external_id || "").trim(),
         url: String(item?.url || "").trim(),
         title: String(item?.title || "").replace(/\s+/g, " ").trim().slice(0, 140),
-        created_at: String(item?.created_at || "")
+        created_at: String(item?.created_at || ""),
+        kind: /\/photo\/\d{10,25}(?:[/?]|$)/.test(String(item?.url || "")) ? "photo" : "video",
+        thumbnail_url: String(item?.thumbnail_url || "").trim()
       }))
       .filter(item => /^\d{10,25}$/.test(item.external_id) && !seen.has(item.external_id) && seen.add(item.external_id));
   }
@@ -47,21 +30,27 @@
       const url = new URL(video.url);
       if ((url.hostname === "tiktok.com" || url.hostname.endsWith(".tiktok.com")) && /\/(?:video|photo)\/\d{10,25}(?:\/|$)/.test(url.pathname)) return `${url.origin}${url.pathname}`;
     } catch {}
-    return `https://www.tiktok.com/@trainingbot.ai2/video/${video.external_id}`;
+    return `https://www.tiktok.com/@trainingbbot`;
   }
 
-  async function hydrateClientTitles(items) {
+  const genericTitle = title => !title || /^(?:TikTok(?:\s*-\s*Make Your Day)?|Make Your Day)$/i.test(title);
+  const mediaName = video => video.kind === "photo" ? "Bộ ảnh TikTok" : "Video TikTok";
+  const fallbackCover = "/pubg-game-avatar.webp?v=140";
+
+  async function hydrateClientPreviews(items) {
     const videos = normalize(items);
-    await Promise.all(videos.map(async video => {
-      if (video.title) return;
+    await Promise.all(videos.slice(0, 12).map(async video => {
+      if (genericTitle(video.title)) video.title = "";
       try {
-        const response = await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(canonicalUrl(video))}`, {cache: "force-cache"});
+        const response = await fetch("/api/home-video-preview?url=" + encodeURIComponent(canonicalUrl(video)), {
+          cache: "default", signal: AbortSignal.timeout(6500)
+        });
         if (!response.ok) return;
         const data = await response.json();
-        video.title = String(data?.title || "").replace(/\s+/g, " ").trim().slice(0, 140);
+        if (data?.ok && data.thumbnail_url) video.thumbnail_url = data.thumbnail_url;
+        if (data?.ok && genericTitle(video.title) && !genericTitle(data.title)) video.title = data.title;
       } catch {}
     }));
-    videos.forEach(video=>{if(/^(TikTok(?: - Make Your Day)?|Make Your Day)$/i.test(video.title))video.title="";});
     return videos;
   }
 
@@ -77,54 +66,84 @@
 
 
   // A poster is shown initially. The third-party player is loaded only after a click.
+  // Photos are primarily presented as image covers + official post links.
+  // Video players are user-triggered; TikTok error events restore a usable fallback.
   function mainPreview(video) {
     const container = document.createElement("div");
     container.className = "tb-home-video-preview";
 
-    const externalLink = () => {
+    const externalLink = (label = "Mở bài gốc trên TikTok") => {
       const link = document.createElement("a");
       link.className = "tb-home-video-external";
       link.href = canonicalUrl(video);
       link.target = "_blank";
       link.rel = "noopener noreferrer";
-      link.textContent = "Mở trên TikTok";
+      link.textContent = label;
       return link;
     };
 
-    const showPoster = () => {
+    const showPoster = (error = "") => {
       const poster = document.createElement("div");
       poster.className = "tb-home-video-poster";
+      if (video.thumbnail_url) poster.classList.add("is-real");
       const image = document.createElement("img");
-      image.src = "/pubg-game-avatar.webp?v=140";
-      image.alt = "Ảnh đại diện PUBG MOBILE";
+      image.src = video.thumbnail_url || fallbackCover;
+      image.alt = video.title || mediaName(video);
       image.loading = "lazy";
-      const caption = document.createElement("div");
-      caption.className = "tb-home-video-overlay";
+      image.referrerPolicy = "no-referrer";
+      image.addEventListener("error", () => {
+        if (image.src.endsWith(fallbackCover)) return;
+        image.src = fallbackCover;
+        poster.classList.remove("is-real");
+      });
+      const overlay = document.createElement("div");
+      overlay.className = "tb-home-video-overlay";
+      const type = document.createElement("span");
+      type.className = "tb-home-video-kind";
+      type.textContent = video.kind === "photo" ? "BÀI ĐĂNG ẢNH" : "VIDEO";
       const heading = document.createElement("h3");
-      heading.textContent = video.title || "Video PUBG MOBILE nổi bật";
-      const play = document.createElement("button");
-      play.type = "button";
-      play.className = "tb-home-video-play-button";
-      play.textContent = "▶ Phát video";
-      play.setAttribute("aria-label", "Phát " + (video.title || "video nổi bật"));
-      play.addEventListener("click", showPlayer);
-      caption.append(heading, play, externalLink());
-      poster.append(image, caption);
+      heading.textContent = video.title || mediaName(video);
+      overlay.append(type, heading);
+      if (error) {
+        const note = document.createElement("p");
+        note.className = "tb-home-video-error";
+        note.textContent = "TikTok chưa cho phát nội dung này trên website. Bạn vẫn có thể mở bài đăng gốc.";
+        overlay.append(note);
+      }
+      if (video.kind === "video") {
+        const play = document.createElement("button");
+        play.type = "button";
+        play.className = "tb-home-video-play-button";
+        play.textContent = "▶ Phát video";
+        play.setAttribute("aria-label", "Phát " + (video.title || "video TikTok"));
+        play.addEventListener("click", showPlayer);
+        overlay.append(play);
+      }
+      overlay.append(externalLink(video.kind === "photo" ? "Xem đầy đủ bộ ảnh trên TikTok" : "Mở video trên TikTok"));
+      poster.append(image, overlay);
       container.replaceChildren(poster);
     };
 
     const showPlayer = () => {
-      const frame = mainFrame(video);
+      let frame = mainFrame(video);
       const controls = document.createElement("div");
       controls.className = "tb-home-video-controls";
       const close = document.createElement("button");
       close.type = "button";
       close.textContent = "Đóng trình phát";
-      close.addEventListener("click", showPoster);
-      controls.append(close, externalLink());
+      const onMessage = event => {
+        if (event.origin !== "https://www.tiktok.com" || event.source !== frame.contentWindow) return;
+        if (event.data?.["x-tiktok-player"] && (event.data.type === "onPlayerError" || event.data.type === "onError")) {
+          cleanup();
+          showPoster("embed");
+        }
+      };
+      const cleanup = () => window.removeEventListener("message", onMessage);
+      close.addEventListener("click", () => { cleanup(); showPoster(); });
+      window.addEventListener("message", onMessage);
+      controls.append(close, externalLink("Mở video trên TikTok"));
       container.replaceChildren(frame, controls);
     };
-
     showPoster();
     return container;
   }
@@ -134,20 +153,22 @@
     card.className = "tb-home-video-card";
     card.tabIndex = 0;
     card.setAttribute("role", "button");
-    card.setAttribute("aria-label", `Xem ${video.title || `video ${index + 1}`}`);
+    card.setAttribute("aria-label", `Xem ${video.title || `${mediaName(video)} ${index + 1}`}`);
 
     const thumb = document.createElement("div");
     thumb.className = "tb-home-video-thumb";
 
     const image = document.createElement("img");
-    image.src = "/pubg-game-avatar.webp?v=140";
-    image.alt = "";
+    image.src = video.thumbnail_url || fallbackCover;
+    image.alt = video.title || mediaName(video);
     image.loading = "lazy";
+    image.referrerPolicy = "no-referrer";
+    image.addEventListener("error", () => { image.src = fallbackCover; });
 
     const play = document.createElement("span");
     play.className = "tb-home-video-play";
     play.setAttribute("aria-hidden", "true");
-    play.textContent = "▶";
+    play.textContent = video.kind === "photo" ? "▣" : "▶";
 
     const choose = () => select(video.external_id);
     card.addEventListener("click", choose);
@@ -160,18 +181,19 @@
 
     thumb.append(image, play);
     card.append(thumb);
-    if (video.title) {
-      const title = document.createElement("div");
-      title.className = "tb-home-video-title";
-      title.textContent = video.title;
-      card.append(title);
-    }
+    const title = document.createElement("div");
+    title.className = "tb-home-video-title";
+    title.textContent = video.title || mediaName(video);
+    card.append(title);
     return card;
   }
 
   function render(items) {
     const videos = normalize(items);
-    if (!videos.length) return;
+    if (!videos.length) {
+      host.innerHTML = '<div class="tb-home-video-empty">Chưa có bài đăng TikTok. <a href="https://www.tiktok.com/@trainingbbot" target="_blank" rel="noopener noreferrer">Xem kênh TrainingBot</a></div>';
+      return;
+    }
 
     let activeId = videos[0].external_id;
     const main = document.createElement("div");
@@ -290,9 +312,9 @@
       const response = await fetch("/api/home-videos", {cache: "no-store"});
       const data = await response.json();
       if (!response.ok || !data?.ok) throw new Error("home videos unavailable");
-      render(await hydrateClientTitles(data.videos));
+      render(await hydrateClientPreviews(data.videos));
     } catch {
-      render(await hydrateClientTitles(FALLBACK));
+      render(FALLBACK);
     }
   }
 

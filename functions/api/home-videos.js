@@ -52,9 +52,7 @@ async function ensureTable(env){
     title TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL
   )`).run();
-  for(const seed of SEEDS){
-    await env.DB.prepare("INSERT OR IGNORE INTO home_videos(external_id,url,title,created_at) VALUES(?,?,?,?)").bind(...seed).run();
-  }
+  // Existing entries are preserved; deleted legacy posts must not be recreated on reads.
   await env.DB.prepare("UPDATE home_videos SET url=? WHERE external_id=? AND url LIKE '%/player/v1/%'")
     .bind(SEEDS[2][1],SEEDS[2][0]).run();
 }
