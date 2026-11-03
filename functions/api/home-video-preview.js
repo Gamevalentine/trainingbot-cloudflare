@@ -40,7 +40,11 @@ async function retrieve(url,asJson=false){
   }catch{return null;}
 }
 export async function onRequestGet({request}){
-  const input=parseTikTok(new URL(request.url).searchParams.get("url"));
+  const params=new URL(request.url).searchParams;
+  const user=params.get("user"),kind=params.get("kind"),id=params.get("id");
+  const direct=user&&kind&&id&&/^[\w.]{2,32}$/.test(user)&&/^(video|photo)$/.test(kind)&&/^\d{10,25}$/.test(id)
+    ? "https://www.tiktok.com/@"+user+"/"+kind+"/"+id : null;
+  const input=parseTikTok(direct||params.get("url"));
   if(!input)return json({ok:false,message:"Link TikTok không hợp lệ."},400);
   let thumbnail_url="",description="";
   if(input.type==="video"){

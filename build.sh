@@ -80,7 +80,7 @@ if ! grep -q 'home_videos_v165\.css' public/index.html; then
   sed -i 's#</head>#  <link rel="stylesheet" href="/home_videos_v165.css?v=207">\n</head>#' public/index.html
 fi
 if ! grep -q 'home_videos_v165\.js' public/index.html; then
-  sed -i 's#</body>#  <script defer src="/home_videos_v165.js?v=207"></script>\n</body>#' public/index.html
+  sed -i 's#</body>#  <script defer src="/home_videos_v165.js?v=208"></script>\n</body>#' public/index.html
 fi
 node --check public/home_videos_v165.js >/dev/null
 

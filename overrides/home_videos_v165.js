@@ -42,7 +42,10 @@
     await Promise.all(videos.slice(0, 12).map(async video => {
       if (genericTitle(video.title)) video.title = "";
       try {
-        const response = await fetch("/api/home-video-preview?url=" + encodeURIComponent(canonicalUrl(video)), {
+        const match = new URL(canonicalUrl(video)).pathname.match(/^\/@([\w.]+)\/(video|photo)\/(\d{10,25})(?:\/|$)/);
+        if (!match) return;
+        const params = new URLSearchParams({user: match[1], kind: match[2], id: match[3]});
+        const response = await fetch("/api/home-video-preview?" + params.toString(), {
           cache: "default", signal: AbortSignal.timeout(6500)
         });
         if (!response.ok) return;
