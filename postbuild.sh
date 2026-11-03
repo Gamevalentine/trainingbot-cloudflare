@@ -363,3 +363,31 @@ NODE
 # No external media download, font, API, D1 or R2 request.
 node --check tools/seo/lic04-build-png.mjs
 node tools/seo/lic04-build-png.mjs
+
+# TrainingBot TikTok channel profile-link normalization
+# Only profile hyperlinks change; original /video/ links and IDs remain untouched.
+node <<'NODE'
+const fs = require('node:fs');
+const path = require('node:path');
+const root = path.resolve('public');
+const newChannel = 'https://www.tiktok.com/@trainingbbot';
+let count = 0;
+function visit(folder) {
+  for (const entry of fs.readdirSync(folder, {withFileTypes:true})) {
+    const file = path.join(folder, entry.name);
+    if (entry.isDirectory()) visit(file);
+    else if (entry.isFile() && /\.(html|js)$/.test(entry.name)) {
+      const original = fs.readFileSync(file, 'utf8');
+      const updated = original
+        .replace(/https:\/\/www\.tiktok\.com\/@trainingbot\.ai2(?=["'\s<>?]|$)/g, newChannel)
+        .replace(/(>♪\s*&nbsp;\s*)@trainingbot\.ai2(?=<\/a>)/g, '$1@trainingbbot');
+      if (updated !== original) {
+        fs.writeFileSync(file, updated);
+        count++;
+      }
+    }
+  }
+}
+visit(root);
+console.log('TikTok channel profile links normalized in ' + count + ' generated files.');
+NODE

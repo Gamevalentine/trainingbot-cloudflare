@@ -2,7 +2,7 @@
   const social=document.querySelector('.tb-social-links');
   if(social){
     social.innerHTML=`
-      <a href="https://www.tiktok.com/@trainingbot.ai2" target="_blank" rel="noopener noreferrer" aria-label="TikTok" title="TikTok">
+      <a href="https://www.tiktok.com/@trainingbbot" target="_blank" rel="noopener noreferrer" aria-label="TikTok" title="TikTok">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 3v10.1a4.6 4.6 0 1 1-3.4-4.45v2.55a2.1 2.1 0 1 0 1.1 1.9V3h2.3Zm0 0c.55 2.2 2.02 3.58 4.5 3.9v2.35c-1.7-.1-3.18-.67-4.5-1.7V3Z"/></svg>
       </a>
       <a href="mailto:trainingbot.ai2@gmail.com" aria-label="Email" title="Email">
