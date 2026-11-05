@@ -39,6 +39,29 @@ async function retrieve(url,asJson=false){
     return asJson?await response.json():await response.text();
   }catch{return null;}
 }
+
+function photoFromPlayer(html){
+  if(!html)return "";
+  const tags=html.match(/<img\b[^>]*>/gi)||[];
+  for(const tag of tags){
+    const match=tag.match(/\bsrc\s*=\s*(?:"([^"]+)"|'([^']+)')/i);
+    if(!match)continue;
+    const candidate=decode(match[1]||match[2]);
+    if(/photomode|photo-mode|photo_mode/i.test(candidate)){
+      const valid=safeImage(candidate);
+      if(valid)return valid;
+    }
+  }
+  // TikTok may serialize the same image in JSON instead of a DOM img element.
+  const possible=html.match(/https?:[^\s"'<>{}]{15,2000}/g)||[];
+  for(const candidate of possible){
+    if(!/photomode|photo-mode|photo_mode/i.test(candidate))continue;
+    const valid=safeImage(decode(candidate.replace(/\\u0026/g,"&").replace(/\\\//g,"/")));
+    if(valid)return valid;
+  }
+  return "";
+}
+
 export async function onRequestGet({request}){
   const params=new URL(request.url).searchParams;
   const user=params.get("user"),kind=params.get("kind"),id=params.get("id");
@@ -57,6 +80,13 @@ export async function onRequestGet({request}){
     if(page){
       if(!thumbnail_url)thumbnail_url=safeImage(meta(page,"og:image")||meta(page,"twitter:image"));
       if(!description)description=title(meta(page,"og:description")||meta(page,"description"));
+    }
+  }
+  if(input.type==="photo" && !thumbnail_url){
+    const player=await retrieve("https://www.tiktok.com/player/v1/"+encodeURIComponent(input.id)+"?controls=0&description=0&music_info=0");
+    if(player){
+      thumbnail_url=photoFromPlayer(player);
+      if(!description)description=title(meta(player,"og:description")||meta(player,"description"));
     }
   }
   return json({ok:true,type:input.type,thumbnail_url,title:description});
