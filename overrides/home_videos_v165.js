@@ -120,12 +120,12 @@
         note.textContent = "TikTok chưa cho phát nội dung này trên website. Bạn vẫn có thể mở bài đăng gốc.";
         overlay.append(note);
       }
-      if (video.kind === "video") {
+      if (video.kind === "video" || video.kind === "photo") {
         const play = document.createElement("button");
         play.type = "button";
         play.className = "tb-home-video-play-button";
-        play.textContent = "▶ Phát video";
-        play.setAttribute("aria-label", "Phát " + (video.title || "video TikTok"));
+        play.textContent = video.kind === "photo" ? "▣ Xem bộ ảnh tại đây" : "▶ Phát video";
+        play.setAttribute("aria-label", (video.kind === "photo" ? "Xem " : "Phát ") + (video.title || mediaName(video)));
         play.addEventListener("click", showPlayer);
         overlay.append(play);
       }
@@ -154,7 +154,10 @@
       controls.append(close, externalLink("Mở video trên TikTok"));
       container.replaceChildren(frame, controls);
     };
-    showPoster();
+    // TikTok documents support for image posts inside its official player.
+    // Prefer the original slideshow rather than substituting an unrelated poster.
+    if (video.kind === "photo" && !video.thumbnail_url) showPlayer();
+    else showPoster();
     return container;
   }
 
