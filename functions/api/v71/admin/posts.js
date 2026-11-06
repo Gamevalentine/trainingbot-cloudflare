@@ -1,3 +1,4 @@
+import {FLASH_STATIC_POST} from "../../../lib/flash-editorial.js";
 const H={"content-type":"application/json; charset=UTF-8","cache-control":"no-store"};
 const reply=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:H});
 const clean=(value,max=100000)=>String(value??"").trim().slice(0,max);
@@ -130,11 +131,16 @@ export async function onRequestGet({request,env}){
   const id=clean(url.searchParams.get("id"),160);
   if(id){
     const post=await env.DB.prepare("SELECT id,slug,title,summary,content,rich_content,category,cover_url,status,featured_at,created_at,updated_at,published_at FROM tb_manual_posts_v1 WHERE id=? LIMIT 1").bind(id).first();
+    if(!post && id===FLASH_STATIC_POST.id)return reply({ok:true,post:{...FLASH_STATIC_POST,virtual_static:true}});
     if(!post)return reply({ok:false,message:"Không tìm thấy bài viết."},404);
     return reply({ok:true,post:{...post,url:`/bai-viet/${post.slug}`}});
   }
   const result=await env.DB.prepare("SELECT id,slug,title,summary,category,cover_url,status,featured_at,published_at,updated_at FROM tb_manual_posts_v1 ORDER BY published_at DESC LIMIT 100").all();
-  return reply({ok:true,posts:(result.results||[]).map(row=>({...row,url:`/bai-viet/${row.slug}`}))});
+  const rows=(result.results||[]).map(row=>({...row,url:`/bai-viet/${row.slug}`}));
+  if(!rows.some(row=>row.id===FLASH_STATIC_POST.id||row.slug===FLASH_STATIC_POST.slug)){
+    rows.unshift({...FLASH_STATIC_POST,virtual_static:true});
+  }
+  return reply({ok:true,posts:rows});
 }
 
 export async function onRequestPost({request,env}){
@@ -170,6 +176,26 @@ export async function onRequestPatch({request,env}){
   if(!id)return reply({ok:false,message:"Thiếu thông tin bài viết."},400);
   await setup(env.DB);
   const post=await env.DB.prepare("SELECT id,slug,title,summary,content,rich_content,category,cover_url,status,featured_at,published_at FROM tb_manual_posts_v1 WHERE id=? LIMIT 1").bind(id).first();
+  if(!post && id===FLASH_STATIC_POST.id){
+    if(typeof body.featured==="boolean")return reply({ok:false,message:"Hãy lưu bài FLASH trong trình sửa trước khi ghim."},409);
+    // Seed only on explicit authenticated PATCH, never on a GET or deployment.
+    const title=clean(body.title,180);
+    const content=clean(body.content,60000);
+    const richContent=sanitizeRich(body.rich_content);
+    const category=clean(body.category,60)||"Tin mới";
+    const summary=clean(body.summary,260)||makeSummary(content);
+    const coverUrl=clean(body.cover_url,500)||FLASH_STATIC_POST.cover_url;
+    const status=body.status===undefined?"published":String(body.status);
+    if(!["draft","published"].includes(status))return reply({ok:false,message:"Trạng thái không hợp lệ."},400);
+    if(title.length<4||(content.length<20&&!richContent))return reply({ok:false,message:"Tiêu đề hoặc nội dung chưa đủ."},400);
+    if(!coverUrl.startsWith("/")||coverUrl.startsWith("//"))return reply({ok:false,message:"Đường dẫn ảnh bìa không hợp lệ."},400);
+    const conflict=await env.DB.prepare("SELECT id FROM tb_manual_posts_v1 WHERE slug=? LIMIT 1").bind(FLASH_STATIC_POST.slug).first();
+    if(conflict)return reply({ok:false,message:"Bài đã được đồng bộ bởi phiên khác. Hãy tải lại Admin."},409);
+    const now=new Date().toISOString();
+    await env.DB.prepare("INSERT INTO tb_manual_posts_v1 (id,slug,title,summary,content,rich_content,category,cover_url,status,featured_at,created_at,updated_at,published_at) VALUES (?,?,?,?,?,?,?,?,?,'',?,?,?)")
+      .bind(id,FLASH_STATIC_POST.slug,title,summary,content,richContent,category,coverUrl,status,FLASH_STATIC_POST.created_at,now,status==="published"?FLASH_STATIC_POST.published_at:"").run();
+    return reply({ok:true,post:{id,slug:FLASH_STATIC_POST.slug,title,summary,content,rich_content:richContent,category,cover_url:coverUrl,status,url:FLASH_STATIC_POST.url},message:"Đã đưa bài FLASH vào D1 và lưu chỉnh sửa."});
+  }
   if(!post)return reply({ok:false,message:"Không tìm thấy bài viết."},404);
 
   if(typeof body.featured==="boolean"){
@@ -208,6 +234,7 @@ export async function onRequestDelete({request,env}){
   try{body=await request.json()}catch{return reply({ok:false,message:"Dữ liệu xóa bài không hợp lệ."},400)}
   const id=clean(body.id,160);
   if(!id)return reply({ok:false,message:"Thiếu mã bài viết cần xóa."},400);
+  if(id===FLASH_STATIC_POST.id)return reply({ok:false,message:"Bài FLASH gốc không thể xóa tại đây. Dùng Lưu nháp để ẩn bài."},409);
   await setup(env.DB);
   const post=await env.DB.prepare("SELECT id,slug,title,cover_url,rich_content FROM tb_manual_posts_v1 WHERE id=? LIMIT 1").bind(id).first();
   if(!post)return reply({ok:false,message:"Không tìm thấy bài viết."},404);

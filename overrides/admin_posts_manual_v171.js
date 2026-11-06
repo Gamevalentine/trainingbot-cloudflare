@@ -92,6 +92,7 @@
       const actions=make("div","tb-post-row-actions");
       const open=make("a","tb-post-open",post.status==="draft"?"Chưa công khai":"Mở bài");if(post.status==="draft"){open.removeAttribute("href");open.setAttribute("aria-disabled","true");open.classList.add("disabled");}else{open.href=post.url;open.target="_blank";open.rel="noopener";}
       const del=make("button","tb-post-delete","Xóa");del.type="button";del.dataset.deletePost=post.id;del.dataset.postTitle=post.title||"Bài viết";
+      if(post.id==="tb-static-flash-20261106"){del.disabled=true;del.title="Bài FLASH gốc: dùng Lưu nháp để ẩn; không thể xóa nhầm bản tĩnh.";}
       actions.append(open,del);row.append(copy,actions);list.appendChild(row);
     });
   }

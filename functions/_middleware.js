@@ -132,6 +132,20 @@ async function handleRequest(context){
      /^\/download\/flash-v4-(?:6-1|7-0)$/.test(url.pathname))){
     return Response.redirect("https://trainingbot.io.vn"+url.pathname,307);
   }
+  // When Admin publishes an editable D1 copy of the older static FLASH article,
+  // preserve the established URL while serving the current D1 version. No write.
+  if(url.pathname==="/news-pubg-mobile-flash-phat-hanh-13-11-2026" &&
+     ["GET","HEAD"].includes(request.method) && !isTrainingBotPreview(url.hostname) && env.DB){
+    try{
+      const post=await env.DB.prepare("SELECT status FROM tb_manual_posts_v1 WHERE slug=? LIMIT 1")
+        .bind("news-pubg-mobile-flash-phat-hanh-13-11-2026").first();
+      if(post?.status==="published")
+        return Response.redirect(url.origin+"/bai-viet/news-pubg-mobile-flash-phat-hanh-13-11-2026",302);
+      if(post?.status==="draft")
+        return new Response("Bài viết đang là bản nháp.",{status:404,headers:{"cache-control":"no-store","x-robots-tag":"noindex"}});
+    }catch(error){console.error("FLASH article read-through fallback",error);}
+  }
+
   const publicPreview=await previewPublicReadOnly(context,url);
   if(publicPreview)return publicPreview;
 
