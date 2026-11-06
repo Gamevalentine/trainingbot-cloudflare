@@ -31,7 +31,10 @@ assert(report.byRole.structured_data_image>=36);
 assert.equal(report.safeMetadataOnly,true,"New default must never leak into displayed image/CSS/script refs");
 assert.equal(report.riskFiles.length,0);
 assert.equal(report.files.filter(f=>f.noindex).length,19,"Keep 19 legacy/alias/account pages noindex");
-assert(report.files.some(f=>f.path==="news-pubg-mobile-flash-phat-hanh-13-11-2026.html"),"New FLASH article must be included in public share metadata audit");
+// Unlike 35 legacy generic pages, FLASH has its own approved editorial cover.
+const flashHtml=fs.readFileSync("public/news-pubg-mobile-flash-phat-hanh-13-11-2026.html","utf8");
+assert(flashHtml.includes('property="og:image" content="https://trainingbot.io.vn/pubg-mobile-flash-poster.webp"'),"FLASH must use its real cinematic cover in OG metadata");
+assert(flashHtml.includes('name="twitter:image" content="https://trainingbot.io.vn/pubg-mobile-flash-poster.webp"'),"FLASH Twitter preview must use its real cover");
 assert(report.files.filter(f=>!f.noindex).length>=16,"Keep every original indexable page");
 const jsonLd=(html)=>{
  const matches=[...html.matchAll(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];

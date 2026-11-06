@@ -459,7 +459,9 @@ for (const file of walk(root)) {
   const title = getTitle(html) || 'TrainingBot';
   const description = decodeEntities(getMeta(html, 'description')) || 'TrainingBot — Gaming Knowledge Hub dành cho cộng đồng game thủ.';
   const isArticle = /class=["'][^"']*tb-article(?:\s|["'])/i.test(html);
-  const image = isArticle ? localImageFor(rel, html) : defaultShareImage;
+  // FLASH has a custom article wrapper, but its social image must be the actual published cover.
+  const editorialArticle = rel === "news-pubg-mobile-flash-phat-hanh-13-11-2026.html";
+  const image = (isArticle || editorialArticle) ? localImageFor(rel, html) : defaultShareImage;
   const robots = noindex ? 'noindex,follow' : 'index,follow,max-image-preview:large';
 
   html = upsertHead(html, /<link\b[^>]*rel=["']canonical["'][^>]*>/i,
