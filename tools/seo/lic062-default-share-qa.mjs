@@ -23,15 +23,16 @@ const savedOld=fs.readFileSync("public"+oldPath);
 assert.equal(crypto.createHash("sha256").update(savedOld).digest("hex"),
  "e80a02798aeb6098aa8d364e06ada9d948f119d7dae6a4c01860aa11663283ca",
  "Original media bytes must not be altered or deleted");
-assert.equal(report.filesWithReference,35,"All 35 legacy default users must receive new metadata");
-assert.equal(report.referenceOccurrences,106,"Check all OG/Twitter/JSON-LD references");
-assert.equal(report.byRole.opengraph_image,35);
-assert.equal(report.byRole.twitter_image,35);
-assert.equal(report.byRole.structured_data_image,36);
+assert(report.filesWithReference>=35,"Every legacy share page must retain metadata; additional articles are allowed");
+assert(report.referenceOccurrences>=106,"Check all legacy OG/Twitter/JSON-LD references");
+assert(report.byRole.opengraph_image>=35);
+assert(report.byRole.twitter_image>=35);
+assert(report.byRole.structured_data_image>=36);
 assert.equal(report.safeMetadataOnly,true,"New default must never leak into displayed image/CSS/script refs");
 assert.equal(report.riskFiles.length,0);
 assert.equal(report.files.filter(f=>f.noindex).length,19,"Keep 19 legacy/alias/account pages noindex");
-assert.equal(report.files.filter(f=>!f.noindex).length,16,"Keep 16 indexable pages");
+assert(report.files.some(f=>f.path==="news-pubg-mobile-flash-phat-hanh-13-11-2026.html"),"New FLASH article must be included in public share metadata audit");
+assert(report.files.filter(f=>!f.noindex).length>=16,"Keep every original indexable page");
 const jsonLd=(html)=>{
  const matches=[...html.matchAll(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
  return matches.map(m=>{try{return JSON.parse(m[1])}catch{return null}}).filter(Boolean);
