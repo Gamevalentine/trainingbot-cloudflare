@@ -80,12 +80,12 @@ if ! grep -q 'home_videos_v165\.css' public/index.html; then
   sed -i 's#</head>#  <link rel="stylesheet" href="/home_videos_v165.css?v=209">\n</head>#' public/index.html
 fi
 if ! grep -q 'home_videos_v165\.js' public/index.html; then
-  sed -i 's#</body>#  <script defer src="/home_videos_v165.js?v=211"></script>\n</body>#' public/index.html
+  sed -i 's#</body>#  <script defer src="/home_videos_v165.js?v=212"></script>\n</body>#' public/index.html
 fi
 # Always update an existing homepage media script tag, not only newly inserted ones.
 # Browsers must not reuse the previous click-to-play bundle.
-sed -i -E 's#home_videos_v165\.js\?v=[0-9]+#home_videos_v165.js?v=211#g' public/index.html
-grep -Fq 'home_videos_v165.js?v=211' public/index.html
+sed -i -E 's#home_videos_v165\.js\?v=[0-9]+#home_videos_v165.js?v=212#g' public/index.html
+grep -Fq 'home_videos_v165.js?v=212' public/index.html
 node --check public/home_videos_v165.js >/dev/null
 
 # Inject the homepage video manager into the reconstructed Admin V2 document.
@@ -98,7 +98,7 @@ let source=fs.readFileSync(file,'utf8');
 if(!source.includes('admin_home_videos_v165.js')){
   const marker='document.open();document.write(h);document.close()';
   if(!source.includes(marker))throw new Error('Admin V2 loader marker not found');
-  const patch=`h=h.replace('</body>','<script defer src="/admin_home_videos_v165.js?v=211"><\\/script></body>');${marker}`;
+  const patch=`h=h.replace('</body>','<script defer src="/admin_home_videos_v165.js?v=212"><\\/script></body>');${marker}`;
   source=source.replace(marker,patch);
   fs.writeFileSync(file,source);
 }

@@ -9,7 +9,7 @@
   if (!host || !heroLayout) return;
 
   const playerUrl = (id, compact = false) =>
-    `https://www.tiktok.com/player/v1/${encodeURIComponent(id)}?controls=${compact ? 0 : 1}&description=${compact ? 0 : 1}&music_info=0&rel=0&autoplay=1&muted=1`;
+    `https://www.tiktok.com/player/v1/${encodeURIComponent(id)}?controls=${compact ? 0 : 1}&description=${compact ? 0 : 1}&music_info=0&rel=0&autoplay=1&muted=1&loop=1`;
 
   function normalize(items) {
     const seen = new Set();
@@ -175,8 +175,10 @@
           command("mute");
           if (inView && !document.hidden) command("play");
         } else if (message.type === "onPlayerError" || message.type === "onError") {
-          failed = true;
-          showPoster(message.value?.errorCode === 3002 ? "autoplay" : "unavailable");
+          // An autoplay or transient media error must not remove the TikTok
+          // iframe: it can still show the post and its native play controls.
+          // An earlier version replaced it with a static, unrelated poster.
+          if (message.value?.errorCode === 3002) command("mute");
         }
       };
       window.addEventListener("message", messageHandler);
