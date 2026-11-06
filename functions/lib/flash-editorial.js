@@ -7,7 +7,7 @@ export const FLASH_STATIC_POST = Object.freeze({
   title:"PUBG MOBILE FLASH ra mắt ngày 13/11/2026: Lịch phát hành và cách đăng ký trước",
   summary:"PUBG MOBILE xác nhận FLASH ra mắt ngày 13/11/2026, một ngày sau bản 4.7. Xem lịch phát hành, tính năng bản tải gọn nhẹ và cách đăng ký trước.",
   category:"Tin mới",
-  cover_url:"/editorial-pubg-mobile-flash-13-11-2026.svg",
+  cover_url:"/pubg-mobile-flash-poster.webp",
   status:"published",
   featured_at:"",
   published_at:"2026-11-06T16:30:00.000Z",
