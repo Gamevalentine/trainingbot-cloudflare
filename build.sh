@@ -73,6 +73,9 @@ node --check public/visitor_tracking_v177.js >/dev/null
 test -f public/ad_placeholder_test_v179.js
 node --check public/ad_placeholder_test_v179.js >/dev/null
 
+# Regression: uploaded Unicode PNG must be stored as a fixed-length buffer in R2.
+node tools/admin/image-upload-r2-qa.mjs
+
 # Homepage video shelf: newest TikTok stays large, older videos form a horizontal row.
 test -f public/home_videos_v165.css
 test -f public/home_videos_v165.js

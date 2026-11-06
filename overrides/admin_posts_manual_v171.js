@@ -67,7 +67,15 @@
     const target=`/user-posts/${slugify(title)}-${Date.now()}.${extFor(file)}`;
     const formData=new FormData();formData.set("target",target);formData.set("file",file);
     const response=await fetch("/api/v71/admin/image-replace",{method:"POST",headers:{Authorization:`Bearer ${token()}`},body:formData});
-    const data=await response.json().catch(()=>({}));if(!response.ok||!data.ok)throw new Error(data.message||"Không tải được ảnh bìa.");return data.url||target;
+    const data=await response.json().catch(()=>null);
+    if(!response.ok||data?.ok!==true){
+      const message=data?.message||(
+        response.status===413?"Ảnh vượt giới hạn tải lên của máy chủ.":
+        response.status===401?"Phiên quản trị đã hết hạn.":
+        `Máy chủ không thể lưu ảnh bìa (HTTP ${response.status}).`);
+      throw new Error(message);
+    }
+    return data.url||target;
   }
 
   function renderPosts(posts){

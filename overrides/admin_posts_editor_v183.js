@@ -131,8 +131,8 @@
     const auth=token();if(!auth)throw new Error("Phiên quản trị không còn hợp lệ.");
     const form=new FormData();form.set("target",target);form.set("file",file);
     const response=await fetch(IMAGE_API,{method:"POST",headers:{Authorization:`Bearer ${auth}`},body:form,cache:"no-store"});
-    const data=await response.json().catch(()=>({}));
-    if(!response.ok||!data.ok)throw new Error(data.message||"Không tải được ảnh.");
+    const data=await response.json().catch(()=>null);
+    if(!response.ok||data?.ok!==true)throw new Error(data?.message||`Máy chủ không thể lưu ảnh (HTTP ${response.status}).`);
     return data.url||target;
   }
 

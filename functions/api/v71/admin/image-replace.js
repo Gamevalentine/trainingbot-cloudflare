@@ -26,13 +26,23 @@ export async function onRequestPost({request,env}){
     if(!target)return json({ok:false,message:"Đường dẫn ảnh cần thay không hợp lệ."},400);
     if(!file || typeof file.stream!=="function")return json({ok:false,message:"Không nhận được file ảnh."},400);
     const type=String(file.type||"").toLowerCase();
-    if(!type.startsWith("image/"))return json({ok:false,message:"File được chọn không phải ảnh."},400);
-    if(Number(file.size||0)>12*1024*1024)return json({ok:false,message:"Ảnh vượt quá 12 MB."},413);
+    const allowed=new Set(["image/png","image/jpeg","image/webp","image/gif","image/avif","image/svg+xml"]);
+    if(!allowed.has(type))return json({ok:false,message:"Định dạng ảnh không được hỗ trợ. Hỗ trợ PNG, JPG, WebP, GIF, AVIF, SVG."},415);
+    const size=Number(file.size||0);
+    if(size<=0)return json({ok:false,message:"Ảnh không có dữ liệu."},400);
+    if(size>12*1024*1024)return json({ok:false,message:"Ảnh vượt quá 12 MB."},413);
     const key=keyFor(target);
-    await env.VIDEO_BUCKET.put(key,file.stream(),{
-      httpMetadata:{contentType:type||"application/octet-stream",cacheControl:"public, max-age=0, must-revalidate"},
-      customMetadata:{targetPath:target,originalName:String(file.name||"image").slice(0,160),updatedAt:new Date().toISOString()}
+    // A File.stream() from multipart FormData is not guaranteed to have a known
+    // length. R2Bucket.put rejects unknown-length streams in production.
+    // Buffering is bounded by the 12 MB limit above; filenames are not used as keys.
+    const bytes=await file.arrayBuffer();
+    if(bytes.byteLength!==size)return json({ok:false,message:"Dữ liệu ảnh nhận được chưa đầy đủ."},400);
+    const stored=await env.VIDEO_BUCKET.put(key,bytes,{
+      httpMetadata:{contentType:type,cacheControl:"public, max-age=0, must-revalidate"},
+      // Store the original Unicode filename as ASCII-safe percent encoding.
+      customMetadata:{targetPath:target,originalName:encodeURIComponent(String(file.name||"image")).slice(0,512),updatedAt:new Date().toISOString()}
     });
+    if(!stored)throw new Error("R2 put returned null");
     return json({ok:true,target,key,url:target});
   }catch(error){
     console.error("image replace",error);
