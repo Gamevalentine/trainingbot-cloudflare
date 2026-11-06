@@ -9,7 +9,7 @@
   if (!host || !heroLayout) return;
 
   const playerUrl = (id, compact = false) =>
-    `https://www.tiktok.com/player/v1/${encodeURIComponent(id)}?controls=${compact ? 0 : 1}&description=${compact ? 0 : 1}&music_info=0&rel=0&autoplay=0`;
+    `https://www.tiktok.com/player/v1/${encodeURIComponent(id)}?controls=${compact ? 0 : 1}&description=${compact ? 0 : 1}&music_info=0&rel=0&autoplay=1&muted=1`;
 
   function normalize(items) {
     const seen = new Set();
@@ -62,7 +62,7 @@
     iframe.className = "tb-home-video-main-frame";
     iframe.src = playerUrl(video.external_id, false);
     iframe.title = video.title || "Video TikTok nổi bật của TrainingBot";
-    iframe.loading = "lazy";
+    iframe.loading = "eager";
     iframe.allow = "fullscreen; autoplay; encrypted-media; picture-in-picture";
     return iframe;
   }
@@ -71,11 +71,20 @@
   // A poster is shown initially. The third-party player is loaded only after a click.
   // Photos are primarily presented as image covers + official post links.
   // Video players are user-triggered; TikTok error events restore a usable fallback.
+  // Play the real TikTok embed when the media enters the viewport.
+  // Muted autoplay is necessary for modern browser autoplay policies.
   function mainPreview(video) {
     const container = document.createElement("div");
     container.className = "tb-home-video-preview";
+    let frame = null;
+    let observer = null;
+    let inView = false;
+    let manuallyClosed = false;
+    let failed = false;
+    let disposed = false;
+    let messageHandler = null;
 
-    const externalLink = (label = "Mở bài gốc trên TikTok") => {
+    const externalLink = (label = "Mở bài đăng trên TikTok") => {
       const link = document.createElement("a");
       link.className = "tb-home-video-external";
       link.href = canonicalUrl(video);
@@ -85,20 +94,34 @@
       return link;
     };
 
-    const showPoster = (error = "") => {
+    const command = type => {
+      try {
+        frame?.contentWindow?.postMessage({"x-tiktok-player": true, type}, "https://www.tiktok.com");
+      } catch {}
+    };
+
+    const detach = () => {
+      if (frame) command("pause");
+      frame = null;
+      if (messageHandler) window.removeEventListener("message", messageHandler);
+      messageHandler = null;
+    };
+
+    const showPoster = (reason = "") => {
+      if (disposed) return;
+      detach();
       const poster = document.createElement("div");
       poster.className = "tb-home-video-poster";
       if (video.thumbnail_url) poster.classList.add("is-real");
       if (video.kind === "photo" && !video.thumbnail_url) poster.classList.add("is-photo-unavailable");
       const image = document.createElement("img");
-      image.src = video.thumbnail_url || (video.kind === "photo" ? "/trainingbot-logo-v110.png" : fallbackCover);
+      const defaultCover = video.kind === "photo" ? "/trainingbot-logo-v110.png" : fallbackCover;
+      image.src = video.thumbnail_url || defaultCover;
       image.alt = video.title || mediaName(video);
       image.loading = "lazy";
       image.referrerPolicy = "no-referrer";
       image.addEventListener("error", () => {
-        if (image.src.endsWith(fallbackCover)) return;
-        image.src = video.kind === "photo" ? "/trainingbot-logo-v110.png" : fallbackCover;
-        poster.classList.remove("is-real");
+        if (image.src !== new URL(defaultCover, location.href).href) image.src = defaultCover;
       });
       const overlay = document.createElement("div");
       overlay.className = "tb-home-video-overlay";
@@ -108,59 +131,100 @@
       const heading = document.createElement("h3");
       heading.textContent = video.title || mediaName(video);
       overlay.append(type, heading);
-      if (video.kind === "photo" && !video.thumbnail_url) {
-        const note=document.createElement("p");
-        note.className="tb-home-video-error";
-        note.textContent="TikTok chưa cung cấp ảnh xem trước. Bạn có thể xem bộ ảnh gốc bên dưới.";
-        overlay.append(note);
-      }
-      if (error) {
+      if (reason) {
         const note = document.createElement("p");
         note.className = "tb-home-video-error";
-        note.textContent = "TikTok chưa cho phát nội dung này trên website. Bạn vẫn có thể mở bài đăng gốc.";
+        note.textContent = reason === "autoplay"
+          ? "Trình duyệt chặn tự phát. Bấm nút bên dưới để xem nội dung."
+          : "Trình phát tạm thời không khả dụng. Bạn vẫn có thể mở bài gốc trên TikTok.";
         overlay.append(note);
       }
-      if (video.kind === "video" || video.kind === "photo") {
-        const play = document.createElement("button");
-        play.type = "button";
-        play.className = "tb-home-video-play-button";
-        play.textContent = video.kind === "photo" ? "▣ Xem bộ ảnh tại đây" : "▶ Phát video";
-        play.setAttribute("aria-label", (video.kind === "photo" ? "Xem " : "Phát ") + (video.title || mediaName(video)));
-        play.addEventListener("click", showPlayer);
-        overlay.append(play);
-      }
-      overlay.append(externalLink(video.kind === "photo" ? "Xem đầy đủ bộ ảnh trên TikTok" : "Mở video trên TikTok"));
+      const play = document.createElement("button");
+      play.type = "button";
+      play.className = "tb-home-video-play-button";
+      play.textContent = video.kind === "photo" ? "▣ Xem bộ ảnh" : "▶ Phát video";
+      play.addEventListener("click", () => {
+        manuallyClosed = false;
+        failed = false;
+        showPlayer();
+      });
+      overlay.append(play, externalLink());
       poster.append(image, overlay);
       container.replaceChildren(poster);
     };
 
     const showPlayer = () => {
-      let frame = mainFrame(video);
+      if (disposed || frame) return;
+      failed = false;
+      const player = mainFrame(video);
+      frame = player;
       const controls = document.createElement("div");
       controls.className = "tb-home-video-controls";
       const close = document.createElement("button");
       close.type = "button";
       close.textContent = "Đóng trình phát";
-      const onMessage = event => {
-        if (event.origin !== "https://www.tiktok.com" || event.source !== frame.contentWindow) return;
-        if (event.data?.["x-tiktok-player"] && (event.data.type === "onPlayerError" || event.data.type === "onError")) {
-          cleanup();
-          showPoster("embed");
+      close.addEventListener("click", () => {
+        manuallyClosed = true;
+        showPoster();
+      });
+      messageHandler = event => {
+        if (event.origin !== "https://www.tiktok.com" || event.source !== player.contentWindow) return;
+        const message = event.data;
+        if (!message?.["x-tiktok-player"]) return;
+        if (message.type === "onPlayerReady") {
+          command("mute");
+          if (inView && !document.hidden) command("play");
+        } else if (message.type === "onPlayerError" || message.type === "onError") {
+          failed = true;
+          showPoster(message.value?.errorCode === 3002 ? "autoplay" : "unavailable");
         }
       };
-      const cleanup = () => window.removeEventListener("message", onMessage);
-      close.addEventListener("click", () => { cleanup(); showPoster(); });
-      window.addEventListener("message", onMessage);
-      controls.append(close, externalLink("Mở video trên TikTok"));
-      container.replaceChildren(frame, controls);
+      window.addEventListener("message", messageHandler);
+      controls.append(close, externalLink(video.kind === "photo" ? "Mở bộ ảnh trên TikTok" : "Mở video trên TikTok"));
+      container.replaceChildren(player, controls);
     };
-    // TikTok documents support for image posts inside its official player.
-    // Prefer the original slideshow rather than substituting an unrelated poster.
-    if (video.kind === "photo" && !video.thumbnail_url) showPlayer();
-    else showPoster();
+
+    const updateVisibility = visible => {
+      if (disposed) return;
+      inView = visible;
+      if (visible && !document.hidden) {
+        if (!frame && !failed && !manuallyClosed) showPlayer();
+        else if (frame) command("play");
+      } else if (frame) {
+        command("pause");
+      }
+    };
+
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        if (frame) command("pause");
+      } else if (inView) {
+        updateVisibility(true);
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    showPoster();
+
+    if ("IntersectionObserver" in window) {
+      observer = new IntersectionObserver(entries => {
+        const entry = entries[0];
+        const visible = !!entry?.isIntersecting && entry.intersectionRatio >= 0.18;
+        if (!entry?.isIntersecting) manuallyClosed = false;
+        updateVisibility(visible);
+      }, {threshold: [0, 0.18, 0.4]});
+      observer.observe(container);
+    } else {
+      updateVisibility(true);
+    }
+
+    container.tbCleanup = () => {
+      disposed = true;
+      observer?.disconnect();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      detach();
+    };
     return container;
   }
-
   function miniCard(video, index, select) {
     const card = document.createElement("article");
     card.className = "tb-home-video-card";
@@ -305,6 +369,7 @@
 
     const paint = () => {
       const active = videos.find(video => video.external_id === activeId) || videos[0];
+      main.firstElementChild?.tbCleanup?.();
       main.replaceChildren(mainPreview(active));
       strip.replaceChildren();
       const others = videos.filter(video => video.external_id !== active.external_id);
