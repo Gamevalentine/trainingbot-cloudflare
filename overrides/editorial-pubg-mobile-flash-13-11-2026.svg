@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+<title id="title">PUBG MOBILE FLASH — 13/11/2026</title>
+<desc id="desc">Ảnh biên tập gốc của TrainingBot: ánh chớp xanh, núi và người nhảy dù, thông báo PUBG MOBILE FLASH ra mắt ngày 13 tháng 11 năm 2026.</desc>
+<defs>
+  <linearGradient id="sky" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#06101b"/><stop offset=".55" stop-color="#0d2b50"/><stop offset="1" stop-color="#092b60"/></linearGradient>
+  <linearGradient id="blue" x1="0" x2="1"><stop stop-color="#3de4ff"/><stop offset="1" stop-color="#6688ff"/></linearGradient>
+  <linearGradient id="ground" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#092d54"/><stop offset="1" stop-color="#05101f"/></linearGradient>
+  <filter id="glow"><feGaussianBlur stdDeviation="10"/></filter>
+</defs>
+<rect width="1200" height="675" fill="url(#sky)"/>
+<g opacity=".24" stroke="#62d1ff"><path d="M0 110h1200M0 220h1200M0 330h1200M0 440h1200M0 550h1200" stroke-width="1"/><path d="M180 0v675M380 0v675M580 0v675M780 0v675M980 0v675" stroke-width=".8"/></g>
+<g fill="#b0eafa" opacity=".4"><circle cx="116" cy="95" r="3"/><circle cx="920" cy="142" r="2"/><circle cx="1046" cy="55" r="4"/><circle cx="721" cy="80" r="2"/><circle cx="1073" cy="299" r="2"/></g>
+<path d="M936 0 822 230 956 212 748 546 832 308 706 320 823 0Z" fill="#44dfff" opacity=".32" filter="url(#glow)"/>
+<path d="M950 0 841 219 969 210 754 534 844 295 719 312 837 0Z" fill="#72e8ff" opacity=".92"/>
+<path d="M0 501 151 414 293 518 446 371 618 520 760 452 918 532 1067 396 1200 503v172H0Z" fill="#114370"/>
+<path d="M0 560 112 492 241 573 417 473 533 558 724 479 860 566 999 472 1200 556v119H0Z" fill="url(#ground)"/>
+<g transform="translate(1020 219)" fill="none" stroke="#d7fcff" stroke-width="4" opacity=".88"><path d="M-86-35c21-62 149-62 172 0"/><path d="M-86-35q86 47 172 0"/><path d="M-75-30 0 98M0-38V98M75-30 0 98"/></g>
+<g transform="translate(1020 343)" fill="#132b46" stroke="#9addeb" stroke-width="2"><circle cx="0" cy="0" r="15"/><path d="M-9 16 -23 56 25 56 9 16Z"/><path d="M-15 26 -40 47M15 26 42 47"/></g>
+<rect x="58" y="51" width="246" height="43" rx="10" fill="#102a4c" stroke="#4aaeda"/>
+<text x="79" y="80" font-family="Arial,DejaVu Sans,sans-serif" font-size="21" font-weight="800" fill="#d8f6ff">TRAININGBOT</text>
+<text x="64" y="188" font-family="Arial,DejaVu Sans,sans-serif" font-size="35" font-weight="800" fill="#dffaff" letter-spacing="3">PUBG MOBILE</text>
+<text x="55" y="338" font-family="Arial,DejaVu Sans,sans-serif" font-size="145" font-weight="900" fill="url(#blue)" letter-spacing="-5">FLASH</text>
+<rect x="61" y="380" width="670" height="2" fill="#55cafa" opacity=".65"/>
+<text x="63" y="441" font-family="Arial,DejaVu Sans,sans-serif" font-size="37" font-weight="700" fill="#fff">LỊCH PHÁT HÀNH CHÍNH THỨC</text>
+<rect x="60" y="462" width="522" height="101" rx="18" fill="#09263e" stroke="#5ad9ff" stroke-width="3"/>
+<text x="85" y="535" font-family="Arial,DejaVu Sans,sans-serif" font-size="76" font-weight="900" fill="#fff">13/11/2026</text>
+<text x="62" y="616" font-family="Arial,DejaVu Sans,sans-serif" font-size="23" fill="#bce9f4">Bản tải gọn nhẹ • Android &amp; iOS</text>
+</svg>
