@@ -25,10 +25,13 @@ const editor='admin_posts_editor_v183.js';
 if(!source.includes(manual)||!source.includes(feature)||!source.includes(editor)){
   const marker='document.open();document.write(h);document.close()';
   if(!source.includes(marker))throw new Error('Admin V2 loader marker not found');
-  const scripts=`<script defer src="/${manual}?v=173"><\\/script><script defer src="/${feature}?v=173"><\\/script><script defer src="/${editor}?v=185"><\\/script>`;
+  const scripts=`<script defer src="/${manual}?v=186"><\\/script><script defer src="/${feature}?v=173"><\\/script><script defer src="/${editor}?v=186"><\\/script>`;
   source=source.replace(marker,`h=h.replace('</body>','${scripts}</body>');${marker}`);
-  fs.writeFileSync(file,source);
 }
+// Force-update already inserted URLs too; caching must not keep the faulty upload UI.
+source=source.replace(/admin_posts_manual_v171\.js\?v=\d+/g,"admin_posts_manual_v171.js?v=186");
+source=source.replace(/admin_posts_editor_v183\.js\?v=\d+/g,"admin_posts_editor_v183.js?v=186");
+fs.writeFileSync(file,source);
 NODE
 
 for page in public/index.html public/news.html; do
