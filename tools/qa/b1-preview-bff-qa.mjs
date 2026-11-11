@@ -36,7 +36,7 @@ const svc={
     return new Response(JSON.stringify({ok:true}),{headers:{'content-type':'application/json'}});
   }
   assert(visitors.has(data.visitorId),'No session for AI request');
-  assert(['Xin chào','bao giờ có bản update 4.7','Beta 4.7 đã có chưa?','bao giờ có bản update 4.6'].includes(data.message));
+  assert(['Xin chào','bao giờ có bản update 4.7','Beta 4.7 đã có chưa?','bao giờ có bản update 4.6','tin PUBG mới nhất'].includes(data.message));
   return new Response(JSON.stringify({reply:'Xin chào từ Staging',conversationId:'conv_preview_12345678',revision:1}),
     {headers:{'content-type':'application/json'}});
  }
@@ -109,29 +109,71 @@ assert.equal(injected.status,400);
 const good=await chat(req('/api/ai-preview/chat',{cookie:rawCookie,body:{surface:'visitor',message:'Xin chào'}}),env);
 assert.equal(good.status,200);
 assert.equal((await good.json()).reply,'Xin chào từ Staging');
-// A reviewed date must override an unsupported generic model reply, but only
-// AFTER the signed Worker call succeeds and consumes its normal rate quota.
-const release=await chat(req('/api/ai-preview/chat',{cookie:rawCookie,
-  body:{surface:'visitor',message:'bao giờ có bản update 4.7'}}),env);
+// The public feed is served by a FIXED anonymous JSON API, never a writable
+// Production resource. Inject a synthetic response for full offline QA.
+const dynamicVersions=[
+  {version:'V4.7.5',status:'coming_soon',arch:'x64',updated_at:'2026-11-10T10:00:00Z'},
+  {version:'V4.7.4',status:'released',arch:'x64',updated_at:'2026-10-30T10:00:00Z'}
+];
+const dynamicPosts=[
+  {title:'PUBG MOBILE FLASH dự kiến ra mắt 13/11/2026',
+   url:'/bai-viet/pubg-mobile-flash-du-kien-ra-mat',published_at:'2026-11-11T10:00:00Z',summary:'Tin về Flash.'},
+  {title:'PUBG MOBILE 4.7 cập nhật ngày 12/11/2026',
+   url:'/bai-viet/pubg-mobile-4-7-cap-nhat',published_at:'2026-11-10T10:00:00Z',summary:'Bài viết được cập nhật.'}
+];
+const publicCalls=[];
+const publicFetch=async (url,options)=>{
+  assert.equal(options.method,'GET');
+  assert.equal(options.redirect,'manual');
+  assert.equal(options.credentials,'omit');
+  assert(!options.headers.cookie&&!options.headers.authorization);
+  publicCalls.push(url);
+  const data=url==='https://trainingbot.io.vn/api/beta-versions'
+    ?{ok:true,versions:dynamicVersions}
+    :url==='https://trainingbot.io.vn/api/posts?limit=12'
+      ?{ok:true,posts:dynamicPosts}:null;
+  assert(data,'Cannot fetch arbitrary URL');
+  return new Response(JSON.stringify(data),{status:200,headers:{'content-type':'application/json'}});
+};
+const releaseQuery=req('/api/ai-preview/chat',{cookie:rawCookie,
+  body:{surface:'visitor',message:'bao giờ có bản update 4.7'}});
+const release=await chat(releaseQuery,env,{publicFetch});
 assert.equal(release.status,200);
 const announced=await release.json();
 assert.match(announced.reply,/12\/11\/2026/);
-assert.match(announced.reply,/Beta 4\.7/);
-assert.match(announced.reply,/không phải dữ liệu cửa hàng thời gian thực/);
+assert.match(announced.reply,/V4\.7\.5/);
+assert.match(announced.reply,/chưa mở tải/);
 assert(announced.sources.some(x=>x.type==='official_claim'&&
   x.url==='https://www.pubgmobile.jp/version-4-7-0-update-notice-20261105/'));
 assert(announced.sources.some(x=>x.type==='site_release'&&
   x.url==='https://trainingbot.io.vn/ban-cap-nhat'));
+assert(announced.sources.some(x=>x.type==='site_news'&&
+  x.url==='https://trainingbot.io.vn/bai-viet/pubg-mobile-4-7-cap-nhat'));
+dynamicVersions[0].status='released';
+const updated=await chat(req('/api/ai-preview/chat',{cookie:rawCookie,
+  body:{surface:'visitor',message:'bao giờ có bản update 4.7'}}),env,{publicFetch});
+assert.equal(updated.status,200);
+assert.match((await updated.json()).reply,/V4\.7\.5 \(x64\): được đánh dấu đã phát hành/,
+ 'A public API change must affect the very next answer without a code change');
 const beta=await chat(req('/api/ai-preview/chat',{cookie:rawCookie,
-  body:{surface:'visitor',message:'Beta 4.7 đã có chưa?'}}),env);
+  body:{surface:'visitor',message:'Beta 4.7 đã có chưa?'}}),env,{publicFetch});
 assert.equal(beta.status,200);
-assert.match((await beta.json()).reply,/V4\.7\.4/);
+assert.match((await beta.json()).reply,/V4\.7\.5/);
+const news=await chat(req('/api/ai-preview/chat',{cookie:rawCookie,
+  body:{surface:'visitor',message:'tin PUBG mới nhất'}}),env,{publicFetch});
+assert.equal(news.status,200);
+const newsBody=await news.json();
+assert.match(newsBody.reply,/PUBG MOBILE FLASH/);
+assert(newsBody.sources?.some(x=>x.type==='site_news'));
 const other=await chat(req('/api/ai-preview/chat',{cookie:rawCookie,
-  body:{surface:'visitor',message:'bao giờ có bản update 4.6'}}),env);
+  body:{surface:'visitor',message:'bao giờ có bản update 4.6'}}),env,{publicFetch});
 assert.equal(other.status,200);
-assert.equal((await other.json()).reply,'Xin chào từ Staging',
-  'Do not synthesize release dates for unsupported versions');
-
+assert.match((await other.json()).reply,/Chưa đủ căn cứ/i,
+ 'Do not invent dates for absent versions');
+assert(publicCalls.every(x=>[
+  'https://trainingbot.io.vn/api/beta-versions',
+  'https://trainingbot.io.vn/api/posts?limit=12'
+].includes(x)),'Only fixed allowlisted public endpoints');
 assert.equal(lastGuest,responses.at(-1).guest);
 assert.equal((await chat(req('/api/ai-preview/chat',{cookie:rawCookie,headers:{'CF-Connecting-IP':'203.0.113.52'},body:{surface:'visitor',message:'Xin chào'}}),env)).status,401,'Guest cookie bound to IP');
 const prod='https://trainingbot.io.vn';
