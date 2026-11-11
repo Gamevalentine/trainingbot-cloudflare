@@ -1,10 +1,13 @@
 import {verified47ReleaseAnswer} from './ai_release_facts.js';
 import {getTrainingBotPublicData,composeTrainingBotPublicAnswer} from './ai_public_knowledge.js';
+import {FOLLOWUP_KINDS,publicAnswerTopic,feedbackMode,groundedFollowup} from './ai_followup_context.js';
 // Preview-only B.1 first-party BFF. No global fetch, direct upstream URL, or Production resource.
 const encoder=new TextEncoder();
 const JSON_HEADERS={'content-type':'application/json; charset=utf-8','cache-control':'no-store, max-age=0',
   'x-content-type-options':'nosniff','x-robots-tag':'noindex, nofollow','referrer-policy':'no-referrer'};
 const cookieName='__Host-tb_ai_b1';
+const followupCookieName='__Host-tb_ai_last_v1';
+const followupMaxAgeMs=20*60*1000;
 const safe=(status,data,headers={})=>new Response(JSON.stringify(data),{status,headers:{...JSON_HEADERS,...headers}});
 const b64=bytes=>btoa(String.fromCharCode(...bytes)).replaceAll('+','-').replaceAll('/','_').replace(/=+$/g,'');
 const proof=async(secret,s)=>b64(new Uint8Array(await crypto.subtle.sign('HMAC',secret,encoder.encode(s))));
@@ -98,6 +101,36 @@ async function validateCookie(req,ctx){
  return equals(expected,signature)?id:null;
 }
 function expiresCookie(){return cookieName+'=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0';}
+function lastContextRaw(req){
+ const found=(req.headers.get('cookie')||'').split(';').map(x=>x.trim())
+   .filter(s=>s.startsWith(followupCookieName+'='));
+ return found.length===1?found[0].slice(followupCookieName.length+1):'';
+}
+async function validLastContext(req,ctx,visitorId,conversationId){
+ if(typeof conversationId!=='string'||!/^[A-Za-z0-9_-]{8,100}$/.test(conversationId))return null;
+ const match=/^([a-z0-9_]{3,20})\.(\d{13})\.([A-Za-z0-9_-]{43})$/.exec(lastContextRaw(req));
+ if(!match)return null;
+ const [,kind,expires,signature]=match;
+ if(!FOLLOWUP_KINDS.includes(kind))return null;
+ const until=Number(expires),now=Date.now();
+ if(until<=now||until>now+followupMaxAgeMs)return null;
+ const expected=await proof(ctx.key,
+  ['TB_SOURCE_CONTEXT_V1',visitorId,conversationId,kind,expires,ctx.ipHash,ctx.u.hostname].join(':'));
+ return equals(expected,signature)?kind:null;
+}
+async function issueLastContext(ctx,visitorId,conversationId,kind){
+ if(!FOLLOWUP_KINDS.includes(kind)||typeof conversationId!=='string'||
+   !/^[A-Za-z0-9_-]{8,100}$/.test(conversationId))return clearLastContext();
+ const expires=String(Date.now()+followupMaxAgeMs);
+ const signature=await proof(ctx.key,
+  ['TB_SOURCE_CONTEXT_V1',visitorId,conversationId,kind,expires,ctx.ipHash,ctx.u.hostname].join(':'));
+ return followupCookieName+'='+kind+'.'+expires+'.'+signature+
+   '; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=1200';
+}
+function clearLastContext(){
+ return followupCookieName+'=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0';
+}
+
 export async function status(request,env){
  if(!previewHost(new URL(request.url)))return safe(404,{error:{code:'NOT_FOUND'}});
  const ctx=await context(request,env);
@@ -184,20 +217,27 @@ export async function chat(request,env,{publicFetch=fetch}={}){
  // Apply only AFTER a successful Worker chat turn, so session, per-IP/user
  // quota and global rate limits are never bypassed.
  const verifiedRelease=verified47ReleaseAnswer(body.message);
- // Only AFTER a successful Staging inference and quota consumption, fetch
- // bounded, anonymous, fixed public endpoints; no DB/secret or mutation calls.
- // Public posts are published site data, not official game release claims.
+ // The upstream Worker stores its raw LLM answer. Pages may display a
+ // different sourced answer, so use a strictly signed, short-lived topic cookie
+ // to ground short follow-ups in the ANSWER ACTUALLY DISPLAYED, not raw history.
+ // Read this only AFTER successful signed Worker/chat quota consumption.
+ const oldTopic=feedbackMode(body.message)
+   ?await validLastContext(request,ctx,visitorId,body.conversationId):null;
+ let followupAnswer=null;
+ if(oldTopic){
+   try{followupAnswer=await groundedFollowup(body.message,oldTopic,{fetchImpl:publicFetch});}
+   catch{/* Do not trust or fabricate an unavailable public feed. */}
+ }
  let publicAnswer=null;
- try {
-   const publicData=await getTrainingBotPublicData(body.message,{fetchImpl:publicFetch});
-   // The user may omit "4.7" when asking about the next update.
-   // A reviewed official 4.7 source is used ONLY if a current public post
-   // identifies version 4.7 and corroborates its date; newer releases
-   // remain attributed to TrainingBot until separately verified.
-   const reviewed47=verifiedRelease??verified47ReleaseAnswer("bao giờ có bản update 4.7");
-   publicAnswer=composeTrainingBotPublicAnswer(publicData,{official47:reviewed47});
- }catch{/* Public feed may be unavailable; existing chat stays functional. */}
- const chosen=publicAnswer??verifiedRelease;
+ if(!followupAnswer){
+   try {
+     const publicData=await getTrainingBotPublicData(body.message,{fetchImpl:publicFetch});
+     const reviewed47=verifiedRelease??verified47ReleaseAnswer("bao giờ có bản update 4.7");
+     publicAnswer=composeTrainingBotPublicAnswer(publicData,{official47:reviewed47});
+   }catch{/* Public feed may be unavailable; existing chat stays functional. */}
+ }
+ const chosen=followupAnswer??publicAnswer??verifiedRelease;
+ const topic=followupAnswer?oldTopic:publicAnswerTopic(body.message,chosen);
  const upstreamSources=Array.isArray(result.json.sources)?result.json.sources
   .filter(x=>['wiki_snapshot','editorial_tactics','official_claim'].includes(x?.type)):[];
  // Do not attach unrelated Wiki citations to public catalog answers.
@@ -223,6 +263,7 @@ export async function chat(request,env,{publicFetch=fetch}={}){
     ...(typeof x.snapshotDate==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x.snapshotDate)?{snapshotDate:x.snapshotDate}:{}),
     ...(['official_claim','site_release','site_news'].includes(x.type)&&typeof x.checkedAt==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x.checkedAt)?{checkedAt:x.checkedAt}:{})
   }));
+ const contextCookie=await issueLastContext(ctx,visitorId,result.json.conversationId,topic);
  return safe(200,{reply:chosen?.reply??result.json.reply,conversationId:result.json.conversationId,
-   revision:result.json.revision,sources});
+   revision:result.json.revision,sources},{'set-cookie':contextCookie});
 }
