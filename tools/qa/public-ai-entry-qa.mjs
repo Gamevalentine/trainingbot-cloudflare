@@ -14,7 +14,7 @@ for(const page of pages){
  assert.equal((html.match(/id="tb-ai-popup"/g)||[]).length,1,page+" dialog");
  assert.equal((html.match(/href="\/ai"/g)||[]).length,3,page+" menu and full-screen fallback links");
  assert(html.includes('visitor-ai-widget-v2.css?v=2'),page+" CSS");
- assert(html.includes('visitor-ai-widget-v2.js?v=2'),page+" client JS");
+ assert(html.includes('visitor-ai-widget-v2.js?v=3'),page+" client JS");
  assert(html.includes('tb-ai-frame-mount'),page+" iframe mount");
  assert(!html.includes('src="https://preview-ai-identity-bridge'),page+" lazy iframe only");
  assert(!/TRAININGBOT_AI_PREVIEW_BRIDGE_SECRET|__Host-tb_ai_b1/.test(html),page+" no API secrets/cookies");
