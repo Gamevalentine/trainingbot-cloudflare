@@ -1,4 +1,5 @@
 import {verified47ReleaseAnswer} from './ai_release_facts.js';
+import {getTrainingBotPublicData,composeTrainingBotPublicAnswer} from './ai_public_knowledge.js';
 // Preview-only B.1 first-party BFF. No global fetch, direct upstream URL, or Production resource.
 const encoder=new TextEncoder();
 const JSON_HEADERS={'content-type':'application/json; charset=utf-8','cache-control':'no-store, max-age=0',
@@ -183,27 +184,40 @@ export async function chat(request,env){
  // Apply only AFTER a successful Worker chat turn, so session, per-IP/user
  // quota and global rate limits are never bypassed.
  const verifiedRelease=verified47ReleaseAnswer(body.message);
+ // Only AFTER a successful Staging inference and quota consumption, fetch
+ // bounded, anonymous, fixed public endpoints; no DB/secret or mutation calls.
+ // Public posts are published site data, not official game release claims.
+ let publicAnswer=null;
+ try {
+   const publicData=await getTrainingBotPublicData(body.message);
+   publicAnswer=composeTrainingBotPublicAnswer(publicData,{official47:verifiedRelease});
+ }catch{/* Public feed may be unavailable; existing chat stays functional. */}
+ const chosen=publicAnswer??verifiedRelease;
  const upstreamSources=Array.isArray(result.json.sources)?result.json.sources
   .filter(x=>['wiki_snapshot','editorial_tactics','official_claim'].includes(x?.type)):[];
- const combined=[...(verifiedRelease?.sources??[]),...upstreamSources].slice(0,8);
+ // Do not attach unrelated Wiki citations to public catalog answers.
+ const combined=(chosen?.sources??upstreamSources).slice(0,8);
  const official47Pattern=/^https:\/\/www\.pubgmobile\.jp\/version-4-7-0-update-notice-20261105\/$/;
  const trainingbotBetaPattern=/^https:\/\/trainingbot\.io\.vn\/ban-cap-nhat$/;
+ const trainingbotPostPattern=/^https:\/\/trainingbot\.io\.vn\/bai-viet\/[a-z0-9]+(?:-[a-z0-9]+)*$/;
  const sources=combined
-  .filter(x=>x&&typeof x==='object'&&['wiki_snapshot','editorial_tactics','official_claim','site_release'].includes(x.type)
+  .filter(x=>x&&typeof x==='object'&&['wiki_snapshot','editorial_tactics','official_claim','site_release','site_news'].includes(x.type)
    &&typeof x.title==='string'&&x.title.length<=160)
   .map(x=>({
     type:x.type,title:x.title,
     sourceStatus:x.type==='wiki_snapshot'?'internal_unverified':
       x.type==='official_claim'?'official_claim_verified':
-      x.type==='site_release'?'trainingbot_public_catalog':'editorial_suggestion',
+      x.type==='site_release'?'trainingbot_public_catalog':
+      x.type==='site_news'?'trainingbot_published_article':'editorial_suggestion',
     gameVersion:['official_claim','site_release'].includes(x.type)&&/^\d+\.\d+$/.test(x.gameVersion??'')?x.gameVersion:null,
     ...(typeof x.url==='string'&&(
       (x.type==='wiki_snapshot'&&(wikiRuntimePattern.test(x.url)||wikiBasePattern.test(x.url)))||
       (x.type==='official_claim'&&(officialPattern.test(x.url)||official47Pattern.test(x.url)))||
-      (x.type==='site_release'&&trainingbotBetaPattern.test(x.url)))?{url:x.url}:{}),
+      (x.type==='site_release'&&trainingbotBetaPattern.test(x.url))||
+      (x.type==='site_news'&&trainingbotPostPattern.test(x.url)))?{url:x.url}:{}),
     ...(typeof x.snapshotDate==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x.snapshotDate)?{snapshotDate:x.snapshotDate}:{}),
-    ...(['official_claim','site_release'].includes(x.type)&&typeof x.checkedAt==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x.checkedAt)?{checkedAt:x.checkedAt}:{})
+    ...(['official_claim','site_release','site_news'].includes(x.type)&&typeof x.checkedAt==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x.checkedAt)?{checkedAt:x.checkedAt}:{})
   }));
- return safe(200,{reply:verifiedRelease?.reply??result.json.reply,conversationId:result.json.conversationId,
+ return safe(200,{reply:chosen?.reply??result.json.reply,conversationId:result.json.conversationId,
    revision:result.json.revision,sources});
 }
