@@ -412,3 +412,5 @@ test -f functions/ai.js
 node --check tools/public/visitor-ai-entry.mjs
 node --check functions/ai.js
 node tools/public/visitor-ai-entry.mjs
+node --check tools/qa/public-ai-entry-qa.mjs
+node tools/qa/public-ai-entry-qa.mjs
