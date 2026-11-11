@@ -15,7 +15,7 @@ const ROBOT='<svg class="tb-bot-drawing" xmlns="http://www.w3.org/2000/svg" view
  +'<rect x="18" y="16" width="44" height="47" rx="15" fill="url(#tbAiFace)" stroke="#b3a6ff" stroke-width="2.3"/><rect x="23" y="23" width="34" height="27" rx="10" fill="#101433" stroke="#8989e8" stroke-width="1.4"/>'
  +'<rect x="29" y="32" width="7" height="12" rx="3.5" fill="url(#tbAiLight)"/><rect x="44" y="32" width="7" height="12" rx="3.5" fill="url(#tbAiLight)"/><path d="M35 48q5 4 10 0" fill="none" stroke="#8aeeff" stroke-width="2.2" stroke-linecap="round"/><path d="M30 57q10 5 20 0" fill="none" stroke="#beabff" stroke-width="2" stroke-linecap="round"/>'
  +'<rect x="23" y="63" width="14" height="7" rx="3" fill="#6f64d8" stroke="#b3a4f7"/><rect x="43" y="63" width="14" height="7" rx="3" fill="#6f64d8" stroke="#b3a4f7"/></svg>';
-const FLOAT='<a class="tb-ai-widget-launch" data-tb-ai-toggle href="/ai" aria-controls="tb-ai-popup" aria-expanded="false" aria-label="Mở hộp chat TrainingBot AI">'+ROBOT+'<span class="tb-bot-chip">Trợ lý AI · Beta</span></a>';
+const FLOAT='<button type="button" class="tb-ai-widget-launch" data-tb-ai-toggle aria-controls="tb-ai-popup" aria-expanded="false" aria-label="Mở hộp chat TrainingBot AI">'+ROBOT+'<span class="tb-bot-chip">Trợ lý AI · Beta</span></button>';
 const PANEL='<section class="tb-ai-popup" id="tb-ai-popup" role="dialog" aria-label="Trò chuyện cùng TrainingBot AI" hidden>'
  +'<span class="tb-ai-loading">Đang mở TrainingBot AI…</span>'
  +'<div class="tb-ai-frame-mount"></div>'
