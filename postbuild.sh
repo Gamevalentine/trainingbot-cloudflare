@@ -356,8 +356,16 @@ for(const page of required) {
   if(matches.length!==1)throw Error('UI-NAV-01: exactly one desktop Beta link expected on '+page);
   if(!/<nav\b[^>]*class="mobile-nav"/i.test(header))throw Error('UI-NAV-01: mobile navigation mount missing on '+page);
 }
-if(!fs.readFileSync(path.join(root,'index.html'),'utf8').includes('<h2>PUBG Mobile Beta</h2>')) {
-  throw Error('UI-NAV-01: homepage Beta heading missing');
+const homePage = fs.readFileSync(path.join(root,'index.html'),'utf8');
+const betaPage = fs.readFileSync(path.join(root,'ban-cap-nhat.html'),'utf8');
+if(homePage.includes('id="tbLatestBeta"') || homePage.includes('id="tbFlashMount"')) {
+  throw Error('UI-NAV-01: Beta download cards must not appear on homepage');
+}
+if(!homePage.includes('href="/ban-cap-nhat#tb-beta-versions"')) {
+  throw Error('UI-NAV-01: homepage CTA must open the Beta section');
+}
+if(!betaPage.includes('id="tbFlashMount"') || !betaPage.includes('id="tb-beta-versions"')) {
+  throw Error('UI-NAV-01: both regular Beta and Flash Beta must appear on Beta page');
 }
 console.log('UI-NAV-01: Beta navigation verified on six main pages; '+replaced+' labels updated');
 NODE
