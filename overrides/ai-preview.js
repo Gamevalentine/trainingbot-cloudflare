@@ -33,15 +33,20 @@
       section.append(head);
       const list = document.createElement("ul");
       for (const source of sources.slice(0, 6)) {
-        if (!source || !["wiki_snapshot", "editorial_tactics", "official_claim"].includes(source.type)) continue;
+        if (!source || !["wiki_snapshot", "editorial_tactics", "official_claim", "site_release"].includes(source.type)) continue;
         const li = document.createElement("li");
         const name = typeof source.title === "string" ? source.title.slice(0, 160) : "Nguồn";
         const wikiUrl = typeof source.url === "string" &&
           (/^https:\/\/github\.com\/Gamevalentine\/trainingbot-cloudflare\/blob\/[a-f0-9]{40}\/overrides\/wiki\.html$/.test(source.url) ||
            /^https:\/\/github\.com\/Gamevalentine\/trainingbot-cloudflare\/actions\/runs\/40763409109$/.test(source.url));
         const officialUrl = typeof source.url === "string" &&
-          /^https:\/\/www\.pubgmobile\.com\/en\/event\/(?:PUBG-MOBILE-Version-430|PUBG-MOBILE-Version-400|Official-Transformers-Collaboration|260Devnotes|250Devnotes|270Devnotes)\/$/.test(source.url);
-        if ((wikiUrl && source.type === "wiki_snapshot") || (officialUrl && source.type === "official_claim")) {
+          (/^https:\/\/www\.pubgmobile\.com\/en\/event\/(?:PUBG-MOBILE-Version-430|PUBG-MOBILE-Version-400|Official-Transformers-Collaboration|260Devnotes|250Devnotes|270Devnotes)\/$/.test(source.url) ||
+           /^https:\/\/www\.pubgmobile\.jp\/version-4-7-0-update-notice-20261105\/$/.test(source.url));
+        const betaUrl = typeof source.url === "string" &&
+          /^https:\/\/trainingbot\.io\.vn\/ban-cap-nhat$/.test(source.url);
+        if ((wikiUrl && source.type === "wiki_snapshot") ||
+            (officialUrl && source.type === "official_claim") ||
+            (betaUrl && source.type === "site_release")) {
           const anchor = document.createElement("a");
           anchor.href = source.url;
           anchor.target = "_blank";
@@ -55,8 +60,11 @@
         note.textContent = source.type === "editorial_tactics"
           ? " — Gợi ý biên tập, không phải dữ kiện chính thức"
           : source.type === "official_claim"
-            ? " — Mệnh đề được dẫn nguồn chính thức; bản " + (source.gameVersion || "chưa rõ") +
+            ? " — Thông tin có nguồn chính thức; bản " + (source.gameVersion || "chưa rõ") +
               (source.checkedAt ? "; đối chiếu " + source.checkedAt : "")
+            : source.type === "site_release"
+              ? " — Danh sách Beta TrainingBot, đối chiếu " + (source.checkedAt || "chưa rõ") +
+                "; không phải lịch phát hành chính thức"
             : " — Wiki nội bộ (bản runtime), không phải xác minh game; phiên bản từng trường chưa xác minh" +
               (source.snapshotDate ? "; chụp " + source.snapshotDate : "");
         li.append(note); list.append(li);
