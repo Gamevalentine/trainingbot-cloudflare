@@ -162,12 +162,13 @@ assert.match((await beta.json()).reply,/V4\.7\.5/);
 const news=await chat(req('/api/ai-preview/chat',{cookie:rawCookie,
   body:{surface:'visitor',message:'tin PUBG mới nhất'}}),env,{publicFetch});
 assert.equal(news.status,200);
-assert.match((await news.json()).reply,/PUBG MOBILE FLASH/);
-assert((await news.clone().json()).sources?.some(x=>x.type==='site_news'));
+const newsBody=await news.json();
+assert.match(newsBody.reply,/PUBG MOBILE FLASH/);
+assert(newsBody.sources?.some(x=>x.type==='site_news'));
 const other=await chat(req('/api/ai-preview/chat',{cookie:rawCookie,
   body:{surface:'visitor',message:'bao giờ có bản update 4.6'}}),env,{publicFetch});
 assert.equal(other.status,200);
-assert.match((await other.json()).reply,/Chưa đủ căn cứ|Chưa đủ căn cứ|Chưa đủ căn cứ|Chưa đủ/iu,
+assert.match((await other.json()).reply,/Chưa đủ căn cứ/i,
  'Do not invent dates for absent versions');
 assert(publicCalls.every(x=>[
   'https://trainingbot.io.vn/api/beta-versions',
