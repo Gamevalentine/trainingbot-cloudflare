@@ -45,3 +45,14 @@ body.tb-community-header-unified > header.site-header .mobile-nav a.tb-ai-nav-li
  .tb-ai-widget-launch[aria-expanded="true"]{visibility:hidden}
 }
 @media(prefers-reduced-motion:reduce){.tb-ai-popup{animation:none}.tb-ai-widget-launch .tb-bot-drawing{transition:none}}
+
+
+.tb-ai-popup .tb-ai-frame-mount{width:100%;height:100%;position:relative;z-index:1}
+.tb-ai-popup .tb-ai-popup-backup[hidden]{display:none!important}
+.tb-ai-popup .tb-ai-popup-backup{
+ position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;
+ text-align:center;padding:24px;background:linear-gradient(145deg,#262442,#151b2b);color:#ece9ff;font:13px/1.6 Inter,system-ui,sans-serif
+}
+.tb-ai-popup-backup strong{font-size:15px}
+.tb-ai-popup-backup p{margin:0;color:#c0bfdd}
+.tb-ai-popup-backup a{background:#5a4ac4;color:white!important;text-decoration:none!important;border-radius:11px;padding:12px 15px;font-weight:750}
