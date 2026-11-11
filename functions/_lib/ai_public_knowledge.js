@@ -126,7 +126,7 @@ export function composeTrainingBotPublicAnswer(data,{official47=null}={}){
     if(selected.length===1&&!intent.detailList){
       const x=selected[0];
       sections.push("Theo TrainingBot (kiểm tra "+checkedAt+"), "+
-        (intent.version?.full?"bản Beta ":"bản Beta mới nhất ")+
+        (intent.version?.full?"bản Beta ":"bản Beta mới nhất là ")+
         x.version+" ("+x.arch+") "+statusText(x.status)+
         (x.updatedAt?" (dữ liệu cập nhật "+x.updatedAt+")":"")+
         ". Đây là bản thử nghiệm, không phải lịch cập nhật chính thức.");
