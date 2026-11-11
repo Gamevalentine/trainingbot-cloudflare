@@ -33,7 +33,7 @@ sed -i 's#hello@trainingbot\.vn#trainingbot.ai2@gmail.com#g; s#TrainingBot Commu
 
 while IFS= read -r -d '' page; do
   case "$page" in
-    public/admin.html|public/admin-*.html|public/contact-inbox.html)
+    public/admin.html|public/admin-*.html|public/contact-inbox.html|public/ai-preview.html|public/ai-admin-preview.html)
       continue
       ;;
   esac
@@ -266,6 +266,15 @@ fi
 if ! grep -q 'wiki_verified_fix_v146\.js' public/wiki.html; then
   sed -i 's#</body>#  <script defer src="/wiki_verified_fix_v146.js?v=146"></script>\n</body>#' public/wiki.html
 fi
+# F.3 Preview: load the verified weapons and vehicle/map details
+# AFTER v145/v146, BEFORE the v149 audit (not on Production).
+if ! grep -q 'wiki_catalog_verified_v147\.js' public/wiki.html; then
+  sed -i 's#</body>#  <script defer src="/wiki_catalog_verified_v147.js?v=147"></script>\n</body>#' public/wiki.html
+fi
+if ! grep -q 'wiki_vehicle_map_detail_v148\.js' public/wiki.html; then
+  sed -i 's#</body>#  <script defer src="/wiki_vehicle_map_detail_v148.js?v=148"></script>\n</body>#' public/wiki.html
+fi
+
 if ! grep -q 'wiki_audit_v149\.js' public/wiki.html; then
   sed -i 's#</body>#  <script defer src="/wiki_audit_v149.js?v=149"></script>\n</body>#' public/wiki.html
 fi
@@ -428,7 +437,7 @@ for (const file of walk(root)) {
   if (!/\.html$/i.test(file)) continue;
   const rel = path.relative(root, file).split(path.sep).join('/');
 
-  if (/^(admin(?:-|\/|\.html)|contact-inbox\.html$|404\.html$)/i.test(rel)) continue;
+  if (/^(admin(?:-|\/|\.html)|contact-inbox\.html$|404\.html$|ai-preview\.html$|ai-admin-preview\.html$)/i.test(rel)) continue;
 
   let html = fs.readFileSync(file, 'utf8');
 
@@ -602,6 +611,9 @@ test -f public/wiki_catalog_verified_v147.js
 test -f public/wiki_vehicle_map_detail_v148.js
 test -f public/wiki_audit_v149.js
 node --check public/wiki_audit_v149.js >/dev/null
+node --check public/wiki_catalog_verified_v147.js >/dev/null
+node --check public/wiki_vehicle_map_detail_v148.js >/dev/null
+node tools/wiki/f3-preview-catalog-count-qa.mjs
 
 # Admin V2 deployment guards.
 test -f public/admin.html
