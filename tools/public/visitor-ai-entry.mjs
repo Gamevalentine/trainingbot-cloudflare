@@ -30,7 +30,9 @@ export function attachAI(html,page){
  const desktop=header.match(desktopRe)?.[0],mobile=header.match(mobileRe)?.[0];
  if(!desktop||!mobile)throw Error("AI-ENTRY: desktop/mobile nav missing "+page);
  let updated=header.replace(desktop,afterWiki(desktop,DESKTOP,page));
- updated=updated.replace(mobile,afterWiki(mobile,MOBILE,page));
+ updated=updated.replace(mobile,/<a\\b[^>]*\\bhref=["\x27]\\/wiki["\x27]/i.test(mobile)
+   ?afterWiki(mobile,MOBILE,page)
+   :mobile.replace(/<\\/nav>$/i,MOBILE+"</nav>"));
  html=html.replace(headerRe,updated);
  html=html.replace("</head>",CSS+"\n</head>");
  html=html.replace("</body>",FLOAT+"\n</body>");
