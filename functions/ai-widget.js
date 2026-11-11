@@ -8,7 +8,7 @@ const HTML=`<!doctype html>
 <meta name="color-scheme" content="dark">
 <title>TrainingBot AI · Chat</title>
 <link rel="stylesheet" href="/ai-widget.css?v=2">
-<script defer src="/ai-widget.js?v=2"></script>
+<script defer src="/ai-widget.js?v=3"></script>
 </head><body>
 <main class="tb-frame" aria-label="Trò chuyện với TrainingBot AI">
 <header class="tb-head">
