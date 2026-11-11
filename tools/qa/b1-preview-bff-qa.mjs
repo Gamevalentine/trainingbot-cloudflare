@@ -36,7 +36,8 @@ const svc={
     return new Response(JSON.stringify({ok:true}),{headers:{'content-type':'application/json'}});
   }
   assert(visitors.has(data.visitorId),'No session for AI request');
-  assert(['Xin chào','bao giờ có bản update 4.7','Beta 4.7 bản nào mới nhất?','Beta 4.7 đã có chưa?','bao giờ có bản update 4.6','tin PUBG mới nhất','khi nào có bản update mới'].includes(data.message));
+  assert(['Xin chào','bao giờ có bản update 4.7','Beta 4.7 bản nào mới nhất?','Beta 4.7 đã có chưa?','bao giờ có bản update 4.6','tin PUBG mới nhất','khi nào có bản update mới',
+  'trả lời dở thế','thế ở Việt Nam thì sao','mấy giờ cập nhật'].includes(data.message));
   return new Response(JSON.stringify({reply:'Xin chào từ Staging',conversationId:'conv_preview_12345678',revision:1}),
     {headers:{'content-type':'application/json'}});
  }
@@ -147,6 +148,45 @@ assert.equal(announced.sources.length,1);
 assert(announced.sources.some(x=>x.type==='official_claim'&&
   x.url==='https://www.pubgmobile.jp/version-4-7-0-update-notice-20261105/'));
 assert.equal(publicCalls.length,0,'Official date needs no unrelated public API calls');
+
+// Exactly what was displayed must be the basis for a reaction, not the raw
+// model output saved in Staging D1. No PII or plain chat text in the cookie.
+const signedContextHeader=release.headers.get('set-cookie');
+assert.match(signedContextHeader,
+  /^__Host-tb_ai_last_v1=official47\.\d{13}\.[A-Za-z0-9_-]{43}; Path=\/; Secure; HttpOnly; SameSite=Strict; Max-Age=1200$/);
+assert(!signedContextHeader.includes('12/11/2026'));
+assert(!signedContextHeader.includes('bao giờ'));
+const signedContext=signedContextHeader.split(';')[0];
+const remembered=await chat(req('/api/ai-preview/chat',{cookie:rawCookie+'; '+signedContext,
+  body:{surface:'visitor',message:'trả lời dở thế',conversationId:'conv_preview_12345678'}}),env,{publicFetch});
+assert.equal(remembered.status,200);
+const rememberedReply=await remembered.json();
+assert.match(rememberedReply.reply,/câu trước chưa giải đáp đúng ý/);
+assert.match(rememberedReply.reply,/12\/11\/2026/);
+assert.match(rememberedReply.reply,/Việt Nam/);
+assert(!rememberedReply.reply.includes('Xin chào từ Staging'),
+  'Never use stale raw model answer for source-backed follow-ups');
+assert.equal(rememberedReply.sources.length,1);
+assert.equal(rememberedReply.sources[0].type,'official_claim');
+
+const vnFollowup=await chat(req('/api/ai-preview/chat',{cookie:rawCookie+'; '+signedContext,
+  body:{surface:'visitor',message:'thế ở Việt Nam thì sao',conversationId:'conv_preview_12345678'}}),env,{publicFetch});
+assert.equal(vnFollowup.status,200);
+assert.match((await vnFollowup.json()).reply,/chưa xác minh được giờ mở cập nhật riêng tại Việt Nam/);
+
+const tampered=signedContext.replace(/.$/,'X');
+const forged=await chat(req('/api/ai-preview/chat',{cookie:rawCookie+'; '+tampered,
+  body:{surface:'visitor',message:'trả lời dở thế',conversationId:'conv_preview_12345678'}}),env,{publicFetch});
+assert.equal(forged.status,200);
+assert.equal((await forged.json()).reply,'Xin chào từ Staging',
+  'Forged topic must not be accepted');
+
+const otherConversation=await chat(req('/api/ai-preview/chat',{cookie:rawCookie+'; '+signedContext,
+  body:{surface:'visitor',message:'trả lời dở thế',conversationId:'conv_other_12345678'}}),env,{publicFetch});
+assert.equal(otherConversation.status,200);
+assert.equal((await otherConversation.json()).reply,'Xin chào từ Staging',
+  'Never replay context into a different conversation');
+
 
 const betaBefore=await chat(req('/api/ai-preview/chat',{cookie:rawCookie,
   body:{surface:'visitor',message:'Beta 4.7 bản nào mới nhất?'}}),env,{publicFetch});
