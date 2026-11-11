@@ -89,7 +89,9 @@
             "SESSION_CONFLICT","SESSION_BRIDGE_TRANSPORT_FAILURE",
             "SESSION_INVALID_UPSTREAM_RESPONSE","SESSION_STAGING_UNAVAILABLE",
             "SESSION_UNAVAILABLE","PREVIEW_BFF_NOT_CONFIGURED","FORBIDDEN",
-            "INVALID_INPUT","UNAUTHORIZED","INTERNAL_ERROR"
+            "INVALID_INPUT","UNAUTHORIZED","INTERNAL_ERROR",
+            "POST_METHOD_DENIED","POST_ORIGIN_DENIED","POST_FETCH_SITE_DENIED",
+            "POST_MISSING_SAME_ORIGIN_PROOF","POST_CONTENT_TYPE_DENIED"
           ];
           const detail=allowed.includes(payload?.error?.code)?payload.error.code:"SESSION_UNKNOWN";
           const httpCode=Number.isInteger(session.status)&&session.status>=400&&session.status<=599?session.status:0;
@@ -124,6 +126,11 @@
         INVALID_INPUT:"Pages từ chối định dạng dữ liệu tạo phiên.",
         UNAUTHORIZED:"Yêu cầu cấp phiên không được máy chủ chấp nhận.",
         INTERNAL_ERROR:"Worker Staging gặp lỗi nội bộ.",
+        POST_METHOD_DENIED:"Yêu cầu không dùng đúng phương thức POST.",
+        POST_ORIGIN_DENIED:"Origin của trang và máy chủ không khớp.",
+        POST_FETCH_SITE_DENIED:"Trình duyệt đánh dấu yêu cầu không cùng nguồn gốc.",
+        POST_MISSING_SAME_ORIGIN_PROOF:"Yêu cầu thiếu bằng chứng cùng nguồn gốc (Origin/Fetch Metadata).",
+        POST_CONTENT_TYPE_DENIED:"Yêu cầu không gửi đúng định dạng JSON.",
         SESSION_UNKNOWN:"Máy chủ từ chối cấp phiên; chưa xác định được nguyên nhân."
       }[reason]||"Máy chủ chưa cấp được phiên.";
       statusLabel.textContent = surface === "admin" ? "Chưa xác thực" : quota ? "Đã giới hạn lượt" : sessionUnavailable ? "Lỗi tạo phiên" : "Chưa mở";

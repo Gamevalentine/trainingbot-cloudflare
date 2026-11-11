@@ -66,6 +66,15 @@ assert.equal(statusBody.anonymousVisitorReady,true);
 assert.equal(statusBody.identityVerified,false);
 assert.deepEqual(statusBody.surfaces,{visitor:true,admin:false});
 assert.equal((await session(req('/api/ai-preview/session',{headers:{origin:'https://evil.example'}}),env)).status,403);
+// Browser fetch() may omit Origin, but must provide a same-origin Fetch Metadata signal.
+const originOmitted=await session(req('/api/ai-preview/session',{headers:{origin:'','sec-fetch-site':'same-origin'}}),env);
+assert.equal(originOmitted.status,200,'Origin omission permitted only with browser same-origin metadata');
+visitors.clear();lastGuest=null; // Isolate the extra positive probe from the primary guest reuse test.
+assert.equal((await session(req('/api/ai-preview/session',{headers:{origin:'','sec-fetch-site':'cross-site'}}),env)).status,403,'No cross-site guest creation');
+assert.equal((await session(req('/api/ai-preview/session',{headers:{origin:'','sec-fetch-site':''}}),env)).status,403,'No unverified request with absent Origin and Fetch Metadata');
+assert.equal((await session(req('/api/ai-preview/session',{headers:{origin:'https://evil.example','sec-fetch-site':'same-origin'}}),env)).status,403,'Explicit Origin mismatch wins');
+assert.equal((await session(req('/api/ai-preview/session',{headers:{'content-type':'text/plain'}}),env)).status,403,'Only JSON POST allowed');
+
 assert.equal((await session(req('/api/ai-preview/session',{body:{role:'admin'}}),env)).status,400);
 assert.equal((await chat(req('/api/ai-preview/chat',{body:{surface:'visitor',message:'Xin chào'}}),env)).status,401);
 // Staging failures must remain closed while the public Preview exposes only
