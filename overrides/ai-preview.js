@@ -81,21 +81,33 @@
           headers:{"content-type":"application/json","accept":"application/json"},
           body:"{}"
         });
-        if (!session.ok) throw Error("VISITOR_SESSION_UNAVAILABLE");
+        if (!session.ok) throw Error(session.status === 429 ? "VISITOR_SESSION_RATE_LIMITED" : "VISITOR_SESSION_UNAVAILABLE");
       }
       statusLabel.textContent = surface === "admin" ? "Phiên Admin đã xác minh" : "Visitor AI sẵn sàng";
       renderStatus("Dịch vụ đã sẵn sàng", surface === "admin" ? "Máy chủ đã xác minh tài khoản Admin." : "Bạn có thể trò chuyện mà không cần tài khoản.");
       prompt.disabled = false; submit.disabled = false;
       prompt.placeholder = "Nhập câu hỏi cho TrainingBot AI…";
       help.textContent = surface === "admin" ? "Đang dùng tài khoản Admin đã xác thực." : "Không cần đăng nhập. Có giới hạn sử dụng để bảo vệ dịch vụ.";
-    } catch {
+    } catch (error) {
       ready = false;
-      statusLabel.textContent = surface === "admin" ? "Chưa xác thực" : "Chưa mở";
-      renderStatus(surface === "admin" ? "Chưa kết nối xác thực Admin" : "Visitor AI chưa mở", surface === "admin" ?
-        "Cần xác thực quyền Admin riêng cho từng tài khoản. Không chấp nhận token quản trị dùng chung." :
-        "Không cần đăng nhập. Máy chủ còn thiếu cổng bảo vệ và giới hạn sử dụng dành cho khách.");
+      const errorCode = error instanceof Error ? error.message : "";
+      const quota = surface === "visitor" && errorCode === "VISITOR_SESSION_RATE_LIMITED";
+      const sessionUnavailable = surface === "visitor" && errorCode === "VISITOR_SESSION_UNAVAILABLE";
+      statusLabel.textContent = surface === "admin" ? "Chưa xác thực" : quota ? "Đã giới hạn lượt" : sessionUnavailable ? "Lỗi tạo phiên" : "Chưa mở";
+      renderStatus(surface === "admin" ? "Chưa kết nối xác thực Admin" :
+        quota ? "Đã đạt giới hạn khởi tạo phiên" :
+        sessionUnavailable ? "Chưa tạo được phiên trò chuyện" : "Visitor AI chưa mở",
+        surface === "admin"
+          ? "Cần xác thực quyền Admin riêng cho từng tài khoản. Không chấp nhận token quản trị dùng chung."
+          : quota
+            ? "Máy chủ đang giới hạn lượt truy cập để bảo vệ quota miễn phí. Hãy thử lại sau; không cần đăng nhập."
+            : sessionUnavailable
+              ? "Kho kiến thức có thể đã sẵn sàng, nhưng máy chủ chưa cấp được phiên Visitor. Chưa thể gửi tin nhắn."
+              : "Máy chủ chưa xác nhận dịch vụ Visitor có thể sử dụng an toàn.");
       prompt.disabled = true; submit.disabled = true;
-      help.textContent = "Không nhập mật khẩu, cookie hoặc token vào ô chat.";
+      help.textContent = quota
+        ? "Không tự động tạo lại phiên để tránh tăng tải lên máy chủ."
+        : "Không nhập mật khẩu, cookie hoặc token vào ô chat.";
     }
   }
   form.addEventListener("submit", async event => {
@@ -110,16 +122,28 @@
       const response=await fetch("/api/ai-preview/chat", {method:"POST",credentials:"same-origin",cache:"no-store",
         redirect:"error",headers:{"content-type":"application/json","accept":"application/json"},
         body:JSON.stringify({surface,message:text,...(conversationId?{conversationId}:{})})});
-      if(!response.ok)throw Error("UNAVAILABLE");
+      if(!response.ok)throw Error(response.status === 429 ? "CHAT_RATE_LIMITED" : "UNAVAILABLE");
       const result=await response.json();
       if(typeof result.reply!=="string" || result.reply.length>16000)throw Error("INVALID_REPLY");
       if(typeof result.conversationId === "string" && /^[A-Za-z0-9_-]{8,100}$/.test(result.conversationId))
         conversationId=result.conversationId;
       message("assistant",result.reply,result.sources);
-    } catch {
-      message("assistant","Dịch vụ AI chưa sẵn sàng. Vui lòng thử lại khi máy chủ được mở.");
-      conversationId = null;
-      await check();
+    } catch (error) {
+      const quota = error instanceof Error && error.message === "CHAT_RATE_LIMITED";
+      message("assistant", quota
+        ? "Bạn đã đạt giới hạn số câu hỏi của phiên này. Hãy thử lại sau; hệ thống sẽ không tự tăng quota."
+        : "Dịch vụ AI tạm thời chưa thể trả lời. Vui lòng thử lại sau.");
+      if (quota) {
+        ready = false;
+        prompt.disabled = true;
+        statusLabel.textContent = "Đã giới hạn lượt";
+        renderStatus("Đã đạt giới hạn hội thoại",
+          "Giới hạn được kiểm tra trên máy chủ để bảo vệ dịch vụ miễn phí.");
+        help.textContent = "Không tự động gửi lại câu hỏi.";
+      } else {
+        conversationId = null;
+        await check();
+      }
     } finally {submit.disabled = !ready;}
   });
   void check();
