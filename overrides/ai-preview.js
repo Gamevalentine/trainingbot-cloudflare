@@ -81,7 +81,17 @@
           headers:{"content-type":"application/json","accept":"application/json"},
           body:"{}"
         });
-        if (!session.ok) throw Error(session.status === 429 ? "VISITOR_SESSION_RATE_LIMITED" : "VISITOR_SESSION_UNAVAILABLE");
+        if (!session.ok) {
+          const payload=await session.json().catch(()=>({}));
+          const allowed=[
+            "SESSION_RATE_STORE_UNAVAILABLE","SESSION_DATABASE_UNAVAILABLE",
+            "SESSION_BRIDGE_AUTH_FAILURE","SESSION_BRIDGE_PROTOCOL_FAILURE",
+            "SESSION_CONFLICT","SESSION_BRIDGE_TRANSPORT_FAILURE",
+            "SESSION_INVALID_UPSTREAM_RESPONSE","SESSION_STAGING_UNAVAILABLE"
+          ];
+          const detail=allowed.includes(payload?.error?.code)?payload.error.code:"SESSION_UNKNOWN";
+          throw Error(session.status===429?"VISITOR_SESSION_RATE_LIMITED":"VISITOR_SESSION_UNAVAILABLE:"+detail);
+        }
       }
       statusLabel.textContent = surface === "admin" ? "Phiên Admin đã xác minh" : "Visitor AI sẵn sàng";
       renderStatus("Dịch vụ đã sẵn sàng", surface === "admin" ? "Máy chủ đã xác minh tài khoản Admin." : "Bạn có thể trò chuyện mà không cần tài khoản.");
@@ -92,7 +102,19 @@
       ready = false;
       const errorCode = error instanceof Error ? error.message : "";
       const quota = surface === "visitor" && errorCode === "VISITOR_SESSION_RATE_LIMITED";
-      const sessionUnavailable = surface === "visitor" && errorCode === "VISITOR_SESSION_UNAVAILABLE";
+      const sessionUnavailable = surface === "visitor" && errorCode.startsWith("VISITOR_SESSION_UNAVAILABLE:");
+      const reason=sessionUnavailable?errorCode.split(":")[1]:"";
+      const reasonText={
+        SESSION_RATE_STORE_UNAVAILABLE:"Không truy cập được kho lưu giới hạn lượt (D1).",
+        SESSION_DATABASE_UNAVAILABLE:"Kho lưu phiên trò chuyện (D1) đang không sẵn sàng.",
+        SESSION_BRIDGE_AUTH_FAILURE:"Xác thực kết nối giữa Preview và Worker đã bị từ chối.",
+        SESSION_BRIDGE_PROTOCOL_FAILURE:"Giao thức tạo phiên giữa Preview và Worker bị lỗi.",
+        SESSION_CONFLICT:"Máy chủ báo phiên trùng, không tự tạo lại để tránh lạm dụng.",
+        SESSION_BRIDGE_TRANSPORT_FAILURE:"Không kết nối được đến Worker Staging.",
+        SESSION_INVALID_UPSTREAM_RESPONSE:"Worker không trả về xác nhận tạo phiên hợp lệ.",
+        SESSION_STAGING_UNAVAILABLE:"Worker Staging chưa cấp được phiên.",
+        SESSION_UNKNOWN:"Máy chủ từ chối cấp phiên; chưa xác định được nguyên nhân."
+      }[reason]||"Máy chủ chưa cấp được phiên.";
       statusLabel.textContent = surface === "admin" ? "Chưa xác thực" : quota ? "Đã giới hạn lượt" : sessionUnavailable ? "Lỗi tạo phiên" : "Chưa mở";
       renderStatus(surface === "admin" ? "Chưa kết nối xác thực Admin" :
         quota ? "Đã đạt giới hạn khởi tạo phiên" :
@@ -102,7 +124,7 @@
           : quota
             ? "Máy chủ đang giới hạn lượt truy cập để bảo vệ quota miễn phí. Hãy thử lại sau; không cần đăng nhập."
             : sessionUnavailable
-              ? "Kho kiến thức có thể đã sẵn sàng, nhưng máy chủ chưa cấp được phiên Visitor. Chưa thể gửi tin nhắn."
+              ? reasonText+" Mã kiểm tra: "+reason+". Chat vẫn được khóa an toàn."
               : "Máy chủ chưa xác nhận dịch vụ Visitor có thể sử dụng an toàn.");
       prompt.disabled = true; submit.disabled = true;
       help.textContent = quota

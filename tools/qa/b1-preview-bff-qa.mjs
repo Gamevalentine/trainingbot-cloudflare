@@ -9,7 +9,7 @@ const key=await crypto.subtle.importKey('raw',Uint8Array.from(secret.match(/../g
   {name:'HMAC',hash:'SHA-256'},false,['sign']);
 const b64=x=>Buffer.from(x).toString('base64url');
 async function sign(v){return b64(await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(v)));}
-let visitors=new Set(),lastGuest=null;
+let visitors=new Set(),lastGuest=null,sessionFailure=null;
 const svc={
  async fetch(req){
   const url=new URL(req.url),method=req.method;
@@ -29,7 +29,12 @@ const svc={
   const data=raw?JSON.parse(raw):{};
   responses.push({route:url.pathname,guest:data.visitorId,ip});
   if(url.pathname.endsWith('status'))return new Response(JSON.stringify({ok:true,visitor:true}),{headers:{'content-type':'application/json'}});
-  if(url.pathname.endsWith('session')){visitors.add(data.visitorId);lastGuest=data.visitorId;return new Response(JSON.stringify({ok:true}),{headers:{'content-type':'application/json'}});}
+  if(url.pathname.endsWith('session')){
+    if(sessionFailure)return new Response(JSON.stringify({error:{code:sessionFailure}}),{
+      status:sessionFailure==='RATE_LIMITED'?429:503,headers:{'content-type':'application/json'}});
+    visitors.add(data.visitorId);lastGuest=data.visitorId;
+    return new Response(JSON.stringify({ok:true}),{headers:{'content-type':'application/json'}});
+  }
   assert(visitors.has(data.visitorId),'No session for AI request');
   assert.equal(data.message,'Xin chào');
   return new Response(JSON.stringify({reply:'Xin chào từ Staging',conversationId:'conv_preview_12345678',revision:1}),
@@ -63,6 +68,22 @@ assert.deepEqual(statusBody.surfaces,{visitor:true,admin:false});
 assert.equal((await session(req('/api/ai-preview/session',{headers:{origin:'https://evil.example'}}),env)).status,403);
 assert.equal((await session(req('/api/ai-preview/session',{body:{role:'admin'}}),env)).status,400);
 assert.equal((await chat(req('/api/ai-preview/chat',{body:{surface:'visitor',message:'Xin chào'}}),env)).status,401);
+// Staging failures must remain closed while the public Preview exposes only
+// allowlisted diagnostic codes, never secrets, SQL or raw upstream payloads.
+for (const [upstream,publicCode,expectedStatus] of [
+  ['POLICY_STORE_UNAVAILABLE','SESSION_RATE_STORE_UNAVAILABLE',503],
+  ['MEMORY_UNAVAILABLE','SESSION_DATABASE_UNAVAILABLE',503],
+  ['UNAUTHORIZED','SESSION_BRIDGE_AUTH_FAILURE',503],
+  ['INVALID_INPUT','SESSION_BRIDGE_PROTOCOL_FAILURE',503],
+  ['RATE_LIMITED','RATE_LIMITED',429]
+]) {
+  sessionFailure=upstream;
+  const failed=await session(req('/api/ai-preview/session'),env);
+  assert.equal(failed.status,expectedStatus);
+  assert.equal((await failed.json()).error.code,publicCode);
+  assert(!failed.headers.has('set-cookie'),'No guest cookie on failed session');
+}
+sessionFailure=null;
 const issued=await session(req('/api/ai-preview/session'),env);
 assert.equal(issued.status,200);
 const cookie=issued.headers.get('set-cookie');
