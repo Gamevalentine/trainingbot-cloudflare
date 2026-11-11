@@ -15,7 +15,7 @@ const state={
     {title:"PUBG MOBILE FLASH ra mắt ngày 13/11/2026",
      url:"/bai-viet/pubg-mobile-flash-ra-mat",summary:"Bản Flash nhẹ hơn",
      published_at:"2026-11-11T03:00:00Z"},
-    {title:"PUBG MOBILE 4.7 cập nhật ngày 12/11/2026",
+    {title:"PUBG MOBILE 4.7 chính thức ra mắt ngày 12/11/2026",
      url:"/bai-viet/pubg-mobile-4-7-cap-nhat",summary:"Thông tin phiên bản 4.7",
      published_at:"2026-11-10T02:00:00Z"},
     {title:"M416 Glacier mới",
@@ -59,6 +59,33 @@ assert.equal(official.sources.length,1,"One official citation for the direct dat
 assert.equal(official.sources[0].type,"official_claim");
 assert.equal(urls.length,callsBeforeOfficial,"Known official schedule needs no unrelated public API fetch");
 
+// A normal Visitor chat question is about PUBG, even without the game name
+// or an explicit 4.7 version. Use fresh published release posts instead of
+// leaking the generic model's "I cannot access realtime data" fallback.
+for(const question of [
+  "khi nào có bản update mới",
+  "bao giờ có bản update mới",
+  "bao giờ PUBG cập nhật bản mới",
+  "khi nào update mới",
+  "bao giờ có bản cập nhật mới"
+]){
+  const before=urls.length;
+  const generic=await answer(question);
+  assert.match(generic.reply,/PUBG MOBILE 4\.7.*12\/11\/2026/);
+  assert.equal(generic.sources.length,1);
+  assert.equal(generic.sources[0].type,"official_claim");
+  assert.equal(urls.length,before+1,"Only public posts API for generic official schedule");
+  assert(!generic.reply.includes("Beta"),"No unrelated Beta or news lists");
+}
+for(const unrelated of [
+  "khi nào cập nhật website",
+  "khi nào có bản update mới cho Windows",
+  "M416 dùng đạn gì?"
+]){
+  assert.equal(publicKnowledgeIntent(unrelated),null);
+}
+
+
 const first=await answer("Beta 4.7 bản nào mới nhất?");
 assert.match(first.reply,/V4\.7\.5.*chưa mở tải/);
 assert.equal(first.sources.length,1,"Beta status must have only its relevant catalog source");
@@ -75,6 +102,19 @@ const updated=await answer("Beta 4.7 bản nào mới nhất?");
 assert.match(updated.reply,/V4\.7\.5.*được đánh dấu đã phát hành/);
 assert(!updated.reply.includes("Bản mới được đăng sau"),"Do not dump news into Beta status answer");
 assert.notEqual(first.reply,updated.reply,"Next question reads new Beta data");
+
+// A new mainline version announcement supersedes the old 4.7 answer
+// immediately, but is correctly attributed to TrainingBot editorial data.
+state.posts.unshift({
+  title:"PUBG MOBILE 4.8 chính thức ra mắt ngày 18/12/2026",
+  url:"/bai-viet/pubg-mobile-4-8-chinh-thuc-ra-mat",
+  summary:"Lịch cập nhật từ bài TrainingBot",published_at:"2026-11-11T08:00:00Z"
+});
+const nextUpdate=await answer("khi nào có bản update mới");
+assert.match(nextUpdate.reply,/4\.8.*18\/12\/2026/);
+assert.equal(nextUpdate.sources.length,1);
+assert.equal(nextUpdate.sources[0].type,"site_news",
+  "Never reuse 4.7 official verification for new 4.8 articles");
 
 const latest=await answer("tin PUBG mới nhất");
 assert.match(latest.reply,/Bản mới được đăng sau|PUBG MOBILE 4\.7\.5 Beta/);

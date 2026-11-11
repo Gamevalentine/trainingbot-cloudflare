@@ -36,7 +36,7 @@ const svc={
     return new Response(JSON.stringify({ok:true}),{headers:{'content-type':'application/json'}});
   }
   assert(visitors.has(data.visitorId),'No session for AI request');
-  assert(['Xin chào','bao giờ có bản update 4.7','Beta 4.7 bản nào mới nhất?','Beta 4.7 đã có chưa?','bao giờ có bản update 4.6','tin PUBG mới nhất'].includes(data.message));
+  assert(['Xin chào','bao giờ có bản update 4.7','Beta 4.7 bản nào mới nhất?','Beta 4.7 đã có chưa?','bao giờ có bản update 4.6','tin PUBG mới nhất','khi nào có bản update mới'].includes(data.message));
   return new Response(JSON.stringify({reply:'Xin chào từ Staging',conversationId:'conv_preview_12345678',revision:1}),
     {headers:{'content-type':'application/json'}});
  }
@@ -118,7 +118,7 @@ const dynamicVersions=[
 const dynamicPosts=[
   {title:'PUBG MOBILE FLASH dự kiến ra mắt 13/11/2026',
    url:'/bai-viet/pubg-mobile-flash-du-kien-ra-mat',published_at:'2026-11-11T10:00:00Z',summary:'Tin về Flash.'},
-  {title:'PUBG MOBILE 4.7 cập nhật ngày 12/11/2026',
+  {title:'PUBG MOBILE 4.7 chính thức ra mắt ngày 12/11/2026',
    url:'/bai-viet/pubg-mobile-4-7-cap-nhat',published_at:'2026-11-10T10:00:00Z',summary:'Bài viết được cập nhật.'}
 ];
 const publicCalls=[];
@@ -173,6 +173,17 @@ assert.equal(news.status,200);
 const newsBody=await news.json();
 assert.match(newsBody.reply,/PUBG MOBILE FLASH/);
 assert(newsBody.sources?.some(x=>x.type==='site_news'));
+const generic=await chat(req('/api/ai-preview/chat',{cookie:rawCookie,
+  body:{surface:'visitor',message:'khi nào có bản update mới'}}),env,{publicFetch});
+assert.equal(generic.status,200);
+const nextSchedule=await generic.json();
+assert.match(nextSchedule.reply,/PUBG MOBILE 4\.7.*12\/11\/2026/);
+assert(!nextSchedule.reply.includes('V4.7.5'));
+assert.equal(nextSchedule.sources.length,1,'One official citation, not a list of Beta/news');
+assert.equal(nextSchedule.sources[0].type,'official_claim');
+assert.equal(nextSchedule.sources[0].url,
+  'https://www.pubgmobile.jp/version-4-7-0-update-notice-20261105/');
+
 const other=await chat(req('/api/ai-preview/chat',{cookie:rawCookie,
   body:{surface:'visitor',message:'bao giờ có bản update 4.6'}}),env,{publicFetch});
 assert.equal(other.status,200);

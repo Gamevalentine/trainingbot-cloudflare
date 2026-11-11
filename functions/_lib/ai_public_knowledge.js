@@ -29,8 +29,15 @@ export function publicKnowledgeIntent(question){
   const news=/\btin\b|\bnews\b|\bbai viet\b|\bsu kien\b|\bthong bao\b|\bcong bo\b/.test(q);
   const release=/\bbao gio\b|\bkhi nao\b|\blich\b|\bra mat\b|\bphat hanh\b|\bupdate\b|\bcap nhat\b|\bphien ban\b|\bmoi nhat\b|\bmoi\b|\bco chua\b|\bda co\b/.test(q);
   const aboutGame=/\bpubg\b|\bbgmi\b|\bgame\b|\b4[.,]\d\b|\bflash\b|\bbeta\b/.test(q);
+  // Visitor chat is already scoped to PUBG MOBILE. A user can naturally ask
+  // "khi nào có bản update mới" without repeating the game name/version.
+  // Still reject unrelated software/website updates and Beta/Flash queries.
+  const when=/\bbao gio\b|\bkhi nao\b|\bngay nao\b|\blich\b|\bsap toi\b|\btiep theo\b/.test(q);
+  const updateTopic=/\bupdate\b|\bcap nhat\b|\bphien ban moi\b|\bban moi\b/.test(q);
+  const unrelated=/\bwindows\b|\biphone\b|\bios\b|\bwebsite\b|\btrang web\b|\badmin\b|\bgithub\b|\bcloudflare\b|\bdriver\b/.test(q);
+  const genericSchedule=!version&&!beta&&!flash&&!news&&when&&updateTopic&&!unrelated&&q.length<=160;
   // Don't spend extra public API subrequests on unrelated or normal Wiki chat.
-  if(!((news||beta||release)&&(aboutGame||news||beta||version)))return null;
+  if(!genericSchedule&&!((news||beta||release)&&(aboutGame||news||beta||version)))return null;
   const latest=/\bmoi nhat\b|\bgan day\b|\bgan nhat\b|\btin moi\b|\bcap nhat moi\b/.test(q);
   // A narrow question about the *official* 4.7 schedule has one reviewed
   // official source. Do not unnecessarily list Beta APKs or unrelated posts.
@@ -38,8 +45,8 @@ export function publicKnowledgeIntent(question){
     /\bbao gio\b|\bkhi nao\b|\bngay nao\b|\blich\b|\bra mat\b|\bphat hanh\b/.test(q);
   const detailList=/\bdanh sach\b|\btat ca\b|\bcac ban\b|\bliet ke\b/.test(q);
   const needsBeta=!officialSchedule&&!flash&&(beta||Boolean(version)||/ban beta|phien ban moi nhat|ban thu nghiem/.test(q));
-  const needsPosts=!officialSchedule&&(flash||news||(!beta&&(release||Boolean(version))));
-  return {q,version,flash,beta,latest,officialSchedule,detailList,needsBeta,needsPosts};
+  const needsPosts=!officialSchedule&&(genericSchedule||flash||news||(!beta&&(release||Boolean(version))));
+  return {q,version,flash,beta,latest,officialSchedule,genericSchedule,detailList,needsBeta,needsPosts};
 }
 async function readPublicJSON(fetchImpl,url){
   try{
@@ -80,6 +87,26 @@ export async function getTrainingBotPublicData(question,{fetchImpl=fetch,now=()=
   const checkedAt=new Date(now()).toISOString().slice(0,10);
   return {intent,versions,articles,checkedAt,betaAvailable:!!beta,postsAvailable:!!posts};
 }
+// Only a PUBG MOBILE mainline VERSION announcement with an explicit date
+// can answer an unspecified "when is the next update?" question.
+// Never mistake FLASH, Beta test builds, BGMI or PUBG PC news for mainline.
+function latestMainlineAnnouncement(articles){
+  return articles.flatMap(a=>{
+    const t=norm(a.title);
+    if(!/^pubg mobile\s+(?:version\s*|v)?\d{1,2}[.,]\d{1,2}\b/.test(t)||
+       /\bflash\b|\bbeta\b|\bbgmi\b|\bpc\b/.test(t)||
+       !/\bchinh thuc\b|\bra mat\b|\bphat hanh\b|\blich cap nhat\b/.test(t))return [];
+    const version=t.match(/^pubg mobile\s+(?:version\s*|v)?(\d{1,2})[.,](\d{1,2})\b/);
+    const date=t.match(/\b(?:ngay\s+)?(\d{1,2})\s*\/\s*(\d{1,2})\s*\/\s*(20\d{2})\b/);
+    if(!version||!date)return [];
+    const [day,month,year]=[Number(date[1]),Number(date[2]),Number(date[3])];
+    const test=new Date(Date.UTC(year,month-1,day));
+    if(test.getUTCDate()!==day||test.getUTCMonth()!==month-1||test.getUTCFullYear()!==year)return [];
+    return [{article:a,version:version[1]+"."+version[2],
+      date:[day,month,year].map((x,i)=>i===2?String(x):String(x).padStart(2,"0")).join("/")}];
+  }).sort((a,b)=>newer("V"+a.version,"V"+b.version)||
+    b.article.publishedAt.localeCompare(a.article.publishedAt))[0]??null;
+}
 const statusText=s=>s==="released"?"được đánh dấu đã phát hành":
   ["coming_soon","upcoming","scheduled","unreleased","pending"].includes(s)?"chưa mở tải":
   "trạng thái chưa được xác minh";
@@ -106,6 +133,29 @@ function relevantArticles(data){
 export function composeTrainingBotPublicAnswer(data,{official47=null}={}){
   if(!data?.intent)return null;
   const {intent,versions,checkedAt}=data;
+  if(intent.genericSchedule){
+    const latest=latestMainlineAnnouncement(data.articles??[]);
+    if(!latest)return {
+      reply:data.postsAvailable
+        ?"Trong các bài viết TrainingBot hiện có, mình chưa tìm thấy lịch phát hành bản PUBG MOBILE mới tiếp theo đã được công bố. Mình không tự đoán ngày."
+        :"Hiện chưa đọc được tin cập nhật từ TrainingBot nên mình chưa thể xác nhận lịch phát hành mới nhất.",
+      sources:[]
+    };
+    const official=latest.version==="4.7"&&official47?.reply?.includes(latest.date)
+      ?official47.sources?.find(s=>s.type==="official_claim"):null;
+    if(official)return {
+      reply:"PUBG MOBILE "+latest.version+" có lịch cập nhật ngày "+latest.date+
+        " theo thông báo chính thức đã đối chiếu. Thời điểm nhận bản cập nhật có thể khác theo khu vực.",
+      sources:[official]
+    };
+    return {
+      reply:"Theo bài viết mới nhất của TrainingBot về lịch cập nhật PUBG MOBILE, phiên bản "+
+        latest.version+" được nêu lịch ngày "+latest.date+
+        ". Đây là thông tin từ bài đăng TrainingBot, chưa được xác minh độc lập với nhà phát hành.",
+      sources:[{type:"site_news",title:latest.article.title,url:latest.article.url,
+        checkedAt,publishedAt:latest.article.publishedAt,sourceStatus:"trainingbot_published_article"}]
+    };
+  }
   const matched=versions.filter(x=>!intent.version||
     (intent.version.full?x.version.toLowerCase()===intent.version.full.toLowerCase():
       x.version.toLowerCase().startsWith(intent.version.major.toLowerCase()+".")));

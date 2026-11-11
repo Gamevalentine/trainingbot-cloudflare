@@ -190,7 +190,12 @@ export async function chat(request,env,{publicFetch=fetch}={}){
  let publicAnswer=null;
  try {
    const publicData=await getTrainingBotPublicData(body.message,{fetchImpl:publicFetch});
-   publicAnswer=composeTrainingBotPublicAnswer(publicData,{official47:verifiedRelease});
+   // The user may omit "4.7" when asking about the next update.
+   // A reviewed official 4.7 source is used ONLY if a current public post
+   // identifies version 4.7 and corroborates its date; newer releases
+   // remain attributed to TrainingBot until separately verified.
+   const reviewed47=verifiedRelease??verified47ReleaseAnswer("bao giờ có bản update 4.7");
+   publicAnswer=composeTrainingBotPublicAnswer(publicData,{official47:reviewed47});
  }catch{/* Public feed may be unavailable; existing chat stays functional. */}
  const chosen=publicAnswer??verifiedRelease;
  const upstreamSources=Array.isArray(result.json.sources)?result.json.sources
