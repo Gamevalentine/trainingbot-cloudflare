@@ -10,16 +10,16 @@
  const vnum=v=>{const m=String(v||"").match(/v?(\d+)\.(\d+)\.(\d+)/i);return m?(+m[1]*1000000 + +m[2]*1000 + +m[3]):0;};
  const localImage=(value,fallback)=>{if(!value)return fallback;try{const u=new URL(value,location.origin);return u.origin===location.origin?u.href:fallback;}catch{return fallback;}};
  function latestFlash(){
-  const versions=[...document.querySelectorAll("#tbFlashMount .tb-flash-card")].map(card=>({
-   version:card.querySelector("[data-flash-download-version]")?.dataset.flashDownloadVersion||"",
-   url:card.querySelector('a[href^="/download/flash-"]')?.getAttribute("href")||"",
-   image:card.querySelector(".tb-flash-image")?.getAttribute("src")||""
-  })).filter(x=>/^v\d+\.\d+\.\d+$/i.test(x.version)&&/^\/download\/flash-v\d+-\d+-\d+$/.test(x.url));
+  // Flash downloads live on /ban-cap-nhat; preserve the home spotlight without hidden/duplicate cards.
+  const versions=[
+   {version:"v4.6.1",url:"/download/flash-v4-6-1",image:"/pubg-mobile-light-avatar.webp?v=150"},
+   {version:"v4.7.0",url:"/download/flash-v4-7-0",image:"/pubg-mobile-light-avatar.webp?v=150"}
+  ];
   versions.sort((a,b)=>vnum(b.version)-vnum(a.version));
   const f=versions[0];
   return f?{type:"flash",label:"FLASH BETA · MỚI NHẤT",title:"PUBG MOBILE FLASH BETA "+f.version.toUpperCase(),
    meta:"Đã mở tải · Phiên bản Flash Beta",image:localImage(f.image,"/pubg-mobile-light-avatar.webp"),
-   download:f.url,detail:"/#tbFlashMount"}:null;
+   download:f.url,detail:"/ban-cap-nhat#tbFlashMount"}:null;
  }
  async function latestBeta(){
   const r=await fetch("/api/beta-versions",{cache:"no-store"});if(!r.ok)throw Error("beta");
