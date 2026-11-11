@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {publicKnowledgeIntent,getTrainingBotPublicData,composeTrainingBotPublicAnswer}
   from "../../functions/_lib/ai_public_knowledge.js";
+import {verified47ReleaseAnswer} from "../../functions/_lib/ai_release_facts.js";
 
 // Offline-only. Production API shapes are mimicked, not queried. Test the same
 // public source mutating between two calls without changing AI source code.
@@ -41,16 +42,27 @@ const fetchImpl=async(url,init)=>{
     status:200,headers:{"content-type":"application/json"}
   });
 };
-const answer=async q=>composeTrainingBotPublicAnswer(await getTrainingBotPublicData(q,{fetchImpl,now:today}));
+const answer=async q=>composeTrainingBotPublicAnswer(
+  await getTrainingBotPublicData(q,{fetchImpl,now:today}),
+  {official47:verified47ReleaseAnswer(q)});
 
 assert.equal(publicKnowledgeIntent("M416 dùng đạn gì?"),null);
 assert.equal(await answer("M416 dùng đạn gì?"),null);
 assert.equal(urls.length,0,"No API call for ordinary Wiki question");
 
-const first=await answer("bao giờ có bản update 4.7");
+const callsBeforeOfficial=urls.length;
+const official=await answer("khi nào có bản update 4.7 thế");
+assert.match(official.reply,/12\/11\/2026/);
+assert(!official.reply.includes("V4.7.5"),"Official schedule must not include unrelated Beta builds");
+assert(!official.reply.includes("Bài viết liên quan"));
+assert.equal(official.sources.length,1,"One official citation for the direct date question");
+assert.equal(official.sources[0].type,"official_claim");
+assert.equal(urls.length,callsBeforeOfficial,"Known official schedule needs no unrelated public API fetch");
+
+const first=await answer("Beta 4.7 bản nào mới nhất?");
 assert.match(first.reply,/V4\.7\.5.*chưa mở tải/);
-assert(first.sources.some(s=>s.type==="site_release"));
-assert(first.sources.some(s=>s.type==="site_news"));
+assert.equal(first.sources.length,1,"Beta status must have only its relevant catalog source");
+assert.equal(first.sources[0].type,"site_release");
 
 state.versions[0].status="released";
 state.posts.unshift({
@@ -59,12 +71,14 @@ state.posts.unshift({
   summary:"Bản mới được đăng sau",
   published_at:"2026-11-11T06:00:00Z"
 });
-const updated=await answer("bao giờ có bản update 4.7");
+const updated=await answer("Beta 4.7 bản nào mới nhất?");
 assert.match(updated.reply,/V4\.7\.5.*được đánh dấu đã phát hành/);
-assert.match(updated.reply,/Bản mới được đăng sau/);
-assert.notEqual(first.reply,updated.reply,"Next question reads new public data");
+assert(!updated.reply.includes("Bản mới được đăng sau"),"Do not dump news into Beta status answer");
+assert.notEqual(first.reply,updated.reply,"Next question reads new Beta data");
 
 const latest=await answer("tin PUBG mới nhất");
+assert.match(latest.reply,/Bản mới được đăng sau|PUBG MOBILE 4\.7\.5 Beta/);
+assert(!latest.reply.includes("Tóm tắt:"),"News titles should be concise");
 assert.match(latest.reply,/PUBG MOBILE 4\.7\.5 Beta/);
 assert(!latest.sources.some(s=>s.url.includes("evil.example")),"No user-controlled URL");
 const flash=await answer("PUBG FLASH ra mắt khi nào");
