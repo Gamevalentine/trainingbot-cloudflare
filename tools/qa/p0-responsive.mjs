@@ -32,7 +32,7 @@ try{
       // Wiki filters. Only test critical interactive surfaces and page width.
       const important=[
         "#tb203Spotlight",
-        "#tbHomeBetaState",
+        "#tbFlashMount",
         "#tbContactForm button[type=submit]",
         ".tb202-contact-panel",
         ".tb202-wiki-grid"
@@ -51,6 +51,17 @@ try{
       assert.equal(await hero.count(),1);
       assert.equal(await page.locator(".tb203-hero-copy").count(),1);
       await page.waitForFunction(()=>document.querySelectorAll("#tb203Dots button").length>=3,undefined,{timeout:3000});
+    }
+    if(pageName==="/"){
+      assert.equal(await page.locator("#tbLatestBeta, #tbFlashMount").count(),0);
+      assert.equal(await page.locator('.tb202-actions a[href="/ban-cap-nhat#tb-beta-versions"]').count(),1);
+    }
+    if(pageName==="/ban-cap-nhat.html"){
+      assert.equal(await page.locator("#tb-beta-versions").count(),1);
+      assert.equal(await page.locator("#tbFlashMount .tb-flash-card").count(),2);
+      assert.equal(await page.locator('#tbFlashMount a[href="/download/flash-v4-6-1"]').count(),1);
+      assert.equal(await page.locator('#tbFlashMount a[href="/download/flash-v4-7-0"]').count(),1);
+      await page.waitForFunction(()=>[...document.querySelectorAll("#tbFlashMount .tb-flash-download-count")].every(el=>/lượt tải/.test(el.textContent)),undefined,{timeout:5000});
     }
     if(pageName==="/wiki.html"){
       const left=page.locator("#tbP1First"),right=page.locator("#tbP1Second");
