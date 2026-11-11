@@ -136,7 +136,11 @@ export function composeTrainingBotPublicAnswer(data,{official47=null}={}){
       " trong dữ liệu công khai TrainingBot vừa đọc ("+checkedAt+
       "). Chưa đủ căn cứ để xác nhận ngày ra mắt chính thức.");
   }
-  if(!sections.length)return null;
+  if(!sections.length){
+    sections.push(!data.betaAvailable&&!data.postsAvailable
+      ?"Hiện chưa đọc được nguồn tin và Beta công khai của TrainingBot. Mình không thể xác nhận thông tin mới nhất trong lượt này; bạn có thể mở "+BETA_URL+" để kiểm tra."
+      :"Nguồn công khai TrainingBot hiện chưa có bài viết hoặc phiên bản phù hợp câu hỏi này. Mình không tự suy đoán ngày phát hành.");
+  }
   sections.push("Nguồn: dữ liệu công khai TrainingBot được đọc khi bạn hỏi ("+checkedAt+"). Bài viết của TrainingBot không thay thế thông báo chính thức của nhà phát hành.");
   return {reply:sections.join("\n\n").slice(0,5000),sources:sources.slice(0,6)};
 }
