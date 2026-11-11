@@ -29,8 +29,12 @@ a.tb-ai-floating:focus-visible{outline:3px solid #d2e4ff;outline-offset:4px}
 .tb-ai-floating .tb-ai-orb{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.15);font-size:18px}
 .tb-ai-floating .tb-ai-label{white-space:nowrap}
 .tb-ai-floating .tb-ai-state{font-size:9px;line-height:1.1;font-weight:800;opacity:.75}
+@media(max-width:700px){
+ /* Five-item bottom navigation uses ~86px; keep the AI shortcut above it. */
+ a.tb-ai-floating{bottom:calc(98px + env(safe-area-inset-bottom,0px))}
+}
 @media(max-width:600px){
- a.tb-ai-floating{right:12px;bottom:calc(15px + env(safe-area-inset-bottom,0px));min-height:48px;padding:0 13px;font-size:12px;gap:7px}
+ a.tb-ai-floating{right:12px;bottom:calc(98px + env(safe-area-inset-bottom,0px));min-height:48px;padding:0 13px;font-size:12px;gap:7px}
  .tb-ai-floating .tb-ai-orb{width:25px;height:25px;font-size:16px}
 }
 @media(prefers-reduced-motion:reduce){a.tb-ai-floating{transition:none}}
