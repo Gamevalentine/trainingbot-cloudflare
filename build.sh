@@ -566,7 +566,7 @@ NODE
 # Guard against leaking Pages Preview hostnames in public client assets.
 # iOS chat now uses a first-party iframe. Preview exists ONLY inside the
 # fixed server-side public AI bridge, never exposed as a browser destination.
-if grep -RIl --include='*.html' --include='*.css' --include='*.js' --include='*.json' --include='*.xml' --include='*.txt' 'trainingbot-cloudflare\\.pages\\.dev' public | grep -q .; then
+if grep -RIl --include='*.html' --include='*.css' --include='*.js' --include='*.json' --include='*.xml' --include='*.txt' 'trainingbot-cloudflare\.pages\.dev' public | grep -q .; then
   echo 'ERROR: unapproved pages.dev hostname found in public/' >&2
   exit 1
 fi
