@@ -144,9 +144,12 @@ const announced=await release.json();
 assert.match(announced.reply,/12\/11\/2026/);
 assert(!announced.reply.includes('V4.7.5'),'Do not dump Beta status into official date answer');
 assert(!announced.reply.includes('Bài viết liên quan'),'No news list for a direct date question');
-assert.equal(announced.sources.length,1);
+assert.equal(announced.sources.length,2);
 assert(announced.sources.some(x=>x.type==='official_claim'&&
-  x.url==='https://www.pubgmobile.jp/version-4-7-0-update-notice-20261105/'));
+  x.url==='https://www.instagram.com/reel/DfbazBRtgl5/'));
+assert(announced.sources.some(x=>x.type==='site_news'&&
+  x.url==='https://trainingbot.io.vn/bai-viet/pubg-mobile-4-7-chinh-thuc-ra-mat-ngay-12-11-2026-lich-cap-nhat-va-nhung-dieu-can-biet'));
+assert(!announced.reply.includes('Nhật Bản'));
 assert.equal(publicCalls.length,0,'Official date needs no unrelated public API calls');
 
 // Exactly what was displayed must be the basis for a reaction, not the raw
@@ -163,16 +166,18 @@ assert.equal(remembered.status,200);
 const rememberedReply=await remembered.json();
 assert.match(rememberedReply.reply,/câu trước chưa giải đáp đúng ý/);
 assert.match(rememberedReply.reply,/12\/11\/2026/);
-assert.match(rememberedReply.reply,/Việt Nam/);
+assert.match(rememberedReply.reply,/Global/);
+assert(!rememberedReply.reply.includes('Nhật Bản'));
 assert(!rememberedReply.reply.includes('Xin chào từ Staging'),
   'Never use stale raw model answer for source-backed follow-ups');
-assert.equal(rememberedReply.sources.length,1);
+assert.equal(rememberedReply.sources.length,2);
 assert.equal(rememberedReply.sources[0].type,'official_claim');
+assert.equal(rememberedReply.sources[1].type,'site_news');
 
 const vnFollowup=await chat(req('/api/ai-preview/chat',{cookie:rawCookie+'; '+signedContext,
   body:{surface:'visitor',message:'thế ở Việt Nam thì sao',conversationId:'conv_preview_12345678'}}),env,{publicFetch});
 assert.equal(vnFollowup.status,200);
-assert.match((await vnFollowup.json()).reply,/chưa xác minh được giờ mở cập nhật riêng tại Việt Nam/);
+assert.match((await vnFollowup.json()).reply,/chưa đối chiếu được giờ cập nhật chính xác tại Việt Nam/);
 
 const tampered=signedContext.slice(0,-1)+(signedContext.endsWith('X')?'Y':'X');
 const forged=await chat(req('/api/ai-preview/chat',{cookie:rawCookie+'; '+tampered,
@@ -219,10 +224,10 @@ assert.equal(generic.status,200);
 const nextSchedule=await generic.json();
 assert.match(nextSchedule.reply,/PUBG MOBILE 4\.7.*12\/11\/2026/);
 assert(!nextSchedule.reply.includes('V4.7.5'));
-assert.equal(nextSchedule.sources.length,1,'One official citation, not a list of Beta/news');
+assert.equal(nextSchedule.sources.length,2,'Two reviewed links: international official post and TrainingBot article');
 assert.equal(nextSchedule.sources[0].type,'official_claim');
-assert.equal(nextSchedule.sources[0].url,
-  'https://www.pubgmobile.jp/version-4-7-0-update-notice-20261105/');
+assert.equal(nextSchedule.sources[0].url,'https://www.instagram.com/reel/DfbazBRtgl5/');
+assert.equal(nextSchedule.sources[1].type,'site_news');
 
 const other=await chat(req('/api/ai-preview/chat',{cookie:rawCookie,
   body:{surface:'visitor',message:'bao giờ có bản update 4.6'}}),env,{publicFetch});
