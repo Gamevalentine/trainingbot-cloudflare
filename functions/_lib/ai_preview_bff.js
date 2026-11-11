@@ -1,3 +1,4 @@
+import {verified47ReleaseAnswer} from './ai_release_facts.js';
 // Preview-only B.1 first-party BFF. No global fetch, direct upstream URL, or Production resource.
 const encoder=new TextEncoder();
 const JSON_HEADERS={'content-type':'application/json; charset=utf-8','cache-control':'no-store, max-age=0',
@@ -178,19 +179,31 @@ export async function chat(request,env){
  const officialPattern=/^https:\/\/www\.pubgmobile\.com\/en\/event\/(?:PUBG-MOBILE-Version-430|PUBG-MOBILE-Version-400|Official-Transformers-Collaboration|260Devnotes|250Devnotes|270Devnotes)\/$/;
  const wikiRuntimePattern=/^https:\/\/github\.com\/Gamevalentine\/trainingbot-cloudflare\/actions\/runs\/40763409109$/;
  const wikiBasePattern=/^https:\/\/github\.com\/Gamevalentine\/trainingbot-cloudflare\/blob\/[a-f0-9]{40}\/overrides\/wiki\.html$/;
- const sources=Array.isArray(result.json.sources)?result.json.sources.slice(0,8)
-  .filter(x=>x&&typeof x==='object'&&['wiki_snapshot','editorial_tactics','official_claim'].includes(x.type)
+ // Release facts are manually source-reviewed and scoped to this Preview.
+ // Apply only AFTER a successful Worker chat turn, so session, per-IP/user
+ // quota and global rate limits are never bypassed.
+ const verifiedRelease=verified47ReleaseAnswer(body.message);
+ const upstreamSources=Array.isArray(result.json.sources)?result.json.sources
+  .filter(x=>['wiki_snapshot','editorial_tactics','official_claim'].includes(x?.type)):[];
+ const combined=[...(verifiedRelease?.sources??[]),...upstreamSources].slice(0,8);
+ const official47Pattern=/^https:\/\/www\.pubgmobile\.jp\/version-4-7-0-update-notice-20261105\/$/;
+ const trainingbotBetaPattern=/^https:\/\/trainingbot\.io\.vn\/ban-cap-nhat$/;
+ const sources=combined
+  .filter(x=>x&&typeof x==='object'&&['wiki_snapshot','editorial_tactics','official_claim','site_release'].includes(x.type)
    &&typeof x.title==='string'&&x.title.length<=160)
   .map(x=>({
     type:x.type,title:x.title,
-    sourceStatus:x.type==='wiki_snapshot'?'internal_unverified':x.type==='official_claim'?'official_claim_verified':'editorial_suggestion',
-    gameVersion:x.type==='official_claim'&&/^\d+\.\d+$/.test(x.gameVersion??'')?x.gameVersion:null,
+    sourceStatus:x.type==='wiki_snapshot'?'internal_unverified':
+      x.type==='official_claim'?'official_claim_verified':
+      x.type==='site_release'?'trainingbot_public_catalog':'editorial_suggestion',
+    gameVersion:['official_claim','site_release'].includes(x.type)&&/^\d+\.\d+$/.test(x.gameVersion??'')?x.gameVersion:null,
     ...(typeof x.url==='string'&&(
       (x.type==='wiki_snapshot'&&(wikiRuntimePattern.test(x.url)||wikiBasePattern.test(x.url)))||
-      (x.type==='official_claim'&&officialPattern.test(x.url)))?{url:x.url}:{}),
+      (x.type==='official_claim'&&(officialPattern.test(x.url)||official47Pattern.test(x.url)))||
+      (x.type==='site_release'&&trainingbotBetaPattern.test(x.url)))?{url:x.url}:{}),
     ...(typeof x.snapshotDate==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x.snapshotDate)?{snapshotDate:x.snapshotDate}:{}),
-    ...(x.type==='official_claim'&&typeof x.checkedAt==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x.checkedAt)?{checkedAt:x.checkedAt}:{})
-  })):[];
- return safe(200,{reply:result.json.reply,conversationId:result.json.conversationId,
+    ...(['official_claim','site_release'].includes(x.type)&&typeof x.checkedAt==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x.checkedAt)?{checkedAt:x.checkedAt}:{})
+  }));
+ return safe(200,{reply:verifiedRelease?.reply??result.json.reply,conversationId:result.json.conversationId,
    revision:result.json.revision,sources});
 }

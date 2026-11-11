@@ -36,7 +36,7 @@ const svc={
     return new Response(JSON.stringify({ok:true}),{headers:{'content-type':'application/json'}});
   }
   assert(visitors.has(data.visitorId),'No session for AI request');
-  assert.equal(data.message,'Xin chào');
+  assert(['Xin chào','bao giờ có bản update 4.7','Beta 4.7 đã có chưa?','bao giờ có bản update 4.6'].includes(data.message));
   return new Response(JSON.stringify({reply:'Xin chào từ Staging',conversationId:'conv_preview_12345678',revision:1}),
     {headers:{'content-type':'application/json'}});
  }
@@ -109,6 +109,29 @@ assert.equal(injected.status,400);
 const good=await chat(req('/api/ai-preview/chat',{cookie:rawCookie,body:{surface:'visitor',message:'Xin chào'}}),env);
 assert.equal(good.status,200);
 assert.equal((await good.json()).reply,'Xin chào từ Staging');
+// A reviewed date must override an unsupported generic model reply, but only
+// AFTER the signed Worker call succeeds and consumes its normal rate quota.
+const release=await chat(req('/api/ai-preview/chat',{cookie:rawCookie,
+  body:{surface:'visitor',message:'bao giờ có bản update 4.7'}}),env);
+assert.equal(release.status,200);
+const announced=await release.json();
+assert.match(announced.reply,/12\/11\/2026/);
+assert.match(announced.reply,/Beta 4\.7/);
+assert.match(announced.reply,/không phải dữ liệu cửa hàng thời gian thực/);
+assert(announced.sources.some(x=>x.type==='official_claim'&&
+  x.url==='https://www.pubgmobile.jp/version-4-7-0-update-notice-20261105/'));
+assert(announced.sources.some(x=>x.type==='site_release'&&
+  x.url==='https://trainingbot.io.vn/ban-cap-nhat'));
+const beta=await chat(req('/api/ai-preview/chat',{cookie:rawCookie,
+  body:{surface:'visitor',message:'Beta 4.7 đã có chưa?'}}),env);
+assert.equal(beta.status,200);
+assert.match((await beta.json()).reply,/V4\.7\.4/);
+const other=await chat(req('/api/ai-preview/chat',{cookie:rawCookie,
+  body:{surface:'visitor',message:'bao giờ có bản update 4.6'}}),env);
+assert.equal(other.status,200);
+assert.equal((await other.json()).reply,'Xin chào từ Staging',
+  'Do not synthesize release dates for unsupported versions');
+
 assert.equal(lastGuest,responses.at(-1).guest);
 assert.equal((await chat(req('/api/ai-preview/chat',{cookie:rawCookie,headers:{'CF-Connecting-IP':'203.0.113.52'},body:{surface:'visitor',message:'Xin chào'}}),env)).status,401,'Guest cookie bound to IP');
 const prod='https://trainingbot.io.vn';
