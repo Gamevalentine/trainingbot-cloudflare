@@ -61,7 +61,7 @@ export async function getTrainingBotPublicData(question,{fetchImpl=fetch,now=()=
   ]);
   const versions=Array.isArray(beta?.versions)?beta.versions.slice(0,50).flatMap(x=>{
     if(!x||typeof x!=="object"||typeof x.version!=="string"||!/^V\d{1,2}\.\d{1,2}(?:\.\d{1,2})?$/.test(x.version))return [];
-    return [{version:x.version,status:trimText(x.status,40).toLowerCase(),
+    return [{version:x.version,status:typeof x.status==="string"&&/^[a-z_]{1,40}$/.test(x.status)?x.status:"unknown",
       updatedAt:dateOnly(x.updated_at),arch:trimText(x.arch,12)}];
   }).sort((a,b)=>newer(a.version,b.version)):[];
   const articles=Array.isArray(posts?.posts)?posts.posts.slice(0,24).flatMap(x=>{
@@ -93,7 +93,7 @@ function relevantArticles(data){
     if(intent.beta&&!ver&&!title.includes("beta"))score-=4;
     if(/glacier/.test(intent.q)&&title.includes("glacier"))score+=8;
     if(/erangel/.test(intent.q)&&title.includes("erangel"))score+=7;
-    if(!ver&&!intent.flash&&!intent.beta&&intent.latest)score+=2;
+    if(!ver&&!intent.flash&&!intent.beta&&intent.latest&&!/\bglacier\b|\berangel\b|\bm416\b/.test(intent.q))score+=2;
     return {article,score};
   }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||b.article.publishedAt.localeCompare(a.article.publishedAt));
   return relevant.slice(0,3).map(x=>x.article);
