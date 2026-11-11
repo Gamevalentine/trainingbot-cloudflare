@@ -50,13 +50,16 @@ export async function groundedFollowup(question,topic,{fetchImpl=fetch}={}){
   if(!mode||!FOLLOWUP_KINDS.includes(topic))return null;
   if(topic==="official47"){
     const verified=verified47ReleaseAnswer("bao giờ có bản update 4.7");
-    const sources=verified?.sources?.filter(s=>s.type==="official_claim").slice(0,1)??[];
-    const detail="PUBG MOBILE 4.7 có lịch cập nhật ngày 12/11/2026 theo thông báo khu vực Nhật Bản. "+
-      "Mình chưa xác minh được giờ mở cập nhật riêng tại Việt Nam nên không nên đưa ra giờ cụ thể.";
-    const follow=mode==="feedback"
-      ?" Bạn muốn mình làm rõ giờ ở Việt Nam hay cách tải bản cập nhật?"
-      :"";
-    return {reply:explanatoryLead(mode)+detail+follow,sources};
+    if(!verified)return null;
+    // Continue from what the visitor ACTUALLY saw, not the raw Staging LLM
+    // response. Don't reintroduce a Japan-only citation for a global release.
+    const detail=mode==="vietnam"
+      ?verified.reply+" Nếu bạn hỏi riêng PUBG MOBILE VNG, mình chưa đối chiếu được giờ cập nhật chính xác tại Việt Nam."
+      :mode==="time"
+        ?verified.reply+" Mình chưa có nguồn xác nhận giờ cập nhật chính xác."
+        :verified.reply;
+    return {reply:explanatoryLead(mode)+detail,
+      sources:verified.sources.filter(s=>["official_claim","site_news"].includes(s.type)).slice(0,2)};
   }
   // This data is read again from public APIs, never trusted from a client's
   // claimed text or from a stale model conversation.
