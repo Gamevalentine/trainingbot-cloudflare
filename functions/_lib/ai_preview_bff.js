@@ -7,6 +7,14 @@ const JSON_HEADERS={'content-type':'application/json; charset=utf-8','cache-cont
   'x-content-type-options':'nosniff','x-robots-tag':'noindex, nofollow','referrer-policy':'no-referrer'};
 const cookieName='__Host-tb_ai_b1';
 const followupCookieName='__Host-tb_ai_last_v1';
+// Isolated CHIPS cookie for the TrainingBot floating widget. The existing
+// strict first-party chat cookies remain unchanged for full-page Preview.
+const widgetCookieName='__Host-tb_ai_widget_b1';
+const widgetFollowupName='__Host-tb_ai_widget_last_v1';
+const embedMode=ctx=>ctx.u.search==='?embed=1';
+const sessionCookieName=ctx=>embedMode(ctx)?widgetCookieName:cookieName;
+const followupName=ctx=>embedMode(ctx)?widgetFollowupName:followupCookieName;
+const cookiePolicy=ctx=>embedMode(ctx)?'SameSite=None; Partitioned':'SameSite=Strict';
 const followupMaxAgeMs=20*60*1000;
 const safe=(status,data,headers={})=>new Response(JSON.stringify(data),{status,headers:{...JSON_HEADERS,...headers}});
 const b64=bytes=>btoa(String.fromCharCode(...bytes)).replaceAll('+','-').replaceAll('/','_').replace(/=+$/g,'');
@@ -28,7 +36,7 @@ const ipFrom=req=>{
 };
 async function context(request,env){
  const u=new URL(request.url);
- if(!previewHost(u)||u.search||u.hash)return null;
+ if(!previewHost(u)||(u.search!==''&&u.search!=='?embed=1')||u.hash)return null;
  // Only service binding. Never proxy to public website or arbitrary user-supplied URL.
  if(!env?.TRAININGBOT_AI_STAGE_WORKER?.fetch)return null;
  const key=await keyFrom(env);if(!key)return null;
@@ -86,13 +94,14 @@ async function boundedJson(req,bytes=4096){
  if(encoder.encode(text).length>bytes)return null;
  try{const obj=JSON.parse(text);return obj&&typeof obj==='object'&&!Array.isArray(obj)?obj:null;}catch{return null;}
 }
-function cookieValue(request){
+function cookieValue(request,ctx){
+ const name=sessionCookieName(ctx);
  const found=(request.headers.get('cookie')||'').split(';').map(x=>x.trim())
-   .filter(s=>s.startsWith(cookieName+'='));
- return found.length===1?found[0].slice(cookieName.length+1):'';
+   .filter(s=>s.startsWith(name+'='));
+ return found.length===1?found[0].slice(name.length+1):'';
 }
 async function validateCookie(req,ctx){
- const raw=cookieValue(req);
+ const raw=cookieValue(req,ctx);
  const matches=/^(b_[a-zA-Z0-9_-]{32})\.(\d{13})\.([A-Za-z0-9_-]{43})$/.exec(raw);
  if(!matches)return null;
  const [,id,expires,signature]=matches;
@@ -100,15 +109,16 @@ async function validateCookie(req,ctx){
  const expected=await proof(ctx.key,['cookie',id,expires,ctx.ipHash,ctx.u.hostname].join(':'));
  return equals(expected,signature)?id:null;
 }
-function expiresCookie(){return cookieName+'=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0';}
-function lastContextRaw(req){
+function expiresCookie(ctx){return sessionCookieName(ctx)+'=; Path=/; Secure; HttpOnly; '+cookiePolicy(ctx)+'; Max-Age=0';}
+function lastContextRaw(req,ctx){
+ const name=followupName(ctx);
  const found=(req.headers.get('cookie')||'').split(';').map(x=>x.trim())
-   .filter(s=>s.startsWith(followupCookieName+'='));
- return found.length===1?found[0].slice(followupCookieName.length+1):'';
+   .filter(s=>s.startsWith(name+'='));
+ return found.length===1?found[0].slice(name.length+1):'';
 }
 async function validLastContext(req,ctx,visitorId,conversationId){
  if(typeof conversationId!=='string'||!/^[A-Za-z0-9_-]{8,100}$/.test(conversationId))return null;
- const match=/^([a-z0-9_]{3,20})\.(\d{13})\.([A-Za-z0-9_-]{43})$/.exec(lastContextRaw(req));
+ const match=/^([a-z0-9_]{3,20})\.(\d{13})\.([A-Za-z0-9_-]{43})$/.exec(lastContextRaw(req,ctx));
  if(!match)return null;
  const [,kind,expires,signature]=match;
  if(!FOLLOWUP_KINDS.includes(kind))return null;
@@ -120,15 +130,15 @@ async function validLastContext(req,ctx,visitorId,conversationId){
 }
 async function issueLastContext(ctx,visitorId,conversationId,kind){
  if(!FOLLOWUP_KINDS.includes(kind)||typeof conversationId!=='string'||
-   !/^[A-Za-z0-9_-]{8,100}$/.test(conversationId))return clearLastContext();
+   !/^[A-Za-z0-9_-]{8,100}$/.test(conversationId))return clearLastContext(ctx);
  const expires=String(Date.now()+followupMaxAgeMs);
  const signature=await proof(ctx.key,
   ['TB_SOURCE_CONTEXT_V1',visitorId,conversationId,kind,expires,ctx.ipHash,ctx.u.hostname].join(':'));
- return followupCookieName+'='+kind+'.'+expires+'.'+signature+
-   '; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=1200';
+ return followupName(ctx)+'='+kind+'.'+expires+'.'+signature+
+   '; Path=/; Secure; HttpOnly; '+cookiePolicy(ctx)+'; Max-Age=1200';
 }
-function clearLastContext(){
- return followupCookieName+'=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0';
+function clearLastContext(ctx){
+ return followupName(ctx)+'=; Path=/; Secure; HttpOnly; '+cookiePolicy(ctx)+'; Max-Age=0';
 }
 
 export async function status(request,env){
@@ -186,8 +196,8 @@ export async function session(request,env){
  }
  const expires=String(Date.now()+3600000);
  const signature=await proof(ctx.key,['cookie',id,expires,ctx.ipHash,ctx.u.hostname].join(':'));
- return safe(200,{ok:true,expiresInSeconds:3600},{'set-cookie':cookieName+'='+id+'.'+expires+'.'+signature+
-  '; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=3600'});
+ return safe(200,{ok:true,expiresInSeconds:3600},{'set-cookie':sessionCookieName(ctx)+'='+id+'.'+expires+'.'+signature+
+  '; Path=/; Secure; HttpOnly; '+cookiePolicy(ctx)+'; Max-Age=3600'});
 }
 export async function chat(request,env,{publicFetch=fetch}={}){
  if(!previewHost(new URL(request.url)))return safe(404,{error:{code:'NOT_FOUND'}});
@@ -196,7 +206,7 @@ export async function chat(request,env,{publicFetch=fetch}={}){
  const guard=postGuard(request,ctx);
  if(guard)return safe(403,{error:{code:guard}});
  const visitorId=await validateCookie(request,ctx);
- if(!visitorId)return safe(401,{error:{code:'UNAUTHORIZED'}},{'set-cookie':expiresCookie()});
+ if(!visitorId)return safe(401,{error:{code:'UNAUTHORIZED'}},{'set-cookie':expiresCookie(ctx)});
  const body=await boundedJson(request,4096);
  if(!body||body.surface!=='visitor'||typeof body.message!=='string'||!body.message.trim()||
     body.message.length>3000||Object.keys(body).some(k=>!['surface','message','conversationId'].includes(k))||
