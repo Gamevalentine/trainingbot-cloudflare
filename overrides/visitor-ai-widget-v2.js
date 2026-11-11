@@ -1,11 +1,12 @@
-/* TrainingBot public inline AI launcher. No credentials or model requests on
-   Production: the sandboxed iframe talks only to its own isolated Preview BFF. */
+/* TrainingBot in-page AI launcher. The iframe now stays first-party on
+   trainingbot.io.vn so iOS Safari does not block a third-party chat frame.
+   Its API is a scoped server-side bridge to the quota-limited Visitor AI. */
 "use strict";
 (()=>{
  const panel=document.getElementById("tb-ai-popup");
  if(!panel)return;
- const ORIGIN="https://preview-ai-identity-bridge.trainingbot-cloudflare.pages.dev";
- const FRAME=ORIGIN+"/ai-widget";
+ const ORIGIN="https://trainingbot.io.vn";
+ const FRAME="/ai-widget";
  let iframe=null,openedFrom=null,handshake=false,pendingCheck=null;
  const toggles=()=>document.querySelectorAll("[data-tb-ai-toggle]");
  const expanded=active=>toggles().forEach(link=>link.setAttribute("aria-expanded",active?"true":"false"));

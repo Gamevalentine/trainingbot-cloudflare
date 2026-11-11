@@ -416,3 +416,13 @@ node --check functions/ai.js
 node tools/public/visitor-ai-entry.mjs
 node --check tools/qa/public-ai-entry-qa.mjs
 node tools/qa/public-ai-entry-qa.mjs
+# First-party iOS Safari chat backend: no third-party iframe/cookies on mobile.
+test -f public/ai-widget.js
+test -f public/ai-widget.css
+test -f functions/ai-widget.js
+test -f functions/_lib/ai_widget_public_proxy.js
+node --check public/ai-widget.js
+node --check functions/ai-widget.js
+node --check functions/_lib/ai_widget_public_proxy.js
+node --check tools/qa/public-ai-bridge-qa.mjs
+node tools/qa/public-ai-bridge-qa.mjs
