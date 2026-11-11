@@ -3,7 +3,7 @@
   const get=id=>document.getElementById(id);
   const thread=get("tb-thread"),question=get("tb-question"),send=get("tb-send");
   const form=get("tb-form"),status=get("tb-status"),close=get("tb-close");
-  const PARENT="https://trainingbot.io.vn";
+  const PARENT=window.location.origin;
   const API="/api/ai-preview";
   const Q="";
   let ready=false,conversationId=null,working=false;
