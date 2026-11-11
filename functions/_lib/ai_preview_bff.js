@@ -60,11 +60,19 @@ async function stage(ctx,route,method,data){
   return {status:503,category:'EXCEPTION_'+step+'_'+type};
  }
 }
-function goodPost(req,ctx){
- if(req.method!=='POST'||req.headers.get('origin')!==ctx.u.origin)return false;
+function postGuard(req,ctx){
+ if(req.method!=='POST')return 'POST_METHOD_DENIED';
+ const origin=req.headers.get('origin');
  const site=req.headers.get('sec-fetch-site');
- if(site&&site!=='same-origin')return false;
- return /^application\/json(?:;\s*charset=utf-8)?$/i.test(req.headers.get('content-type')||'');
+ // Some privacy-preserving browsers omit Origin on a same-origin fetch.
+ // In that case require the browser-generated Fetch Metadata signal.
+ // Never accept a mismatched Origin, same-site subdomain or cross-site request.
+ if(origin&&origin!==ctx.u.origin)return 'POST_ORIGIN_DENIED';
+ if(site&&site!=='same-origin')return 'POST_FETCH_SITE_DENIED';
+ if(!origin&&site!=='same-origin')return 'POST_MISSING_SAME_ORIGIN_PROOF';
+ if(!/^application\/json(?:;\s*charset=utf-8)?$/i.test(req.headers.get('content-type')||''))
+   return 'POST_CONTENT_TYPE_DENIED';
+ return null;
 }
 async function boundedJson(req,bytes=4096){
  const declared=Number(req.headers.get('content-length')||0);
@@ -119,7 +127,8 @@ export async function session(request,env){
  if(!previewHost(new URL(request.url)))return safe(404,{error:{code:'NOT_FOUND'}});
  const ctx=await context(request,env);
  if(!ctx)return safe(503,{error:{code:'PREVIEW_BFF_NOT_CONFIGURED'}});
- if(!goodPost(request,ctx))return safe(403,{error:{code:'FORBIDDEN'}});
+ const guard=postGuard(request,ctx);
+ if(guard)return safe(403,{error:{code:guard}});
  const body=await boundedJson(request,128);
  if(!body||Object.keys(body).length!==0)return safe(400,{error:{code:'INVALID_INPUT'}});
  const prior=await validateCookie(request,ctx);
@@ -149,7 +158,8 @@ export async function chat(request,env){
  if(!previewHost(new URL(request.url)))return safe(404,{error:{code:'NOT_FOUND'}});
  const ctx=await context(request,env);
  if(!ctx)return safe(503,{error:{code:'PREVIEW_BFF_NOT_CONFIGURED'}});
- if(!goodPost(request,ctx))return safe(403,{error:{code:'FORBIDDEN'}});
+ const guard=postGuard(request,ctx);
+ if(guard)return safe(403,{error:{code:guard}});
  const visitorId=await validateCookie(request,ctx);
  if(!visitorId)return safe(401,{error:{code:'UNAUTHORIZED'}},{'set-cookie':expiresCookie()});
  const body=await boundedJson(request,4096);
