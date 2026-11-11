@@ -11,7 +11,7 @@ for(const page of pages){
  assert.equal((html.match(/class="tb-ai-widget-launch"/g)||[]).length,1,page+" floating robot");
  assert.equal((html.match(/data-tb-ai-toggle/g)||[]).length,3,page+" launch controls");
  assert.equal((html.match(/id="tb-ai-popup"/g)||[]).length,1,page+" dialog");
- assert.equal((html.match(/href="\/ai"/g)||[]).length,4,page+" fallback links");
+ assert.equal((html.match(/href="\/ai"/g)||[]).length,3,page+" menu and full-screen fallback links");
  assert(html.includes('visitor-ai-widget-v2.css?v=2'),page+" CSS");
  assert(html.includes('visitor-ai-widget-v2.js?v=2'),page+" client JS");
  assert(html.includes('tb-ai-frame-mount'),page+" iframe mount");
