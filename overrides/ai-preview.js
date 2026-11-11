@@ -33,7 +33,7 @@
       section.append(head);
       const list = document.createElement("ul");
       for (const source of sources.slice(0, 6)) {
-        if (!source || !["wiki_snapshot", "editorial_tactics", "official_claim", "site_release"].includes(source.type)) continue;
+        if (!source || !["wiki_snapshot", "editorial_tactics", "official_claim", "site_release", "site_news"].includes(source.type)) continue;
         const li = document.createElement("li");
         const name = typeof source.title === "string" ? source.title.slice(0, 160) : "Nguồn";
         const wikiUrl = typeof source.url === "string" &&
@@ -44,9 +44,12 @@
            /^https:\/\/www\.pubgmobile\.jp\/version-4-7-0-update-notice-20261105\/$/.test(source.url));
         const betaUrl = typeof source.url === "string" &&
           /^https:\/\/trainingbot\.io\.vn\/ban-cap-nhat$/.test(source.url);
+        const newsUrl = typeof source.url === "string" &&
+          /^https:\/\/trainingbot\.io\.vn\/bai-viet\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(source.url);
         if ((wikiUrl && source.type === "wiki_snapshot") ||
             (officialUrl && source.type === "official_claim") ||
-            (betaUrl && source.type === "site_release")) {
+            (betaUrl && source.type === "site_release") ||
+            (newsUrl && source.type === "site_news")) {
           const anchor = document.createElement("a");
           anchor.href = source.url;
           anchor.target = "_blank";
@@ -65,6 +68,9 @@
             : source.type === "site_release"
               ? " — Danh sách Beta TrainingBot, đối chiếu " + (source.checkedAt || "chưa rõ") +
                 "; không phải lịch phát hành chính thức"
+            : source.type === "site_news"
+              ? " — Bài viết TrainingBot, lấy dữ liệu " + (source.checkedAt || "chưa rõ") +
+                "; không phải nguồn chính thức của PUBG MOBILE"
             : " — Wiki nội bộ (bản runtime), không phải xác minh game; phiên bản từng trường chưa xác minh" +
               (source.snapshotDate ? "; chụp " + source.snapshotDate : "");
         li.append(note); list.append(li);
