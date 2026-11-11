@@ -156,7 +156,7 @@ export async function session(request,env){
  return safe(200,{ok:true,expiresInSeconds:3600},{'set-cookie':cookieName+'='+id+'.'+expires+'.'+signature+
   '; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=3600'});
 }
-export async function chat(request,env){
+export async function chat(request,env,{publicFetch=fetch}={}){
  if(!previewHost(new URL(request.url)))return safe(404,{error:{code:'NOT_FOUND'}});
  const ctx=await context(request,env);
  if(!ctx)return safe(503,{error:{code:'PREVIEW_BFF_NOT_CONFIGURED'}});
@@ -189,7 +189,7 @@ export async function chat(request,env){
  // Public posts are published site data, not official game release claims.
  let publicAnswer=null;
  try {
-   const publicData=await getTrainingBotPublicData(body.message);
+   const publicData=await getTrainingBotPublicData(body.message,{fetchImpl:publicFetch});
    publicAnswer=composeTrainingBotPublicAnswer(publicData,{official47:verifiedRelease});
  }catch{/* Public feed may be unavailable; existing chat stays functional. */}
  const chosen=publicAnswer??verifiedRelease;
