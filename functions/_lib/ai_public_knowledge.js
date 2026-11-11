@@ -80,7 +80,7 @@ const statusText=s=>s==="released"?"được đánh dấu đã phát hành":
   "trạng thái chưa được xác minh";
 function relevantArticles(data){
   const {intent,articles}=data;
-  if((intent.latest||(/\btin\b|\bnews\b|\bbai viet\b/.test(intent.q)&&!intent.flash))&&!intent.version&&!intent.beta&&!/\bglacier\b|\berangel\b|\bm416\b/.test(intent.q))return articles.slice(0,3);
+  if(!intent.version&&!intent.beta&&!intent.flash&&!/\bglacier\b|\berangel\b|\bm416\b/.test(intent.q))return articles.slice(0,3);
   const ver=intent.version?norm(intent.version.major.slice(1)):null;
   const relevant=articles.map(article=>{
     const title=norm(article.title),summary=norm(article.summary);
