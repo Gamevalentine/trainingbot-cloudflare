@@ -55,8 +55,9 @@ const official=await answer("khi nào có bản update 4.7 thế");
 assert.match(official.reply,/12\/11\/2026/);
 assert(!official.reply.includes("V4.7.5"),"Official schedule must not include unrelated Beta builds");
 assert(!official.reply.includes("Bài viết liên quan"));
-assert.equal(official.sources.length,1,"One official citation for the direct date question");
+assert.equal(official.sources.length,2,"Direct Global date includes publisher post and TrainingBot article");
 assert.equal(official.sources[0].type,"official_claim");
+assert.equal(official.sources[1].type,"site_news");
 assert.equal(urls.length,callsBeforeOfficial,"Known official schedule needs no unrelated public API fetch");
 
 // A normal Visitor chat question is about PUBG, even without the game name
@@ -72,8 +73,9 @@ for(const question of [
   const before=urls.length;
   const generic=await answer(question);
   assert.match(generic.reply,/PUBG MOBILE 4\.7.*12\/11\/2026/);
-  assert.equal(generic.sources.length,1);
+  assert.equal(generic.sources.length,2);
   assert.equal(generic.sources[0].type,"official_claim");
+  assert.equal(generic.sources[1].type,"site_news");
   assert.equal(urls.length,before+1,"Only public posts API for generic official schedule");
   assert(!generic.reply.includes("Beta"),"No unrelated Beta or news lists");
 }
