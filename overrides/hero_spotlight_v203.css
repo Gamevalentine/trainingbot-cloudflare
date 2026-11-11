@@ -31,3 +31,15 @@
 @media(max-width:980px){.tb202-hero>.tb203-hero-layout{grid-template-columns:1fr}.tb203-spotlight{width:min(100%,610px);margin:22px auto 0}.tb203-hero-copy h1{max-width:790px}}
 @media(max-width:520px){.tb203-spotlight{border-radius:16px}.tb203-slide-frame{height:315px}.tb203-copy{padding:0 13px 13px}.tb203-copy h2{font-size:1.15rem}.tb203-actions a{min-height:38px;font-size:.72rem}}
 @media(prefers-reduced-motion:reduce){.tb203-slide{animation:none}}
+
+/* Mobile-only compact homepage introduction; desktop layout and copy unchanged. */
+.tb203-hero-intro-mobile{display:none}
+@media(max-width:600px){
+  .tb203-hero-intro-desktop{display:none}
+  .tb203-hero-intro-mobile{display:inline}
+  .tb202-hero{padding:24px 0 28px}
+  .tb203-hero-copy h1{margin:12px 0 10px}
+  .tb203-hero-copy p.tb203-hero-intro{margin:0;font-size:.88rem;line-height:1.5}
+  .tb202-actions{margin-top:16px}
+  .tb203-spotlight{margin:17px auto 0}
+}
