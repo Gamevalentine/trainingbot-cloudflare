@@ -407,9 +407,11 @@ NODE
 # six main public pages, without adding Preview credentials to Production.
 # This runs after the header unification and existing Beta navigation checks.
 # Admin, staging API bindings, D1/R2 and all other public pages are unchanged.
-test -f public/visitor-ai-entry-v1.css
+test -f public/visitor-ai-widget-v2.css
+test -f public/visitor-ai-widget-v2.js
 test -f functions/ai.js
 node --check tools/public/visitor-ai-entry.mjs
+node --check public/visitor-ai-widget-v2.js
 node --check functions/ai.js
 node tools/public/visitor-ai-entry.mjs
 node --check tools/qa/public-ai-entry-qa.mjs
