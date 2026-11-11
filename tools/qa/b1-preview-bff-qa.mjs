@@ -103,6 +103,32 @@ const rawCookie=cookie.split(';')[0];
 const reused=await session(req('/api/ai-preview/session',{cookie:rawCookie}),env);
 assert.equal((await reused.json()).reused,true);
 assert.equal(visitors.size,1,'Session reused; no new Staging cost');
+
+// Embedded chat runs at Preview origin inside an iframe on trainingbot.io.vn.
+// Its partitioned cookie must NOT leak into/replace full-page strict sessions.
+const widgetStatus=await status(req('/api/ai-preview/status?embed=1',{method:'GET'}),env);
+assert.equal((await widgetStatus.json()).ready,true);
+const widgetIssued=await session(req('/api/ai-preview/session?embed=1'),env);
+assert.equal(widgetIssued.status,200);
+const widgetCookie=widgetIssued.headers.get('set-cookie');
+assert.match(widgetCookie,/^__Host-tb_ai_widget_b1=b_[A-Za-z0-9_-]{32}\.\d{13}\.[A-Za-z0-9_-]{43}/);
+assert.match(widgetCookie,/Secure; HttpOnly; SameSite=None; Partitioned; Max-Age=3600/);
+const widgetRaw=widgetCookie.split(';')[0];
+const widgetReused=await session(req('/api/ai-preview/session?embed=1',{cookie:widgetRaw}),env);
+assert.equal((await widgetReused.json()).reused,true);
+assert.equal((await chat(req('/api/ai-preview/chat?embed=1',{
+ cookie:rawCookie,body:{surface:'visitor',message:'Xin chào'}}),env)).status,401,
+ 'Strict full-page cookie cannot authorize embed');
+assert.equal((await chat(req('/api/ai-preview/chat',{
+ cookie:widgetRaw,body:{surface:'visitor',message:'Xin chào'}}),env)).status,401,
+ 'Partitioned embed cookie cannot authorize full-page chat');
+const widgetGood=await chat(req('/api/ai-preview/chat?embed=1',{
+ cookie:widgetRaw,body:{surface:'visitor',message:'Xin chào'}}),env);
+assert.equal(widgetGood.status,200);
+assert.equal((await widgetGood.json()).reply,'Xin chào từ Staging');
+assert.equal((await session(req('/api/ai-preview/session?embed=force'),env)).status,503,
+ 'Any query except explicit embed=1 must fail closed');
+
 const badRole=await chat(req('/api/ai-preview/chat',{cookie:rawCookie,body:{surface:'admin',message:'Xin chào'}}),env);
 assert.equal(badRole.status,400);
 const injected=await chat(req('/api/ai-preview/chat',{cookie:rawCookie,body:{surface:'visitor',message:'Xin chào',role:'admin'}}),env);
