@@ -1,0 +1,47 @@
+/* Public TrainingBot floating AI widget. Scoped; never modifies general layout. */
+body.tb-community-header-unified > header.site-header .desktop-nav a.tb-ai-nav-link{
+ color:#e9edff!important;background:linear-gradient(110deg,rgba(97,66,202,.21),rgba(45,113,180,.22))!important;
+ border:1px solid rgba(124,110,239,.46)!important;border-radius:10px!important;padding:0 12px!important;
+}
+body.tb-community-header-unified > header.site-header .desktop-nav a.tb-ai-nav-link:hover{background:rgba(125,91,230,.34)!important;color:#fff!important}
+body.tb-community-header-unified > header.site-header .mobile-nav a.tb-ai-nav-link{background:#32294d!important;color:#efeaff!important;border:1px solid #6e58ac!important;border-radius:12px!important}
+.tb-ai-nav-link .tb-ai-spark{color:#b49bff;margin-right:5px}
+.tb-ai-nav-link .tb-ai-mini-beta{font-size:9px;opacity:.75;margin-left:5px;font-weight:750}
+.tb-ai-widget-launch{
+ --tb-glow:#7865e9;position:fixed!important;bottom:calc(19px + env(safe-area-inset-bottom,0px))!important;right:18px!important;z-index:84!important;
+ display:flex!important;flex-direction:column!important;align-items:center;justify-content:center;gap:1px;
+ width:86px!important;min-width:86px!important;height:93px!important;min-height:93px!important;
+ padding:0!important;border:0!important;border-radius:14px!important;
+ color:#e9e6ff!important;text-decoration:none!important;cursor:pointer;
+ background:transparent!important;box-shadow:none!important;font-family:Inter,system-ui,sans-serif;
+ filter:drop-shadow(0 10px 14px rgba(15,7,52,.48));
+}
+.tb-ai-widget-launch .tb-bot-drawing{width:69px;height:70px;display:block;filter:drop-shadow(0 0 10px rgba(126,102,255,.26));transform-origin:50% 80%;transition:transform .2s ease}
+.tb-ai-widget-launch .tb-bot-chip{font-size:10px;font-weight:850;border:1px solid rgba(182,155,255,.55);padding:3px 9px;border-radius:99px;background:linear-gradient(110deg,#343067,#255d94);box-shadow:0 3px 14px #27215a77;line-height:1.15;white-space:nowrap}
+.tb-ai-widget-launch:hover .tb-bot-drawing,.tb-ai-widget-launch:focus-visible .tb-bot-drawing{transform:translateY(-4px)}
+.tb-ai-widget-launch[aria-expanded="true"] .tb-bot-chip{background:linear-gradient(110deg,#5c3baa,#2b7dc7)}
+.tb-ai-widget-launch:focus-visible,.tb-ai-nav-link:focus-visible{outline:3px solid #c7b8ff!important;outline-offset:2px}
+.tb-ai-popup[hidden]{display:none!important}
+.tb-ai-popup{
+ position:fixed!important;z-index:85!important;
+ right:22px!important;bottom:calc(119px + env(safe-area-inset-bottom,0px))!important;
+ width:min(356px,calc(100vw - 32px))!important;height:min(478px,calc(100dvh - 155px))!important;
+ border:1px solid rgba(149,127,246,.52)!important;border-radius:21px!important;
+ overflow:hidden!important;background:linear-gradient(140deg,#25223b,#171d2d)!important;
+ box-shadow:0 26px 70px rgba(4,7,24,.75),0 0 26px rgba(91,75,202,.14)!important;
+ isolation:isolate;animation:tbAiPop .18s ease-out;
+}
+.tb-ai-popup iframe{display:block;width:100%;height:100%;border:0;background:transparent}
+.tb-ai-popup .tb-ai-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#bfc3df;font:12px system-ui,sans-serif;z-index:-1}
+@keyframes tbAiPop{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:none}}
+@media(max-width:700px){
+ .tb-ai-widget-launch{right:9px!important;bottom:calc(93px + env(safe-area-inset-bottom,0px))!important;width:74px!important;min-width:74px!important;height:79px!important;min-height:79px!important}
+ .tb-ai-widget-launch .tb-bot-drawing{height:57px;width:57px}
+ .tb-ai-widget-launch .tb-bot-chip{font-size:9px}
+ .tb-ai-popup{right:10px!important;bottom:calc(180px + env(safe-area-inset-bottom,0px))!important;width:min(356px,calc(100vw - 20px))!important;height:min(472px,calc(100dvh - 200px))!important}
+}
+@media(max-height:560px){
+ .tb-ai-popup{bottom:calc(9px + env(safe-area-inset-bottom,0px))!important;height:calc(100dvh - 18px)!important}
+ .tb-ai-widget-launch[aria-expanded="true"]{visibility:hidden}
+}
+@media(prefers-reduced-motion:reduce){.tb-ai-popup{animation:none}.tb-ai-widget-launch .tb-bot-drawing{transition:none}}
