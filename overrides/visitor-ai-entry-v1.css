@@ -1,0 +1,36 @@
+/* TrainingBot Visitor AI launch surface (public pages only). No embedded
+   cross-site iframe: preview uses strict same-origin, HttpOnly guest cookies. */
+body.tb-community-header-unified > header.site-header .desktop-nav a.tb-ai-nav-link{
+ color:#e9efff!important;background:linear-gradient(120deg,rgba(98,75,207,.25),rgba(48,131,205,.20))!important;
+ border:1px solid rgba(103,121,249,.44)!important;padding:0 11px!important;
+}
+body.tb-community-header-unified > header.site-header .desktop-nav a.tb-ai-nav-link:hover{
+ color:#fff!important;background:linear-gradient(125deg,#5549c4,#2c7dc5)!important;
+}
+.tb-ai-nav-link .tb-ai-spark{color:#7ce4f2;margin-right:5px;font-weight:900}
+.tb-ai-nav-link .tb-ai-mini-beta{font-size:9px;font-weight:800;opacity:.72;margin-left:5px}
+body.tb-community-header-unified > header.site-header .mobile-nav a.tb-ai-nav-link{
+ color:#e8eeff!important;background:rgba(88,78,218,.14)!important;
+ border:1px solid rgba(122,110,240,.25)!important;border-radius:9px!important;
+}
+a.tb-ai-floating{
+ position:fixed!important;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:68;
+ display:inline-flex;align-items:center;justify-content:center;gap:9px;
+ min-height:51px;padding:0 17px;border-radius:999px;
+ border:1px solid rgba(164,196,255,.50);
+ background:linear-gradient(135deg,#5a48cf,#3677e1 58%,#168dbb);
+ box-shadow:0 15px 40px rgba(4,9,23,.42),0 0 20px rgba(74,107,249,.20);
+ color:#fff!important;text-decoration:none!important;
+ font:800 13px/1.1 Inter,system-ui,sans-serif;letter-spacing:.01em;
+ transition:transform .18s ease,filter .18s ease;
+}
+a.tb-ai-floating:hover{transform:translateY(-2px);filter:brightness(1.12)}
+a.tb-ai-floating:focus-visible{outline:3px solid #d2e4ff;outline-offset:4px}
+.tb-ai-floating .tb-ai-orb{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.15);font-size:18px}
+.tb-ai-floating .tb-ai-label{white-space:nowrap}
+.tb-ai-floating .tb-ai-state{font-size:9px;line-height:1.1;font-weight:800;opacity:.75}
+@media(max-width:600px){
+ a.tb-ai-floating{right:12px;bottom:calc(15px + env(safe-area-inset-bottom,0px));min-height:48px;padding:0 13px;font-size:12px;gap:7px}
+ .tb-ai-floating .tb-ai-orb{width:25px;height:25px;font-size:16px}
+}
+@media(prefers-reduced-motion:reduce){a.tb-ai-floating{transition:none}}
