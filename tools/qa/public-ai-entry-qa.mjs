@@ -9,6 +9,7 @@ for(const page of pages){
  assert.equal((head.match(/class="nav-link tb-ai-nav-link"/g)||[]).length,1,page+" desktop");
  assert.equal((head.match(/class="tb-ai-nav-link"/g)||[]).length,1,page+" mobile");
  assert.equal((html.match(/class="tb-ai-widget-launch"/g)||[]).length,1,page+" floating robot");
+ assert(html.includes('<button type="button" class="tb-ai-widget-launch"'),page+" native robot button");
  assert.equal((html.match(/data-tb-ai-toggle/g)||[]).length,3,page+" launch controls");
  assert.equal((html.match(/id="tb-ai-popup"/g)||[]).length,1,page+" dialog");
  assert.equal((html.match(/href="\/ai"/g)||[]).length,3,page+" menu and full-screen fallback links");
