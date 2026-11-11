@@ -573,7 +573,7 @@ fi
 node <<'NODE'
 const fs=require('fs');
 const file=fs.readFileSync('public/visitor-ai-widget-v2.js','utf8');
-if(!file.includes('const ORIGIN="https://trainingbot.io.vn"')||
+if(!file.includes('const ORIGIN=window.location.origin;')||
    !file.includes('const FRAME="/ai-widget"')||
    file.includes('pages.dev')||
    /TRAININGBOT_AI_PREVIEW_BRIDGE_SECRET|ADMIN_TOKEN|localStorage/.test(file))

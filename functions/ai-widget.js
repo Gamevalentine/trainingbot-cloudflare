@@ -8,7 +8,7 @@ const HTML=`<!doctype html>
 <meta name="color-scheme" content="dark">
 <title>TrainingBot AI · Chat</title>
 <link rel="stylesheet" href="/ai-widget.css?v=2">
-<script defer src="/ai-widget.js?v=2"></script>
+<script defer src="/ai-widget.js?v=3"></script>
 </head><body>
 <main class="tb-frame" aria-label="Trò chuyện với TrainingBot AI">
 <header class="tb-head">
@@ -29,7 +29,15 @@ const HTML=`<!doctype html>
 </main></body></html>`;
 export function onRequestGet({request}){
  const u=new URL(request.url);
- if(u.origin!=='https://trainingbot.io.vn')
+ // Both Cloudflare's default project domain and the branded domain can
+ // serve the same public site. Reject unknown hosts, not valid first-party
+ // aliases: otherwise mobile browsers see a raw "Not found" inside the popup.
+ const approved=new Set([
+   'https://trainingbot.io.vn',
+   'https://trainingbot-cloudflare.pages.dev',
+   'https://www.trainingbot.io.vn'
+ ]);
+ if(u.protocol!=='https:'||!approved.has(u.origin))
    return new Response('Not found',{status:404,headers:{'cache-control':'no-store'}});
  return new Response(HTML,{status:200,headers:{
    'content-type':'text/html; charset=utf-8',

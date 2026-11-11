@@ -5,7 +5,7 @@
 (()=>{
  const panel=document.getElementById("tb-ai-popup");
  if(!panel)return;
- const ORIGIN="https://trainingbot.io.vn";
+ const ORIGIN=window.location.origin;
  const FRAME="/ai-widget";
  let iframe=null,openedFrom=null,handshake=false,pendingCheck=null;
  const toggles=()=>document.querySelectorAll("[data-tb-ai-toggle]");

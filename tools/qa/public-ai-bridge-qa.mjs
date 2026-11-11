@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {proxyPublicAi} from '../../functions/_lib/ai_widget_public_proxy.js';
+import {onRequestGet as widgetDocument} from '../../functions/ai-widget.js';
 
 const site='https://trainingbot.io.vn';
 const preview='https://preview-ai-identity-bridge.trainingbot-cloudflare.pages.dev';
@@ -47,6 +48,50 @@ assert.equal(chat.status,200);
 assert.match((await chat.json()).reply,/5\.56mm/);
 assert.match(chat.headers.get('set-cookie'),/^__Host-tb_ai_last_v1/);
 assert.equal(calls.length,3);
+
+ // The same site can be reached through its Cloudflare project alias.
+ // This was returning a raw "Not found" on iPhone due to host checks.
+for(const allowed of [
+  'https://trainingbot.io.vn',
+  'https://trainingbot-cloudflare.pages.dev',
+  'https://www.trainingbot.io.vn'
+]){
+  const resp=widgetDocument({request:new Request(allowed+'/ai-widget')});
+  assert.equal(resp.status,200,'Widget must render on recognized first-party host '+allowed);
+  assert.equal(resp.headers.get('cache-control'),'no-store, max-age=0');
+  assert.match(await resp.text(),/Mình có thể giúp gì cho bạn\?/);
+}
+assert.equal(widgetDocument({request:new Request('https://attacker.invalid/ai-widget')}).status,404);
+assert.equal(widgetDocument({request:new Request('http://trainingbot.io.vn/ai-widget')}).status,404);
+const alias='https://trainingbot-cloudflare.pages.dev';
+const aliasStatus=await proxyPublicAi(new Request(alias+'/api/ai-preview/status',{
+ method:'GET',headers:{'sec-fetch-site':'same-origin'}
+}),'status',{fetchImpl});
+assert.equal(aliasStatus.status,200,'Pages project hostname must work when first-party');
+const aliasSession=await proxyPublicAi(new Request(alias+'/api/ai-preview/session',{
+ method:'POST',
+ headers:{origin:alias,'sec-fetch-site':'same-origin','content-type':'application/json'},
+ body:'{}'
+}),'session',{fetchImpl});
+assert.equal(aliasSession.status,200,'Alias must issue first-party guest cookie');
+const aliasChat=await proxyPublicAi(new Request(alias+'/api/ai-preview/chat',{
+ method:'POST',headers:{origin:alias,'sec-fetch-site':'same-origin','content-type':'application/json',
+ cookie:guest},body:JSON.stringify({surface:'visitor',message:'M416 dùng đạn gì?'})
+}),'chat',{fetchImpl});
+assert.equal(aliasChat.status,200);
+assert.match((await aliasChat.json()).reply,/5\.56mm/);
+const forgedOrigin=await proxyPublicAi(new Request(alias+'/api/ai-preview/session',{
+ method:'POST',headers:{origin:site,'sec-fetch-site':'same-origin','content-type':'application/json'},
+ body:'{}'
+}),'session',{fetchImpl});
+assert.equal(forgedOrigin.status,403,'Alias page must reject mismatching canonical Origin');
+assert.equal((await proxyPublicAi(new Request('https://attacker.invalid/api/ai-preview/status',{
+ method:'GET'
+}),'status',{fetchImpl})).status,404,'No arbitrary hostname allowed');
+assert.equal((await proxyPublicAi(new Request('http://trainingbot.io.vn/api/ai-preview/status',{
+ method:'GET'
+}),'status',{fetchImpl})).status,404,'HTTPS required');
+
 assert.equal(calls[0].cookie,guest);
 assert.equal(calls[1].cookie,guest);
 assert.equal(calls[2].cookie,guest);

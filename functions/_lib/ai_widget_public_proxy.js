@@ -7,7 +7,11 @@
 // TrainingBot domain this bridge transports the SAME HMAC-authenticated guest
 // session through a first-party, Secure, HttpOnly, SameSite=Strict cookie.
 // Preview still owns all quota, D1 and model policies.
-const PUBLIC_ORIGIN='https://trainingbot.io.vn';
+const PUBLIC_ORIGINS=new Set([
+  'https://trainingbot.io.vn',
+  'https://trainingbot-cloudflare.pages.dev',
+  'https://www.trainingbot.io.vn'
+]);
 const PREVIEW_ORIGIN='https://preview-ai-identity-bridge.trainingbot-cloudflare.pages.dev';
 const VALID_ROUTES=new Set(['status','session','chat']);
 const GUEST_COOKIES=new Set(['__Host-tb_ai_b1','__Host-tb_ai_last_v1']);
@@ -69,14 +73,14 @@ async function limitedJson(request,route){
 export async function proxyPublicAi(request,route,{fetchImpl=fetch}={}){
   try{
     const url=new URL(request.url);
-    if(!VALID_ROUTES.has(route)||url.origin!==PUBLIC_ORIGIN||url.search||url.hash)
+    if(!VALID_ROUTES.has(route)||!PUBLIC_ORIGINS.has(url.origin)||url.search||url.hash)
       return err('NOT_FOUND',404);
     const method=route==='status'?'GET':'POST';
     if(request.method!==method)return err('METHOD_NOT_ALLOWED',405);
     if(method==='POST'){
       const origin=request.headers.get('origin');
       const site=request.headers.get('sec-fetch-site');
-      if(origin&&origin!==PUBLIC_ORIGIN)return err('INVALID_ORIGIN',403);
+      if(origin&&origin!==url.origin)return err('INVALID_ORIGIN',403);
       if(site&&site!=='same-origin')return err('INVALID_FETCH_SITE',403);
       if(!origin&&site!=='same-origin')return err('MISSING_BROWSER_PROOF',403);
       if(!/^application\/json(?:;\s*charset=utf-8)?$/i.test(request.headers.get('content-type')||''))
