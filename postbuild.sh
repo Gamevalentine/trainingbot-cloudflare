@@ -402,3 +402,13 @@ function visit(folder) {
 visit(root);
 console.log('TikTok channel profile links normalized in ' + count + ' generated files.');
 NODE
+
+# AI-ENTRY-01: make the existing, quota-limited Visitor AI reachable from all
+# six main public pages, without adding Preview credentials to Production.
+# This runs after the header unification and existing Beta navigation checks.
+# Admin, staging API bindings, D1/R2 and all other public pages are unchanged.
+test -f public/visitor-ai-entry-v1.css
+test -f functions/ai.js
+node --check tools/public/visitor-ai-entry.mjs
+node --check functions/ai.js
+node tools/public/visitor-ai-entry.mjs
