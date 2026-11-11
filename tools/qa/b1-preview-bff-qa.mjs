@@ -174,7 +174,7 @@ const vnFollowup=await chat(req('/api/ai-preview/chat',{cookie:rawCookie+'; '+si
 assert.equal(vnFollowup.status,200);
 assert.match((await vnFollowup.json()).reply,/chưa xác minh được giờ mở cập nhật riêng tại Việt Nam/);
 
-const tampered=signedContext.replace(/.$/,'X');
+const tampered=signedContext.slice(0,-1)+(signedContext.endsWith('X')?'Y':'X');
 const forged=await chat(req('/api/ai-preview/chat',{cookie:rawCookie+'; '+tampered,
   body:{surface:'visitor',message:'trả lời dở thế',conversationId:'conv_preview_12345678'}}),env,{publicFetch});
 assert.equal(forged.status,200);
