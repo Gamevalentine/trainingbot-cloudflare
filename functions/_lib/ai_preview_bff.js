@@ -126,8 +126,20 @@ export async function session(request,env){
  if(prior)return safe(200,{ok:true,reused:true});
  const id='b_'+b64(crypto.getRandomValues(new Uint8Array(24)));
  const resp=await stage(ctx,'/__preview_b1/session','POST',{visitorId:id});
- if(resp.status!==200||resp.json?.ok!==true)
-  return safe([429,403].includes(resp.status)?resp.status:503,{error:{code:resp.status===429?'RATE_LIMITED':'SESSION_UNAVAILABLE'}});
+ if(resp.status!==200||resp.json?.ok!==true){
+  // Expose only a fixed, non-sensitive failure category. Never return
+  // upstream bodies, identifiers, tokens or database query details.
+  const upstream=resp.json?.error?.code;
+  const category=resp.status===429?'RATE_LIMITED':
+    upstream==='POLICY_STORE_UNAVAILABLE'?'SESSION_RATE_STORE_UNAVAILABLE':
+    upstream==='MEMORY_UNAVAILABLE'||upstream==='AUTH_STORE_UNAVAILABLE'?'SESSION_DATABASE_UNAVAILABLE':
+    upstream==='UNAUTHORIZED'||upstream==='FORBIDDEN'?'SESSION_BRIDGE_AUTH_FAILURE':
+    upstream==='INVALID_INPUT'?'SESSION_BRIDGE_PROTOCOL_FAILURE':
+    upstream==='CONFLICT'?'SESSION_CONFLICT':
+    resp.category?.startsWith('EXCEPTION_')?'SESSION_BRIDGE_TRANSPORT_FAILURE':
+    resp.status===200?'SESSION_INVALID_UPSTREAM_RESPONSE':'SESSION_STAGING_UNAVAILABLE';
+  return safe(resp.status===429?429:503,{error:{code:category}});
+ }
  const expires=String(Date.now()+3600000);
  const signature=await proof(ctx.key,['cookie',id,expires,ctx.ipHash,ctx.u.hostname].join(':'));
  return safe(200,{ok:true,expiresInSeconds:3600},{'set-cookie':cookieName+'='+id+'.'+expires+'.'+signature+
