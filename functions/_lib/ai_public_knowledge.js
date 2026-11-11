@@ -141,12 +141,10 @@ export function composeTrainingBotPublicAnswer(data,{official47=null}={}){
         :"Hiện chưa đọc được tin cập nhật từ TrainingBot nên mình chưa thể xác nhận lịch phát hành mới nhất.",
       sources:[]
     };
-    const official=latest.version==="4.7"&&official47?.reply?.includes(latest.date)
-      ?official47.sources?.find(s=>s.type==="official_claim"):null;
-    if(official)return {
-      reply:"PUBG MOBILE "+latest.version+" có lịch cập nhật ngày "+latest.date+
-        " theo thông báo chính thức đã đối chiếu. Thời điểm nhận bản cập nhật có thể khác theo khu vực.",
-      sources:[official]
+    const corroborated=latest.version==="4.7"&&official47?.reply?.includes(latest.date);
+    if(corroborated)return {
+      reply:official47.reply,
+      sources:(official47.sources??[]).filter(s=>["official_claim","site_news"].includes(s.type)).slice(0,2)
     };
     return {
       reply:"Theo bài viết mới nhất của TrainingBot về lịch cập nhật PUBG MOBILE, phiên bản "+
@@ -166,11 +164,8 @@ export function composeTrainingBotPublicAnswer(data,{official47=null}={}){
   // Date-specific official announcement comes from our reviewed official citation,
   // NEVER from article title alone. Beta status always comes from live public API.
   if(official47&&intent.officialSchedule){
-    const officialLine=official47.reply.split("\n\n")[0];
-    const short=officialLine.split(" Đây là ngày theo lịch")[0];
-    const officialSource=official47.sources?.find(s=>s.type==="official_claim");
-    return {reply:short+" Thời điểm nhận bản cập nhật có thể khác theo khu vực.",
-      sources:officialSource?[officialSource]:[]};
+    return {reply:official47.reply,
+      sources:(official47.sources??[]).filter(s=>["official_claim","site_news"].includes(s.type)).slice(0,2)};
   }
   if(selected.length){
     if(selected.length===1&&!intent.detailList){
