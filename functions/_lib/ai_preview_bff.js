@@ -242,7 +242,7 @@ export async function chat(request,env,{publicFetch=fetch}={}){
   .filter(x=>['wiki_snapshot','editorial_tactics','official_claim'].includes(x?.type)):[];
  // Do not attach unrelated Wiki citations to public catalog answers.
  const combined=(chosen?.sources??upstreamSources).slice(0,8);
- const official47Pattern=/^https:\/\/www\.pubgmobile\.jp\/version-4-7-0-update-notice-20261105\/$/;
+ const official47Pattern=/^https:\/\/www\.instagram\.com\/reel\/DfbazBRtgl5\/$/;
  const trainingbotBetaPattern=/^https:\/\/trainingbot\.io\.vn\/ban-cap-nhat$/;
  const trainingbotPostPattern=/^https:\/\/trainingbot\.io\.vn\/bai-viet\/[a-z0-9]+(?:-[a-z0-9]+)*$/;
  const sources=combined
