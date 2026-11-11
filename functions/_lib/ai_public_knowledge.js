@@ -32,9 +32,14 @@ export function publicKnowledgeIntent(question){
   // Don't spend extra public API subrequests on unrelated or normal Wiki chat.
   if(!((news||beta||release)&&(aboutGame||news||beta||version)))return null;
   const latest=/\bmoi nhat\b|\bgan day\b|\bgan nhat\b|\btin moi\b|\bcap nhat moi\b/.test(q);
-  const needsBeta=!flash&&(beta||Boolean(version)||/ban beta|phien ban moi nhat|ban thu nghiem/.test(q));
-  const needsPosts=flash||news||release||Boolean(version);
-  return {q,version,flash,beta,latest,needsBeta,needsPosts};
+  // A narrow question about the *official* 4.7 schedule has one reviewed
+  // official source. Do not unnecessarily list Beta APKs or unrelated posts.
+  const officialSchedule=version?.major==="V4.7"&&!beta&&!flash&&
+    /\bbao gio\b|\bkhi nao\b|\bngay nao\b|\blich\b|\bra mat\b|\bphat hanh\b/.test(q);
+  const detailList=/\bdanh sach\b|\btat ca\b|\bcac ban\b|\bliet ke\b/.test(q);
+  const needsBeta=!officialSchedule&&!flash&&(beta||Boolean(version)||/ban beta|phien ban moi nhat|ban thu nghiem/.test(q));
+  const needsPosts=!officialSchedule&&(flash||news||(!beta&&(release||Boolean(version))));
+  return {q,version,flash,beta,latest,officialSchedule,detailList,needsBeta,needsPosts};
 }
 async function readPublicJSON(fetchImpl,url){
   try{
@@ -104,30 +109,39 @@ export function composeTrainingBotPublicAnswer(data,{official47=null}={}){
   const matched=versions.filter(x=>!intent.version||
     (intent.version.full?x.version.toLowerCase()===intent.version.full.toLowerCase():
       x.version.toLowerCase().startsWith(intent.version.major.toLowerCase()+".")));
-  const selected=intent.needsBeta?matched.slice(0,(intent.version?.full||(!intent.version&&intent.latest))?1:4):[];
-  const news=relevantArticles(data);
+  const selected=intent.needsBeta?matched.slice(0,intent.detailList?8:1):[];
+  // Beta-version questions need a version/status, not three unrelated articles.
+  const news=intent.beta&&!intent.news?[]:relevantArticles(data);
   const sections=[],sources=[];
   // Date-specific official announcement comes from our reviewed official citation,
   // NEVER from article title alone. Beta status always comes from live public API.
-  if(official47&&!intent.flash&&!intent.beta&&intent.version?.major==="V4.7"){
+  if(official47&&intent.officialSchedule){
     const officialLine=official47.reply.split("\n\n")[0];
-    sections.push(officialLine);
+    const short=officialLine.split(" Đây là ngày theo lịch")[0];
     const officialSource=official47.sources?.find(s=>s.type==="official_claim");
-    if(officialSource)sources.push(officialSource);
+    return {reply:short+" Thời điểm nhận bản cập nhật có thể khác theo khu vực.",
+      sources:officialSource?[officialSource]:[]};
   }
   if(selected.length){
-    sections.push("Danh sách Beta TrainingBot (kiểm tra "+checkedAt+"):\n"+
-      selected.map(x=>"• "+x.version+" ("+x.arch+"): "+statusText(x.status)+
-        (x.updatedAt?"; dữ liệu sửa "+x.updatedAt:"")).join("\n")+
-      "\nĐây là trạng thái trong hệ thống TrainingBot, không bảo đảm đường dẫn APK còn hoạt động hoặc bản chính thức đã phát hành.");
+    if(selected.length===1&&!intent.detailList){
+      const x=selected[0];
+      sections.push("Theo TrainingBot (kiểm tra "+checkedAt+"), "+
+        (intent.version?.full?"bản Beta ":"bản Beta mới nhất là ")+
+        x.version+" ("+x.arch+") "+statusText(x.status)+
+        (x.updatedAt?" (dữ liệu cập nhật "+x.updatedAt+")":"")+
+        ". Đây là bản thử nghiệm, không phải lịch cập nhật chính thức.");
+    }else{
+      sections.push("Các bản Beta theo dữ liệu TrainingBot ("+checkedAt+"):\n"+
+        selected.map(x=>"• "+x.version+": "+statusText(x.status)).join("\n"));
+    }
     sources.push({type:"site_release",title:"TrainingBot — Danh sách PUBG MOBILE Beta",
       url:BETA_URL,checkedAt,sourceStatus:"trainingbot_public_catalog"});
-  }else if(intent.beta&&data.betaAvailable)sections.push("Danh sách Beta công khai hiện không có phiên bản trùng yêu cầu.");
+  }else if(intent.beta&&data.betaAvailable)sections.push("TrainingBot hiện chưa có bản Beta trùng với phiên bản bạn hỏi.");
   if(news.length){
-    const intro=intent.latest?"Tin PUBG MOBILE gần nhất trên TrainingBot:":"Bài viết liên quan từ TrainingBot:";
-    sections.push(intro+"\n"+news.map(x=>"• "+x.title+" (đăng "+x.publishedAt+")"+
-      (x.summary?". Tóm tắt: "+x.summary:"")).join("\n"));
-    for(const x of news)sources.push({type:"site_news",title:x.title,url:x.url,
+    const picked=news.slice(0,intent.flash?1:(intent.beta?2:3));
+    const intro=intent.latest?"Tin gần đây trên TrainingBot:":"Bài viết liên quan trên TrainingBot:";
+    sections.push(intro+"\n"+picked.map(x=>"• "+x.title+" ("+x.publishedAt+")").join("\n"));
+    for(const x of picked)sources.push({type:"site_news",title:x.title,url:x.url,
       checkedAt,publishedAt:x.publishedAt,sourceStatus:"trainingbot_published_article"});
   }
   if(!sections.length&&intent.version&&(data.betaAvailable||data.postsAvailable)){
@@ -141,6 +155,7 @@ export function composeTrainingBotPublicAnswer(data,{official47=null}={}){
       ?"Hiện chưa đọc được nguồn tin và Beta công khai của TrainingBot. Mình không thể xác nhận thông tin mới nhất trong lượt này; bạn có thể mở "+BETA_URL+" để kiểm tra."
       :"Nguồn công khai TrainingBot hiện chưa có bài viết hoặc phiên bản phù hợp câu hỏi này. Mình không tự suy đoán ngày phát hành.");
   }
-  sections.push("Nguồn: dữ liệu công khai TrainingBot được đọc khi bạn hỏi ("+checkedAt+"). Bài viết của TrainingBot không thay thế thông báo chính thức của nhà phát hành.");
-  return {reply:sections.join("\n\n").slice(0,5000),sources:sources.slice(0,6)};
+  // Source dates and verification categories are already displayed beneath
+  // clickable citations. Do not repeat another paragraph of source disclaimers.
+  return {reply:sections.join("\n\n").slice(0,2800),sources:sources.slice(0,3)};
 }

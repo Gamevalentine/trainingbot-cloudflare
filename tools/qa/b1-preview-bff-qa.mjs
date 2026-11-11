@@ -36,7 +36,7 @@ const svc={
     return new Response(JSON.stringify({ok:true}),{headers:{'content-type':'application/json'}});
   }
   assert(visitors.has(data.visitorId),'No session for AI request');
-  assert(['Xin chào','bao giờ có bản update 4.7','Beta 4.7 đã có chưa?','bao giờ có bản update 4.6','tin PUBG mới nhất'].includes(data.message));
+  assert(['Xin chào','bao giờ có bản update 4.7','Beta 4.7 bản nào mới nhất?','Beta 4.7 đã có chưa?','bao giờ có bản update 4.6','tin PUBG mới nhất'].includes(data.message));
   return new Response(JSON.stringify({reply:'Xin chào từ Staging',conversationId:'conv_preview_12345678',revision:1}),
     {headers:{'content-type':'application/json'}});
  }
@@ -141,20 +141,28 @@ const release=await chat(releaseQuery,env,{publicFetch});
 assert.equal(release.status,200);
 const announced=await release.json();
 assert.match(announced.reply,/12\/11\/2026/);
-assert.match(announced.reply,/V4\.7\.5/);
-assert.match(announced.reply,/chưa mở tải/);
+assert(!announced.reply.includes('V4.7.5'),'Do not dump Beta status into official date answer');
+assert(!announced.reply.includes('Bài viết liên quan'),'No news list for a direct date question');
+assert.equal(announced.sources.length,1);
 assert(announced.sources.some(x=>x.type==='official_claim'&&
   x.url==='https://www.pubgmobile.jp/version-4-7-0-update-notice-20261105/'));
-assert(announced.sources.some(x=>x.type==='site_release'&&
-  x.url==='https://trainingbot.io.vn/ban-cap-nhat'));
-assert(announced.sources.some(x=>x.type==='site_news'&&
-  x.url==='https://trainingbot.io.vn/bai-viet/pubg-mobile-4-7-cap-nhat'));
+assert.equal(publicCalls.length,0,'Official date needs no unrelated public API calls');
+
+const betaBefore=await chat(req('/api/ai-preview/chat',{cookie:rawCookie,
+  body:{surface:'visitor',message:'Beta 4.7 bản nào mới nhất?'}}),env,{publicFetch});
+assert.equal(betaBefore.status,200);
+const beforeBeta=await betaBefore.json();
+assert.match(beforeBeta.reply,/V4\.7\.5.*chưa mở tải/);
+assert.equal(beforeBeta.sources.length,1,'Only Beta catalog source for Beta status');
+assert.equal(beforeBeta.sources[0].type,'site_release');
+assert.equal(publicCalls.length,1,'Beta-only question should fetch Beta endpoint, not posts');
+
 dynamicVersions[0].status='released';
 const updated=await chat(req('/api/ai-preview/chat',{cookie:rawCookie,
-  body:{surface:'visitor',message:'bao giờ có bản update 4.7'}}),env,{publicFetch});
+  body:{surface:'visitor',message:'Beta 4.7 bản nào mới nhất?'}}),env,{publicFetch});
 assert.equal(updated.status,200);
-assert.match((await updated.json()).reply,/V4\.7\.5 \(x64\): được đánh dấu đã phát hành/,
- 'A public API change must affect the very next answer without a code change');
+assert.match((await updated.json()).reply,/V4\.7\.5.*được đánh dấu đã phát hành/,
+ 'A Beta API change must affect the next answer without a code change');
 const beta=await chat(req('/api/ai-preview/chat',{cookie:rawCookie,
   body:{surface:'visitor',message:'Beta 4.7 đã có chưa?'}}),env,{publicFetch});
 assert.equal(beta.status,200);
