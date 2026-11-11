@@ -80,7 +80,7 @@ const statusText=s=>s==="released"?"được đánh dấu đã phát hành":
   "trạng thái chưa được xác minh";
 function relevantArticles(data){
   const {intent,articles}=data;
-  if((intent.latest||(/\btin\b|\bnews\b|\bbai viet\b/.test(intent.q)&&!intent.flash))&&!intent.version&&!intent.beta)return articles.slice(0,3);
+  if((intent.latest||(/\btin\b|\bnews\b|\bbai viet\b/.test(intent.q)&&!intent.flash))&&!intent.version&&!intent.beta&&!/\bglacier\b|\berangel\b|\bm416\b/.test(intent.q))return articles.slice(0,3);
   const ver=intent.version?norm(intent.version.major.slice(1)):null;
   const relevant=articles.map(article=>{
     const title=norm(article.title),summary=norm(article.summary);
@@ -104,7 +104,7 @@ export function composeTrainingBotPublicAnswer(data,{official47=null}={}){
   const matched=versions.filter(x=>!intent.version||
     (intent.version.full?x.version.toLowerCase()===intent.version.full.toLowerCase():
       x.version.toLowerCase().startsWith(intent.version.major.toLowerCase()+".")));
-  const selected=intent.needsBeta?matched.slice(0,intent.version?.full?1:4):[];
+  const selected=intent.needsBeta?matched.slice(0,(intent.version?.full||(!intent.version&&intent.latest))?1:4):[];
   const news=relevantArticles(data);
   const sections=[],sources=[];
   // Date-specific official announcement comes from our reviewed official citation,
@@ -129,6 +129,12 @@ export function composeTrainingBotPublicAnswer(data,{official47=null}={}){
       (x.summary?". Tóm tắt: "+x.summary:"")).join("\n"));
     for(const x of news)sources.push({type:"site_news",title:x.title,url:x.url,
       checkedAt,publishedAt:x.publishedAt,sourceStatus:"trainingbot_published_article"});
+  }
+  if(!sections.length&&intent.version&&(data.betaAvailable||data.postsAvailable)){
+    sections.push("Mình chưa tìm thấy trạng thái Beta hoặc bài viết về "+
+      (intent.version.full??intent.version.major)+
+      " trong dữ liệu công khai TrainingBot vừa đọc ("+checkedAt+
+      "). Chưa đủ căn cứ để xác nhận ngày ra mắt chính thức.");
   }
   if(!sections.length)return null;
   sections.push("Nguồn: dữ liệu công khai TrainingBot được đọc khi bạn hỏi ("+checkedAt+"). Bài viết của TrainingBot không thay thế thông báo chính thức của nhà phát hành.");
