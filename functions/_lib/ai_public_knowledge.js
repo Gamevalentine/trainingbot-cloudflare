@@ -38,7 +38,7 @@ export function publicKnowledgeIntent(question){
     /\bbao gio\b|\bkhi nao\b|\bngay nao\b|\blich\b|\bra mat\b|\bphat hanh\b/.test(q);
   const detailList=/\bdanh sach\b|\btat ca\b|\bcac ban\b|\bliet ke\b/.test(q);
   const needsBeta=!officialSchedule&&!flash&&(beta||Boolean(version)||/ban beta|phien ban moi nhat|ban thu nghiem/.test(q));
-  const needsPosts=!officialSchedule&&(flash||news||release||Boolean(version));
+  const needsPosts=!officialSchedule&&(flash||news||(!beta&&(release||Boolean(version))));
   return {q,version,flash,beta,latest,officialSchedule,detailList,needsBeta,needsPosts};
 }
 async function readPublicJSON(fetchImpl,url){
