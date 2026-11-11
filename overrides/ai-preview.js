@@ -41,7 +41,7 @@
            /^https:\/\/github\.com\/Gamevalentine\/trainingbot-cloudflare\/actions\/runs\/40763409109$/.test(source.url));
         const officialUrl = typeof source.url === "string" &&
           (/^https:\/\/www\.pubgmobile\.com\/en\/event\/(?:PUBG-MOBILE-Version-430|PUBG-MOBILE-Version-400|Official-Transformers-Collaboration|260Devnotes|250Devnotes|270Devnotes)\/$/.test(source.url) ||
-           /^https:\/\/www\.pubgmobile\.jp\/version-4-7-0-update-notice-20261105\/$/.test(source.url));
+           /^https:\/\/www\.instagram\.com\/reel\/DfbazBRtgl5\/$/.test(source.url));
         const betaUrl = typeof source.url === "string" &&
           /^https:\/\/trainingbot\.io\.vn\/ban-cap-nhat$/.test(source.url);
         const newsUrl = typeof source.url === "string" &&

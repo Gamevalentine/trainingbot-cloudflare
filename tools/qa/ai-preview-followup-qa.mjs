@@ -21,9 +21,12 @@ for(const [input,mode] of [
     throw Error('No public API needed for a reviewed official claim');
   }});
   assert.match(answer.reply,/12\/11\/2026/);
-  assert.match(answer.reply,/chưa xác minh được giờ mở cập nhật riêng tại Việt Nam/);
-  assert.equal(answer.sources.length,1);
-  assert.equal(answer.sources[0].type,'official_claim');
+  assert.match(answer.reply,/Global/);
+  assert.doesNotMatch(answer.reply,/Nhật Bản|khu vực Nhật/);
+  if(mode==='vietnam')assert.match(answer.reply,/giờ cập nhật chính xác tại Việt Nam/);
+  if(mode==='time')assert.match(answer.reply,/chưa có nguồn xác nhận giờ cập nhật chính xác/);
+  assert.equal(answer.sources.length,2);
+  assert.deepEqual(answer.sources.map(s=>s.type),['official_claim','site_news']);
 }
 for(const q of [
   'khi nào có bản update 4.8',
