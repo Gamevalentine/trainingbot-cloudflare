@@ -563,29 +563,22 @@ fs.writeFileSync(
 );
 NODE
 
-# Guard against accidentally shipping an old Pages preview domain in public
-# text assets. The ONE deliberate exception is the audited Visitor AI widget:
-# it embeds the isolated AI BFF, with no Production credential or Admin access.
-# Do not silently allow previews in any other public asset.
-allowed_preview_widget='public/visitor-ai-widget-v2.js'
-if grep -RIl --include='*.html' --include='*.css' --include='*.js' --include='*.json' --include='*.xml' --include='*.txt' 'trainingbot-cloudflare\.pages\.dev' public | grep -Fvx "$allowed_preview_widget" | grep -q .; then
+# Guard against leaking Pages Preview hostnames in public client assets.
+# iOS chat now uses a first-party iframe. Preview exists ONLY inside the
+# fixed server-side public AI bridge, never exposed as a browser destination.
+if grep -RIl --include='*.html' --include='*.css' --include='*.js' --include='*.json' --include='*.xml' --include='*.txt' 'trainingbot-cloudflare\\.pages\\.dev' public | grep -q .; then
   echo 'ERROR: unapproved pages.dev hostname found in public/' >&2
   exit 1
 fi
-# Even in that one file, only the single approved, currently working AI host
-# may be present. Fail closed if a second or changed Preview host is introduced.
 node <<'NODE'
 const fs=require('fs');
-const file='public/visitor-ai-widget-v2.js';
-const text=fs.readFileSync(file,'utf8');
-const approved='https://preview-ai-identity-bridge.trainingbot-cloudflare.pages.dev';
-const hosts=[...text.matchAll(/[a-z0-9-]+\.trainingbot-cloudflare\.pages\.dev/g)].map(m=>m[0]);
-if(hosts.length!==1||('https://'+hosts[0])!==approved||
-   !text.includes('const ORIGIN="'+approved+'"')||
-   /TRAININGBOT_AI_PREVIEW_BRIDGE_SECRET|ADMIN_TOKEN|localStorage/.test(text)){
-  throw Error('AI-WIDGET: unexpected Preview hostname or privileged client content');
-}
-console.log('AI-WIDGET: exactly one verified isolated Preview origin allowed');
+const file=fs.readFileSync('public/visitor-ai-widget-v2.js','utf8');
+if(!file.includes('const ORIGIN="https://trainingbot.io.vn"')||
+   !file.includes('const FRAME="/ai-widget"')||
+   file.includes('pages.dev')||
+   /TRAININGBOT_AI_PREVIEW_BRIDGE_SECRET|ADMIN_TOKEN|localStorage/.test(file))
+  throw Error('AI-WIDGET: not a first-party sandboxed chat launcher');
+console.log('AI-WIDGET: first-party-only client verified');
 NODE
 grep -q 'https://trainingbot.io.vn' public/index.html
 grep -q 'rel="canonical"' public/index.html
