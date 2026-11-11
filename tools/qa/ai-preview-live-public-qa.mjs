@@ -79,6 +79,6 @@ assert(!missing.reply.includes("12/11/2026"),"Do not copy 4.7 official date to 4
 
 const failed=async()=>{throw Error("Network failed");};
 const unreadable=await getTrainingBotPublicData("tin PUBG mới nhất",{fetchImpl:failed,now:today});
-assert.equal(composeTrainingBotPublicAnswer(unreadable),null,"Public feed failure must not invent fresh news");
+assert.match(composeTrainingBotPublicAnswer(unreadable).reply,/chưa đọc được nguồn tin và Beta công khai/,"Public feed failure must not invent fresh news");
 
 console.log("PASS: source-refresh, Beta state, new articles, Flash isolation, no SSRF, bounded fallback, unrelated Wiki");
