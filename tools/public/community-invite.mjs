@@ -7,7 +7,7 @@ const core=new Set(["index.html","ban-cap-nhat.html","updates.html",
   "news.html","wiki.html","community.html","contact.html","tim-dong-doi.html"]);
 const eligible=name=>core.has(name)||/^news-[a-z0-9-]+\.html$/.test(name);
 const css='<link rel="stylesheet" href="/community-invite-v1.css?v=2">';
-const js='<script defer src="/community-invite-v1.js?v=2"></script>';
+const js='<script defer src="/community-invite-v1.js?v=3"></script>';
 let count=0;
 for(const name of fs.readdirSync(dir)){
   if(!eligible(name))continue;
