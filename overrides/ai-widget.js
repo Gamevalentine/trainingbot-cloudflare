@@ -67,8 +67,10 @@
       if(!session.ok)throw Error("SESSION_UNAVAILABLE");
       ready=true;question.disabled=false;send.disabled=false;
       banner("● Trợ lý sẵn sàng","ready");
-      // Do not summon Safari's virtual keyboard on initialization.
-      // The visitor should explicitly tap the input when ready.
+      // Keep desktop convenience, but never summon Safari's keyboard on
+      // a touch screen before the visitor explicitly taps the textarea.
+      if(window.matchMedia?.("(pointer:fine)")?.matches)
+        question.focus({preventScroll:true});
       notify("ready");
     }catch(err){
       ready=false;question.disabled=true;send.disabled=true;
