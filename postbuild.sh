@@ -440,3 +440,17 @@ node --check tools/public/community-invite.mjs
 node tools/public/community-invite.mjs
 node --check tools/qa/community-invite-qa.mjs
 node tools/qa/community-invite-qa.mjs
+
+# DISCORD-LINK-01: no stale invite on rendered public pages or scripts.
+# Ensure the branded modal, footer and contact/community entry points all
+# point at the single updated community invite, including cache-busted pages.
+if grep -RIl --include='*.html' --include='*.js' --include='*.json' '5u5PbZMqx' public | grep -q .; then
+  echo 'DISCORD-LINK-01: expired Discord invitation still exists in public build' >&2
+  exit 1
+fi
+grep -Fq 'https://discord.com/invite/5BVF9YeFCM' public/community-invite-v1.js
+grep -Fq 'https://discord.com/invite/5BVF9YeFCM' public/footer_v135.js
+grep -Fq 'https://discord.com/invite/5BVF9YeFCM' public/community.html
+grep -Fq 'https://discord.com/invite/5BVF9YeFCM' public/contact.html
+grep -Fq 'community-invite-v1.js?v=3' public/index.html
+grep -Fq 'footer_v135.js?v=207' public/index.html

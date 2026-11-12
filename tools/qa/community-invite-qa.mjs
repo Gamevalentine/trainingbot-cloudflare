@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
 
-const dir="public",cssTag="/community-invite-v1.css?v=2",jsTag="/community-invite-v1.js?v=2";
+const dir="public",cssTag="/community-invite-v1.css?v=2",jsTag="/community-invite-v1.js?v=3";
 const main=["index.html","ban-cap-nhat.html","news.html","wiki.html","community.html","contact.html"];
 for(const name of main){
   const source=fs.readFileSync(path.join(dir,name),"utf8");
@@ -41,7 +41,7 @@ assert.match(css,/@media\(max-width:480px\)/);
 assert(!/localStorage|document\.cookie|fetch\(|XMLHttpRequest|innerHTML/.test(js),
   "Modal is not allowed to track, create unsafe DOM or make API calls");
 assert(js.includes('https://t.me/TraininggBott'));
-assert(js.includes('https://discord.com/invite/5u5PbZMqx'));
+assert(js.includes('https://discord.com/invite/5BVF9YeFCM'));
 assert(js.includes('aria-modal'));
 assert(js.includes('sessionStorage.setItem'));
 assert(js.includes('event.key==="Escape"'));
@@ -96,7 +96,7 @@ assert.equal(telegram.children[1].children[0].textContent,"Tham gia Telegram");
 assert.equal(discord.children[0].src,"/community-logo-discord-v1.svg");
 assert.equal(discord.children[0].alt,"");
 assert.equal(discord.children[1].children[0].textContent,"Tham gia Discord");
-assert.equal(discord.href,"https://discord.com/invite/5u5PbZMqx");
+assert.equal(discord.href,"https://discord.com/invite/5BVF9YeFCM");
 assert.equal(telegram.target,"_blank");
 assert.equal(discord.rel,"noopener noreferrer");
 assert.equal(x.attributes["aria-label"],"Đóng thông báo cộng đồng");
