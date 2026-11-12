@@ -21,7 +21,13 @@ assert.match(chatJs,/question\.addEventListener\("blur",\(\)=>notify\("input-blu
 assert.match(chatJs,/window\.matchMedia\?\.\("\(pointer:fine\)"\)/,
   'Only fine-pointer desktops receive programmatic input focus');
 assert.match(parentCss,/\.tb-ai-popup\.tb-ai-keyboard\{/);
-assert.match(parentCss,/--tb-ai-vv-height/);
+assert.match(parentCss,/--tb-ai-kb-height/);
+assert.match(parentCss,/width:min\(356px,calc\(100vw - 20px\)\)!important;/,
+  'Mobile chat must retain its original 356px maximum width');
+assert.match(parentCss,/border-radius:21px!important;/,
+  'Do not transform popup into a full-screen sheet');
+assert.doesNotMatch(parentCss,/--tb-ai-vv-width|--tb-ai-vv-left/,
+  'Keyboard must not stretch popup to fill viewport');
 assert.match(widgetFunction,/\/ai-widget\.css\?v=3/);
 assert.match(widgetFunction,/\/ai-widget\.js\?v=4/);
 
@@ -36,6 +42,7 @@ function simulate({mobile}){
   const backup={hidden:true};
   const panel={
     hidden:true,
+    getBoundingClientRect(){return {height:472,width:356};},
     classList:{add(n){classes.add(n);},remove(n){classes.delete(n);},
       contains(n){return classes.has(n);}},
     style:{setProperty(k,v){properties.set(k,v);},removeProperty(k){properties.delete(k);}},
@@ -78,13 +85,25 @@ function simulate({mobile}){
   assert(!classes.has('tb-ai-keyboard'),'No textarea focus = no keyboard mode');
   viewport.height=760;viewport.offsetTop=0;vvListener.resize();
   message('input-focus');
+  // Enough room above a smaller keyboard: retain full original height.
+  viewport.height=560;viewport.offsetTop=0;vvListener.resize();
+  if(mobile){
+    assert(classes.has('tb-ai-keyboard'),'Keyboard mode activates only when typing');
+    assert.equal(properties.get('--tb-ai-kb-height'),'472px',
+      'Widget height remains exactly as in screenshot whenever possible');
+    assert.equal(properties.get('--tb-ai-kb-top'),'82px',
+      'Popup only rises above keyboard instead of expanding');
+  }
+  // Tall iPhone keyboard: shrink only the minimum 64px needed.
   viewport.height=420;viewport.offsetTop=27;vvListener.resize();
   if(mobile){
     assert(classes.has('tb-ai-keyboard'),
       'On mobile the input-focus event must enable keyboard-safe panel');
-    assert.equal(properties.get('--tb-ai-vv-top'),'33px');
-    assert.equal(properties.get('--tb-ai-vv-height'),'408px');
-    assert.equal(properties.get('--tb-ai-vv-width'),'378px');
+    assert.equal(properties.get('--tb-ai-kb-top'),'33px');
+    assert.equal(properties.get('--tb-ai-kb-height'),'408px');
+    assert.equal(properties.has('--tb-ai-vv-width'),false,
+      'Never widen popup to full visible viewport');
+    assert.equal(properties.size,2,'Only position/height may change');
   }else{
     assert(!classes.has('tb-ai-keyboard'),'Desktop layout remains untouched');
   }
@@ -101,4 +120,4 @@ function simulate({mobile}){
 }
 simulate({mobile:true});
 simulate({mobile:false});
-console.log('PASS: 16px iOS input, no forced phone focus, live keyboard visualViewport reposition, desktop unaffected, popup closes cleanly');
+console.log('PASS: 16px iOS input, original 356x472 card preserved, keyboard lifts instead of full-screen, minimal shrink when needed, desktop unchanged');
