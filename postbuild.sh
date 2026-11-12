@@ -426,3 +426,6 @@ node --check functions/ai-widget.js
 node --check functions/_lib/ai_widget_public_proxy.js
 node --check tools/qa/public-ai-bridge-qa.mjs
 node tools/qa/public-ai-bridge-qa.mjs
+# iPhone Safari: focus must not zoom the page or hide Send behind keyboard.
+node --check tools/qa/ai-widget-ios-keyboard-qa.mjs
+node tools/qa/ai-widget-ios-keyboard-qa.mjs
