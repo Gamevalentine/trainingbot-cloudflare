@@ -1,6 +1,6 @@
 (()=>{
   const API='/api/team-finder';
-  const DISCORD_INVITE='https://discord.com/invite/5u5PbZMqx';
+  const DISCORD_INVITE='https://discord.com/invite/5BVF9YeFCM';
   const $=s=>document.querySelector(s);
   const grid=$('#tbMatchGrid');
   if(!grid)return;
