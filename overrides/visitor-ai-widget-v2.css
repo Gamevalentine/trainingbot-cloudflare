@@ -58,19 +58,19 @@ body.tb-community-header-unified > header.site-header .mobile-nav a.tb-ai-nav-li
 .tb-ai-popup-backup a{background:#5a4ac4;color:white!important;text-decoration:none!important;border-radius:11px;padding:12px 15px;font-weight:750}
 
 
-/* Safari's keyboard reduces the visual (not always layout) viewport.
-   While the input is active, make the chat a sheet inside the actually
-   visible viewport. This avoids the keyboard covering the Send button. */
+/* iPhone keyboard: keep the user's chosen floating-widget design.
+   Only lift the popup above the keyboard; shorten it *only* if the visible
+   area cannot hold its original height. Never stretch it to full-screen. */
 @media(max-width:700px){
  .tb-ai-popup.tb-ai-keyboard{
-   top:var(--tb-ai-vv-top,6px)!important;
-   left:var(--tb-ai-vv-left,6px)!important;
-   right:auto!important;
+   top:var(--tb-ai-kb-top,6px)!important;
+   right:10px!important;
+   left:auto!important;
    bottom:auto!important;
-   width:var(--tb-ai-vv-width,calc(100vw - 12px))!important;
-   height:var(--tb-ai-vv-height,calc(100dvh - 12px))!important;
+   width:min(356px,calc(100vw - 20px))!important;
+   height:var(--tb-ai-kb-height,472px)!important;
    max-height:none!important;
-   border-radius:16px!important;
+   border-radius:21px!important;
    animation:none!important;
  }
  .tb-ai-popup.tb-ai-keyboard ~ .tb-ai-widget-launch{visibility:hidden!important}

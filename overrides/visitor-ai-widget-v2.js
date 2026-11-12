@@ -8,13 +8,13 @@
  const ORIGIN=window.location.origin;
  const FRAME="/ai-widget";
  let iframe=null,openedFrom=null,handshake=false,pendingCheck=null;
- let typing=false,baselineVisualHeight=0,blurTimer=null;
+ let typing=false,baselineVisualHeight=0,restingPopupHeight=0,blurTimer=null;
  const toggles=()=>document.querySelectorAll("[data-tb-ai-toggle]");
  const expanded=active=>toggles().forEach(link=>link.setAttribute("aria-expanded",active?"true":"false"));
  const touchMobile=()=>window.matchMedia?.("(max-width:700px) and (pointer:coarse)")?.matches===true;
  function clearKeyboardLayout(){
    panel.classList.remove("tb-ai-keyboard");
-   for(const name of ["--tb-ai-vv-top","--tb-ai-vv-left","--tb-ai-vv-width","--tb-ai-vv-height"])
+   for(const name of ["--tb-ai-kb-top","--tb-ai-kb-height"])
      panel.style.removeProperty(name);
  }
  function syncKeyboardLayout(){
@@ -32,10 +32,15 @@
      clearKeyboardLayout();return;
    }
    const inset=6;
-   panel.style.setProperty("--tb-ai-vv-top",Math.max(0,vv.offsetTop+inset)+"px");
-   panel.style.setProperty("--tb-ai-vv-left",Math.max(0,vv.offsetLeft+inset)+"px");
-   panel.style.setProperty("--tb-ai-vv-width",Math.max(220,vv.width-inset*2)+"px");
-   panel.style.setProperty("--tb-ai-vv-height",Math.max(180,vv.height-inset*2)+"px");
+   // Keep the existing 356px-wide chat card and its normal resting height.
+   // If the keyboard leaves less height than the card needs, shorten only
+   // what cannot fit, keeping the message thread internally scrollable.
+   const available=Math.max(160,Math.floor(vv.height-inset*2));
+   const height=Math.min(restingPopupHeight||472,available);
+   const top=Math.max(0,Math.round(vv.offsetTop+
+     Math.max(inset,vv.height-height-inset)));
+   panel.style.setProperty("--tb-ai-kb-top",top+"px");
+   panel.style.setProperty("--tb-ai-kb-height",height+"px");
    panel.classList.add("tb-ai-keyboard");
  }
  window.visualViewport?.addEventListener("resize",syncKeyboardLayout);
@@ -53,6 +58,10 @@
    openedFrom=source;
    panel.hidden=false;expanded(true);
    baselineVisualHeight=window.visualViewport?.height||window.innerHeight;
+   // Snapshot the actual CSS-sized popup before any keyboard adjustment.
+   // Preserve exactly the initial size shown in the visitor's screenshot.
+   restingPopupHeight=Math.round(panel.getBoundingClientRect?.().height||
+     panel.offsetHeight||Math.min(472,Math.max(160,(window.innerHeight||baselineVisualHeight)-200)));
    syncKeyboardLayout();
    if(!iframe){
      iframe=document.createElement("iframe");
