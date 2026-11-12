@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
 
-const dir="public",cssTag="/community-invite-v1.css?v=2",jsTag="/community-invite-v1.js?v=2";
+const dir="public",cssTag="/community-invite-v1.css?v=2",jsTag="/community-invite-v1.js?v=3";
 const main=["index.html","ban-cap-nhat.html","news.html","wiki.html","community.html","contact.html"];
 for(const name of main){
   const source=fs.readFileSync(path.join(dir,name),"utf8");
