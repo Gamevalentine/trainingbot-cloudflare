@@ -359,8 +359,8 @@ ${modified?`<meta property="article:modified_time" content="${esc(modified)}">`:
 <script defer src="/navigation_v124.js?v=124"></script>
 <script defer src="/header_search_v152.js?v=182"></script>
 <script defer src="/visitor_tracking_v177.js?v=181"></script>
-<script defer src="/footer_v135.js?v=178"></script>
-<script defer src="/community-invite-v1.js?v=2"></script>
+<script defer src="/footer_v135.js?v=207"></script>
+<script defer src="/community-invite-v1.js?v=3"></script>
 </body></html>`;
 }
 
