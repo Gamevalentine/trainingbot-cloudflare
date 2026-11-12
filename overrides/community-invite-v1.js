@@ -30,8 +30,22 @@
 
     const x=make("button","tb-community-invite-close","×");
     x.type="button";x.setAttribute("aria-label","Đóng thông báo cộng đồng");
-    const crest=make("div","tb-community-invite-crest","✦");
-    crest.setAttribute("aria-hidden","true");
+    // Use the real circular TrainingBot logo already displayed in the site header.
+    const brand=make("div","tb-community-invite-brand");
+    const brandLogo=make("img","tb-community-invite-logo");
+    brandLogo.src="/trainingbot-logo-v110.png";
+    brandLogo.alt="Logo TrainingBot";
+    brandLogo.width=58;brandLogo.height=58;
+    brandLogo.decoding="async";
+    brandLogo.addEventListener("error",()=>{
+      if(!brandLogo.src.endsWith("/favicon.svg"))brandLogo.src="/favicon.svg";
+    },{once:true});
+    const brandText=make("div","tb-community-invite-brand-text");
+    brandText.append(
+      make("strong","tb-community-invite-brand-name","TRAININGBOT"),
+      make("span","tb-community-invite-brand-sub","GAMING KNOWLEDGE HUB")
+    );
+    brand.append(brandLogo,brandText);
     const eyebrow=make("p","tb-community-invite-eyebrow","Cộng đồng TrainingBot");
     const title=make("h2","tb-community-invite-title",
       "Đừng bỏ lỡ tin PUBG MOBILE mới nhất!");
@@ -43,8 +57,15 @@
     function link(href,style,label,subtitle){
       const a=make("a","tb-community-invite-action "+style);
       a.href=href;a.target="_blank";a.rel="noopener noreferrer";
+      const logo=make("img","tb-community-invite-action-logo");
+      logo.src="/community-logo-"+style+"-v1.svg";
+      logo.alt="";
+      logo.width=30;logo.height=30;
+      logo.setAttribute("aria-hidden","true");
+      const copy=make("span","tb-community-invite-action-copy");
       const main=make("strong","",label),small=make("small","",subtitle);
-      a.append(main,small);
+      copy.append(main,small);
+      a.append(logo,copy);
       actions.append(a);
       return a;
     }
@@ -54,7 +75,7 @@
       "Tham gia Discord","Giao lưu & thảo luận");
     const later=make("button","tb-community-invite-later","Để sau, tiếp tục xem web");
     later.type="button";
-    card.append(x,crest,eyebrow,title,body,actions,later);
+    card.append(x,brand,eyebrow,title,body,actions,later);
     veil.append(card);
     document.body.append(veil);
 
