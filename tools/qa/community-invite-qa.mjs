@@ -29,6 +29,12 @@ assert(dyn.includes(cssTag)&&dyn.includes(jsTag),
   "Dynamic published articles receive the public welcome");
 const css=fs.readFileSync(path.join(dir,"community-invite-v1.css"),"utf8");
 const js=fs.readFileSync(path.join(dir,"community-invite-v1.js"),"utf8");
+for(const brand of ["telegram","discord"]){
+  const icon=fs.readFileSync(path.join(dir,"community-logo-"+brand+"-v1.svg"),"utf8");
+  assert.match(icon,/<svg\b/,"Local official "+brand+" SVG must exist");
+  assert.match(icon,/<path d=/,"Logo must contain actual brand vector path");
+  assert.match(icon,/fill="#ffffff"/,"Logo must stay visible on colored button");
+}
 assert.match(css,/position:fixed;inset:0;z-index:99991/);
 assert.match(css,/max-height:calc\(100dvh - 32px\)/);
 assert.match(css,/@media\(max-width:480px\)/);
@@ -73,10 +79,23 @@ const first=boot(memory);
 assert(first.overlay&&!first.overlay.hidden,"New visitor sees modal on arrival");
 assert(first.body.classList.contains("tb-community-invite-active"),"Background scroll is locked");
 const card=first.overlay.children[0],x=card.children[0],buttons=card.children[5],later=card.children[6];
+const brand=card.children[1];
+assert.equal(brand.className,"tb-community-invite-brand");
+assert.equal(brand.children[0].src,"/trainingbot-logo-v110.png",
+  "Use the same TrainingBot logo as the site header, not the generic favicon");
+assert.equal(brand.children[0].alt,"Logo TrainingBot");
+assert.equal(brand.children[1].children[0].textContent,"TRAININGBOT");
+assert.equal(brand.children[1].children[1].textContent,"GAMING KNOWLEDGE HUB");
 assert.equal(card.attributes.role,"dialog");
 assert.equal(card.attributes["aria-modal"],"true");
 const telegram=buttons.children[0],discord=buttons.children[1];
 assert.equal(telegram.href,"https://t.me/TraininggBott");
+assert.equal(telegram.children[0].src,"/community-logo-telegram-v1.svg");
+assert.equal(telegram.children[0].alt,"");
+assert.equal(telegram.children[1].children[0].textContent,"Tham gia Telegram");
+assert.equal(discord.children[0].src,"/community-logo-discord-v1.svg");
+assert.equal(discord.children[0].alt,"");
+assert.equal(discord.children[1].children[0].textContent,"Tham gia Discord");
 assert.equal(discord.href,"https://discord.com/invite/5u5PbZMqx");
 assert.equal(telegram.target,"_blank");
 assert.equal(discord.rel,"noopener noreferrer");
@@ -97,4 +116,4 @@ const joined=boot(new Map());
 joined.overlay.children[0].children[5].children[0].listeners.click();
 assert(joined.overlay.hidden,"Telegram click dismisses modal while opening new tab");
 
-console.log("PASS: first-visit popup, trusted Telegram/Discord, six pages and articles, dismissal/escape, session dedupe, Admin isolation");
+console.log("PASS: TrainingBot real logo, Telegram/Discord local marks, first-visit invitation, trusted links, dismissal, session dedupe, Admin isolation");
