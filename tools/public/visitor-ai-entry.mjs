@@ -21,8 +21,8 @@ const PANEL='<section class="tb-ai-popup" id="tb-ai-popup" role="dialog" aria-la
  +'<div class="tb-ai-frame-mount"></div>'
  +'<div class="tb-ai-popup-backup" hidden><strong>Không thể mở chat thu gọn trên trình duyệt này.</strong><p>Bạn vẫn có thể trò chuyện bằng giao diện đầy đủ.</p><a href="/ai" target="_blank" rel="noopener noreferrer">Mở AI toàn màn hình ↗</a></div>'
  +'</section>';
-const CSS='<link rel="stylesheet" href="/visitor-ai-widget-v2.css?v=2">';
-const SCRIPT='<script defer src="/visitor-ai-widget-v2.js?v=4"></script>';
+const CSS='<link rel="stylesheet" href="/visitor-ai-widget-v2.css?v=3">';
+const SCRIPT='<script defer src="/visitor-ai-widget-v2.js?v=5"></script>';
 function afterWiki(nav,link,page){
  const wiki=nav.match(/<a\b[^>]*\bhref=["']\/wiki["'][^>]*>[\s\S]*?<\/a>/i);
  if(!wiki)throw Error("AI-WIDGET: missing Wiki link on "+page);

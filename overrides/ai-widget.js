@@ -67,7 +67,11 @@
       if(!session.ok)throw Error("SESSION_UNAVAILABLE");
       ready=true;question.disabled=false;send.disabled=false;
       banner("● Trợ lý sẵn sàng","ready");
-      question.focus({preventScroll:true});notify("ready");
+      // Keep desktop convenience, but never summon Safari's keyboard on
+      // a touch screen before the visitor explicitly taps the textarea.
+      if(window.matchMedia?.("(pointer:fine)")?.matches)
+        question.focus({preventScroll:true});
+      notify("ready");
     }catch(err){
       ready=false;question.disabled=true;send.disabled=true;
       banner(err?.message==="RATE_LIMITED"
@@ -115,10 +119,23 @@
       event.preventDefault();form.requestSubmit();
     }
   });
-  close.addEventListener("click",()=>notify("close"));
+  // Let the parent dialog follow the shrinking iPhone visual viewport only
+  // when the visitor is actually typing, never on initial chat connection.
+  question.addEventListener("focus",()=>notify("input-focus"));
+  question.addEventListener("blur",()=>notify("input-blur"));
+  close.addEventListener("click",()=>{
+    if(document.activeElement===question)question.blur();
+    notify("close");
+  });
   window.addEventListener("message",event=>{
     if(event.origin!==PARENT||event.data?.source!=="trainingbot-site-widget")return;
-    if(event.data.event==="focus"&&ready)question.focus({preventScroll:true});
+    // On touch devices programmatic focus scrolls/zooms Safari even when
+    // preventScroll is requested. Only desktop receives automatic focus.
+    if(event.data.event==="focus"&&ready&&
+      window.matchMedia?.("(pointer:fine)")?.matches)
+      question.focus({preventScroll:true});
+    if(event.data.event==="dismiss"&&document.activeElement===question)
+      question.blur();
   });
   void connect();
 })();
