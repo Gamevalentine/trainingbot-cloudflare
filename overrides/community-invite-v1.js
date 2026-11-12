@@ -71,7 +71,7 @@
     }
     const telegram=link("https://t.me/TraininggBott","telegram",
       "Tham gia Telegram","Theo dõi thông báo mới");
-    const discord=link("https://discord.com/invite/5u5PbZMqx","discord",
+    const discord=link("https://discord.com/invite/5BVF9YeFCM","discord",
       "Tham gia Discord","Giao lưu & thảo luận");
     const later=make("button","tb-community-invite-later","Để sau, tiếp tục xem web");
     later.type="button";
