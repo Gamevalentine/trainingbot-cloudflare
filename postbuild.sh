@@ -429,3 +429,14 @@ node tools/qa/public-ai-bridge-qa.mjs
 # iPhone Safari: focus must not zoom the page or hide Send behind keyboard.
 node --check tools/qa/ai-widget-ios-keyboard-qa.mjs
 node tools/qa/ai-widget-ios-keyboard-qa.mjs
+
+# COMMUNITY-INVITE-01: welcome first-time visitors with Telegram/Discord choices.
+# Run after public navigation, chat widget and article asset checks, to avoid
+# altering Admin pages, D1, or the existing AI chat controls.
+test -f public/community-invite-v1.css
+test -f public/community-invite-v1.js
+node --check public/community-invite-v1.js
+node --check tools/public/community-invite.mjs
+node tools/public/community-invite.mjs
+node --check tools/qa/community-invite-qa.mjs
+node tools/qa/community-invite-qa.mjs
